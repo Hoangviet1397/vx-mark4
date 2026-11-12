@@ -218,24 +218,23 @@
     <radialGradient id="gCone" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#3b3b3f"/><stop offset=".6" stop-color="#18181a"/><stop offset="1" stop-color="#0a0a0b"/></radialGradient>
     <radialGradient id="gDome" cx=".38" cy=".34" r=".7"><stop offset="0" stop-color="#d9d6cf"/><stop offset=".45" stop-color="#8b8780"/><stop offset="1" stop-color="#2c2b29"/></radialGradient>
     <radialGradient id="gWave" cx=".5" cy=".5" r=".5"><stop offset=".45" stop-color="#050505"/><stop offset="1" stop-color="#2a2a2d"/></radialGradient>
-    <radialGradient id="gSurround" cx=".5" cy=".5" r=".5"><stop offset=".86" stop-color="#0a0a0b"/><stop offset=".93" stop-color="#2b2b2e"/><stop offset="1" stop-color="#0a0a0b"/></radialGradient>
+    <radialGradient id="gSurround" cx=".5" cy=".5" r=".5"><stop offset=".86" stop-color="#0b0b0c"/><stop offset=".93" stop-color="#232325"/><stop offset="1" stop-color="#0b0b0c"/></radialGradient>
+    <radialGradient id="gDomeBlack" cx=".4" cy=".35" r=".65"><stop offset="0" stop-color="#4a4a4e"/><stop offset=".5" stop-color="#1b1b1d"/><stop offset="1" stop-color="#0a0a0b"/></radialGradient>
+    <radialGradient id="gBore" cx=".5" cy=".5" r=".5"><stop offset=".8" stop-color="#000" stop-opacity=".18"/><stop offset=".9" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".08"/></radialGradient>
     <radialGradient id="gCap" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#55555a"/><stop offset="1" stop-color="#121213"/></radialGradient>
     <!-- drivers seen through the grille slots of the Fusion render (img/speaker-front.png, 364 x 568) -->
     <symbol id="drivers" viewBox="0 0 364 568">
-      <rect x="10" y="10" width="344" height="548" rx="26" fill="#0c0c0d"/>
-      <!-- tweeter: faceplate, waveguide, dome -->
-      <circle cx="181.5" cy="120" r="92" fill="#141416"/>
-      <circle cx="181.5" cy="120" r="84" fill="none" stroke="#3a3936" stroke-width="2"/>
-      <circle cx="181.5" cy="120" r="62" fill="url(#gWave)"/>
-      <circle cx="181.5" cy="120" r="30" fill="url(#gDome)"/>
-      <circle cx="181.5" cy="120" r="30" fill="none" stroke="#000" stroke-opacity=".5"/>
-      <!-- woofer: basket rim, rubber surround, cone, dust cap -->
-      <circle cx="181.5" cy="387" r="152" fill="#141416"/>
-      <circle cx="181.5" cy="387" r="146" fill="none" stroke="#3a3936" stroke-width="2"/>
-      <circle cx="181.5" cy="387" r="138" fill="url(#gSurround)"/>
-      <circle cx="181.5" cy="387" r="120" fill="url(#gCone)"/>
-      <circle cx="181.5" cy="387" r="120" fill="none" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
-      <circle cx="181.5" cy="387" r="44" fill="url(#gCap)"/>
+      <!-- as built (photos): white printed baffle, black tweeter plate, woofer in a white counterbore -->
+      <rect x="10" y="10" width="344" height="548" rx="26" fill="#0d0d0e"/>
+      <!-- tweeter: round black faceplate, shallow waveguide, black dome -->
+      <circle cx="181.5" cy="120" r="92" fill="#121213"/>
+      <circle cx="181.5" cy="120" r="46" fill="url(#gWave)"/>
+      <circle cx="181.5" cy="120" r="27" fill="url(#gDomeBlack)"/>
+      <!-- woofer: white counterbore ring, rubber surround, black cone -->
+      <circle cx="181.5" cy="387" r="152" fill="#ecebe6"/>
+      <circle cx="181.5" cy="387" r="152" fill="url(#gBore)"/>
+      <circle cx="181.5" cy="387" r="128" fill="url(#gSurround)"/>
+      <circle cx="181.5" cy="387" r="112" fill="url(#gCone)"/>
     </symbol>
   </defs>
 </svg>
