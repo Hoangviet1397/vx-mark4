@@ -206,6 +206,31 @@
   details { margin-top: 26px; color: var(--muted); font-size: 12px; }
   summary { cursor: pointer; letter-spacing: .18em; text-transform: uppercase; font-size: 10px; }
   .log { font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; max-height: 160px; overflow: auto; margin-top: 8px; }
+
+  /* my speakers */
+  .homewrap { padding-top: max(28px, env(safe-area-inset-top)); padding-bottom: max(28px, env(safe-area-inset-bottom)); }
+  .iconbtn { appearance: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--hair); background: transparent; color: var(--text); font: 300 22px/1 inherit; cursor: pointer; }
+  .products { display: grid; gap: 12px; margin-top: 18px; }
+  .product { appearance: none; display: flex; align-items: center; gap: 16px; width: 100%; text-align: left; border: 0; border-radius: 20px; padding: 14px 16px;
+             background: var(--chip); color: var(--text); cursor: pointer; font: inherit; transition: background .2s; }
+  .product:hover { background: var(--hair); }
+  .product.live { background: var(--surface); box-shadow: 0 1px 12px rgba(0,0,0,.12); }
+  .pimg { width: 64px; flex: none; }
+  .pimg .spk { filter: drop-shadow(0 6px 8px rgba(0,0,0,.25)); }
+  .pimg img { width: 100%; height: auto; display: block; position: relative; }
+  .pimg.plus { height: 64px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--hair); border-radius: 14px; font: 200 30px/1 inherit; color: var(--muted); }
+  .pmeta { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .pmeta b { font-weight: 400; font-size: 17px; }
+  .pmeta span { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 7px; }
+  .product.add .pmeta b { color: var(--text); }
+  .sheet { margin-top: 18px; padding: 18px; border-radius: 20px; background: var(--surface); box-shadow: 0 1px 12px rgba(0,0,0,.12); animation: fadein .25s ease; }
+  .sheet-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .sheet-head b { font-weight: 400; font-size: 18px; }
+  .sheet .lead { margin-bottom: 16px; }
+  .sheet .alt { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+  .back { appearance: none; display: inline-flex; align-items: baseline; gap: 10px; border: 0; background: none; color: var(--text); cursor: pointer; padding: 0; font: inherit; }
+  .back > span:first-child { font: 300 26px/1 inherit; color: var(--muted); }
+  .side.solo { width: 46%; }
 </style>
 </head>
 <body>
@@ -243,44 +268,36 @@
 <div id="splash" class="screen">
   <div class="mark">
     <h1>V&amp;X</h1>
-    <div class="model">mark 4</div>
+    <div class="model">speakers</div>
     <div class="rule"></div>
   </div>
 </div>
 
-<!-- ============ 2. connect ============ -->
-<div id="connect" class="screen" hidden>
-  <div class="wrap">
-    <div class="top"><span class="word">V&amp;X<small>mark 4</small></span><span class="eyebrow" id="cStep">Kết nối</span></div>
-    <div class="stage">
-      <div class="pair">
-        <div class="side"><div class="spk"><svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"></div><span class="eyebrow">Trái</span></div>
-        <div class="side"><div class="spk"><svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"></div><span class="eyebrow">Phải</span></div>
+<!-- ============ 2. my speakers ============ -->
+<div id="home" class="screen" hidden>
+  <div class="wrap homewrap">
+    <div class="top"><span class="word">V&amp;X</span><button class="iconbtn" id="addTop" aria-label="Thêm loa">+</button></div>
+    <h2>Loa của tôi</h2>
+    <div class="products" id="products"></div>
+
+    <div class="sheet" id="addSheet" hidden>
+      <div class="sheet-head"><b>Thêm loa</b><button class="linkbtn" id="addClose">Đóng</button></div>
+      <p class="lead">Bật loa lên rồi bấm <b>Tìm loa</b>. Không cần giữ nút nào trên loa.</p>
+      <button class="btn primary" id="findBtn">Tìm loa</button>
+      <div class="alt">
+        <button class="textbtn" id="usbBtn">Nối bằng cáp USB</button>
+        <button class="textbtn" id="btAllBtn">Không thấy loa?</button>
       </div>
     </div>
-    <h2>Kết nối với loa</h2>
-    <p class="lead">Chọn một loa bất kỳ. Mọi chỉnh sửa sẽ tự áp cho cả cặp loa.</p>
-    <ol class="steps" id="stepsBt">
-      <li>Bật cả 2 loa và đợi chúng tự ghép với nhau.</li>
-      <li>Lần đầu dùng Bluetooth: <b>giữ nút Play 2.5 giây</b> cho loa vào chế độ ghép đôi.</li>
-      <li>Bấm <b>Bluetooth</b> rồi chọn loa <b>V&amp;X mark 4</b>.</li>
-    </ol>
-    <div class="actions">
-      <button class="btn primary" id="btBtn">Bluetooth</button>
-      <button class="btn" id="usbBtn">USB</button>
-      <p class="msg" id="cMsg"></p>
-      <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap">
-        <button class="textbtn" id="btAllBtn">Không thấy loa trong danh sách?</button>
-        <button class="textbtn" id="demoBtn">Xem app không cần loa</button>
-      </div>
-    </div>
+    <p class="msg" id="cMsg"></p>
+    <p class="foot"><button class="textbtn" id="demoBtn">Xem app không cần loa</button></p>
   </div>
 </div>
 
-<!-- ============ 3. app ============ -->
+<!-- ============ 3. one speaker ============ -->
 <div id="app" class="screen" hidden>
   <header><div class="wrap">
-    <span class="word">V&amp;X<small>mark 4</small></span>
+    <button class="back" id="backBtn" aria-label="Loa của tôi"><span>‹</span><span class="word" id="appWord">V&amp;X<small>mark 4</small></span></button>
     <button class="pill" id="pill"><i class="dot" id="pillDot"></i><span id="pillTxt">Chưa kết nối</span></button>
   </div></header>
 
@@ -288,18 +305,15 @@
   <div class="view" id="v-speaker">
     <div class="wrap">
       <div class="hero">
-        <div class="pair" id="heroPair">
-          <div class="side" data-r="1"><div class="spk"><svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"></div><span class="eyebrow">Trái</span></div>
-          <div class="side" data-r="2"><div class="spk"><svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"></div><span class="eyebrow">Phải</span></div>
-        </div>
+        <div class="pair" id="heroPair"></div>
       </div>
-      <h1 class="title">V&amp;X mark 4</h1>
+      <h1 class="title" id="pTitle">V&amp;X mark 4</h1>
       <p class="sub" id="homeSub">Cặp loa không dây chủ động hai đường tiếng</p>
 
       <div class="facts">
         <div class="tile link" data-go="sound"><span class="eyebrow">Âm thanh</span><b id="tSound">Optimal</b></div>
-        <div class="tile link" data-go="sound" data-anchor="secPlace"><span class="eyebrow">Vị trí</span><b id="tPlace">Free</b></div>
-        <div class="tile"><span class="eyebrow">Cặp loa</span><b><i class="dot" id="tPeerDot"></i><span id="tPeer">—</span></b></div>
+        <div class="tile link" id="tilePlace" data-go="sound" data-anchor="secPlace"><span class="eyebrow">Vị trí</span><b id="tPlace">Free</b></div>
+        <div class="tile" id="tilePeer"><span class="eyebrow">Cặp loa</span><b><i class="dot" id="tPeerDot"></i><span id="tPeer">—</span></b></div>
         <div class="tile"><span class="eyebrow">Kết nối</span><b id="tLink">—</b></div>
       </div>
 
@@ -317,6 +331,7 @@
     <div class="wrap">
       <h1 class="title">Âm thanh</h1>
       <p class="sub">Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.</p>
+      <div id="wheelBlock">
       <div class="wheel" id="wheel">
         <div class="glow" id="glow"></div>
         <div class="ring"></div><div class="ring inner"></div><div class="centre"></div>
@@ -346,6 +361,8 @@
         </form>
       </section>
 
+      </div>
+
       <section id="secPlace">
         <div class="eyebrow">Vị trí đặt loa</div>
         <div class="seg" id="placement">
@@ -371,18 +388,10 @@
   <div class="view" id="v-info" hidden>
     <div class="wrap">
       <h1 class="title">Giới thiệu</h1>
-      <p class="sub">V&amp;X mark 4 là cặp loa bookshelf không dây, được thiết kế và chế tạo thủ công với mong muốn mang tiếng nhạc tự nhiên, cân bằng vào căn phòng nhỏ.</p>
+      <p class="sub" id="aboutText"></p>
+      <div class="rows spec" id="specRows"></div>
 
-      <div class="rows spec">
-        <div class="row"><span>Sản phẩm</span><span>V&amp;X mark 4</span></div>
-        <div class="row"><span>Nhà sáng tạo</span><span id="creator">V&amp;X</span></div>
-        <div class="row"><span>Năm</span><span>2026</span></div>
-        <div class="row"><span>Loa</span><span>2 đường tiếng, không dây</span></div>
-        <div class="row"><span>Phiên bản app</span><span>2.1</span></div>
-        <div class="row"><span>Giao thức</span><span id="fwProto">—</span></div>
-      </div>
-
-      <details class="guide"><summary>Nút bấm &amp; đèn báo</summary>
+      <details class="guide" id="guide"><summary>Nút bấm &amp; đèn báo</summary>
         <div class="keys" style="margin-top:14px">
           <span class="k"><i>Play</i></span><span>Phát / dừng · giữ: ghép điện thoại</span>
           <span class="k"><i>Rew</i> <i>Next</i></span><span>Bài trước / sau · giữ: âm lượng</span>
@@ -414,7 +423,7 @@
   const GAIA_COMMAND  = '00001101-d102-11e1-9b23-00025b00a5a5';
   const GAIA_RESPONSE = '00001102-d102-11e1-9b23-00025b00a5a5';
   // V&X vendor commands (firmware sink_loudness.c)
-  const VX_VENDOR = 0x7658, CMD_GET_STATE = 0x0001, CMD_SET_BEOSONIC = 0x0002, CMD_SET_PLACEMENT = 0x0003;
+  const VX_VENDOR = 0x7658, CMD_GET_STATE = 0x0001, CMD_SET_BEOSONIC = 0x0002, CMD_SET_PLACEMENT = 0x0003, CMD_GET_INFO = 0x0004;
   const MAX_DIST = 50;
   const PLACES = ['Free', 'Wall', 'Corner'];
   const PLACE_NOTES = ['Loa cách tường trên 50 cm. Âm chuẩn, không bù.',
@@ -433,14 +442,39 @@
   let sendTimer = null, pendingSend = false, lastSend = 0, pollTimer = null, writing = Promise.resolve(), dragging = false;
 
   // =====================================================================
+  // product catalog: one entry per V&X model (model id from GET_INFO)
+  // =====================================================================
+  const F_WHEEL = 1, F_PLACEMENT = 2, F_PAIR = 4, F_USB = 8, F_ALIGNED = 16;
+  const MODELS = {
+    4: {
+      name: 'mark 4', image: 'img/speaker-front.png', drivers: true,
+      tagline: 'Cặp loa không dây chủ động hai đường tiếng',
+      about: 'V&X mark 4 là cặp loa bookshelf không dây, được thiết kế và chế tạo thủ công với mong muốn mang tiếng nhạc tự nhiên, cân bằng vào căn phòng nhỏ.',
+      specs: [['Nhà sáng tạo', 'V&X'], ['Năm', '2026'], ['Loa', '2 đường tiếng, không dây'], ['Phân tần', 'Chủ động 3 kHz, đã chỉnh pha']],
+      guide: true,
+      features: F_WHEEL | F_PLACEMENT | F_PAIR | F_USB | F_ALIGNED
+    }
+  };
+  const UNKNOWN_MODEL = { name: 'loa V&X', image: 'img/speaker-front.png', drivers: true, tagline: 'Loa V&X', about: 'Loa V&X.', specs: [], guide: false, features: F_WHEEL };
+  const modelOf = id => MODELS[id] || Object.assign({}, UNKNOWN_MODEL, { name: 'loa V&X ' + id });
+  const speakerHTML = m => `<div class="spk">${m.drivers ? '<svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg>' : ''}<img src="${m.image}" alt="V&amp;X ${m.name}" draggable="false"></div>`;
+
+  // remembered speakers (this browser): [{ key, model, btId, kind, last }]
+  let products = store.get('vx.products', []);
+  const saveProducts = () => store.set('vx.products', products);
+  let currentKey = null;              // product shown in the app view
+  const info = { model: 0, features: 0, fw: '' };   // from the connected speaker
+
+  // =====================================================================
   // screens and tabs
   // =====================================================================
   let screen = 'splash';
   function showScreen(name) {
     if (screen === name) return;
     screen = name;
-    ['splash', 'connect', 'app'].forEach(s => { const el = $(s); el.hidden = s !== name; el.classList.toggle('enter', s === name); });
+    ['splash', 'home', 'app'].forEach(s => { const el = $(s); el.hidden = s !== name; el.classList.toggle('enter', s === name); });
     window.scrollTo(0, 0);
+    if (name === 'home') renderHomeList();
   }
   let tab = 'speaker';
   function showTab(name, anchor) {
@@ -453,16 +487,74 @@
   }
   document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
   document.querySelectorAll('[data-go]').forEach(el => el.onclick = () => showTab(el.dataset.go, el.dataset.anchor));
-  const enterApp = () => { showScreen('app'); const h = location.hash.slice(1); showTab(['speaker', 'sound', 'info'].includes(h) ? h : 'speaker'); };
-  $('pill').onclick = () => { if (link) showTab('speaker'); else showScreen('connect'); };
-  $('rowConn').onclick = async () => { if (link) await disconnectLink(); showScreen('connect'); };
-  $('demoBtn').onclick = () => { log('Xem app không kết nối loa.'); enterApp(); };
 
-  // splash: short, tap to skip; goes straight in when a speaker is already connected
+  // fill the speaker view for one model: picture, names, which controls exist
+  function applyModel(id) {
+    const m = modelOf(id), f = (info.model === id && info.features) ? info.features : m.features;
+    $('appWord').innerHTML = `V&amp;X<small>${m.name}</small>`;
+    $('pTitle').textContent = 'V&X ' + m.name;
+    const pair = f & F_PAIR;
+    $('heroPair').innerHTML = pair
+      ? `<div class="side" data-r="1">${speakerHTML(m)}<span class="eyebrow">Trái</span></div><div class="side" data-r="2">${speakerHTML(m)}<span class="eyebrow">Phải</span></div>`
+      : `<div class="side solo" data-r="0">${speakerHTML(m)}</div>`;
+    $('tilePeer').hidden = !pair;
+    $('wheelBlock').hidden = !(f & F_WHEEL);
+    $('secPlace').hidden = !(f & F_PLACEMENT);
+    $('tilePlace').hidden = !(f & F_PLACEMENT);
+    $('aboutText').textContent = m.about;
+    $('specRows').innerHTML = [['Sản phẩm', 'V&X ' + m.name], ...m.specs, ['Firmware', info.model === id && info.fw ? info.fw : '—'], ['App', 'web 3.0']]
+      .map(([k, v]) => `<div class="row"><span>${k}</span><span>${v.replace(/&(?!amp;)/g, '&amp;')}</span></div>`).join('');
+    $('guide').hidden = !m.guide;
+    renderStatus();
+  }
+  function openProduct(key) {
+    const p = products.find(x => x.key === key);
+    currentKey = key;
+    applyModel(p ? p.model : 4);
+    showScreen('app');
+    const h = location.hash.slice(1);
+    showTab(['speaker', 'sound', 'info'].includes(h) ? h : 'speaker');
+  }
+  $('backBtn').onclick = () => { history.replaceState(null, '', '#'); showScreen('home'); };
+  $('pill').onclick = () => { if (link) showTab('speaker'); else reconnect(currentKey); };
+  $('rowConn').onclick = async () => { if (link) await disconnectLink(); else reconnect(currentKey); };
+  $('demoBtn').onclick = () => { log('Xem app không kết nối loa.'); currentKey = null; applyModel(4); showScreen('app'); showTab('speaker'); };
+
+  // "My speakers": one card per remembered speaker, plus "add"
+  function renderHomeList() {
+    const box = $('products');
+    box.innerHTML = '';
+    products.slice().sort((a, b) => b.last - a.last).forEach(p => {
+      const m = modelOf(p.model), live = link && currentKey === p.key;
+      const b = document.createElement('button');
+      b.className = 'product' + (live ? ' live' : '');
+      b.innerHTML = `<div class="pimg">${speakerHTML(m)}</div>
+        <div class="pmeta"><b>V&amp;X ${m.name}</b>
+        <span><i class="dot ${live ? (state.peer || !(m.features & F_PAIR) ? 'ok' : 'warn') : ''}"></i>${live ? 'Đã kết nối · ' + (link.kind === 'usb' ? 'USB' : 'Bluetooth') : 'Chạm để kết nối'}</span></div>
+        <span class="chev">›</span>`;
+      b.onclick = () => live ? openProduct(p.key) : reconnect(p.key);
+      box.appendChild(b);
+    });
+    const add = document.createElement('button');
+    add.className = 'product add';
+    add.innerHTML = '<div class="pimg plus">+</div><div class="pmeta"><b>Thêm loa</b><span>Tìm loa V&amp;X ở gần</span></div>';
+    add.onclick = openAdd;
+    box.appendChild(add);
+    if (!products.length) openAdd();
+  }
+  function openAdd() { $('addSheet').hidden = false; $('addSheet').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  $('addTop').onclick = openAdd;
+  $('addClose').onclick = () => { $('addSheet').hidden = true; };
+
+  // splash: short, tap to skip
   let splashDone = false;
-  const leaveSplash = () => { if (splashDone) return; splashDone = true; link ? enterApp() : showScreen('connect'); };
+  const leaveSplash = () => {
+    if (splashDone) return; splashDone = true;
+    if (link && currentKey) openProduct(currentKey);
+    else { showScreen('home'); autoReconnect(); }
+  };
   $('splash').onclick = leaveSplash;
-  setTimeout(leaveSplash, 1700);
+  setTimeout(leaveSplash, 1500);
 
   // =====================================================================
   // Beosonic maths (Bang & Olufsen Beocreate 2)
@@ -645,8 +737,20 @@
     return writing;
   }
   function onResponse(ev) { handlePacket(new Uint8Array(ev.target.value.buffer)); }
+  let infoWaiter = null;   // resolves when the GET_INFO reply (or its refusal) arrives
   function handlePacket(v) {
     if (v.length < 5 || ((v[0] << 8) | v[1]) !== VX_VENDOR) return;
+    const cmd = ((v[2] << 8) | v[3]) & 0x7fff;
+    if (cmd === CMD_GET_INFO) {
+      // older firmware answers "not supported": treat it as a mark 4
+      if (v[4] === 0 && v.length >= 13) {
+        const p = v.slice(5);
+        info.model = (p[1] << 8) | p[2]; info.fw = p[3] + '.' + p[4]; info.features = (p[5] << 8) | p[6];
+        state.proto = p[0]; state.role = p[7];
+      } else { info.model = 4; info.fw = 'cũ (trước 2.1)'; info.features = MODELS[4].features; }
+      if (infoWaiter) { infoWaiter(); infoWaiter = null; }
+      return;
+    }
     if (v[4] !== 0) { log('Loa trả lỗi ' + v[4]); return; }
     if (v.length < 13) return;
     const p = v.slice(5);
@@ -677,9 +781,9 @@
     $('tPeerDot').className = 'dot ' + (!state.connected ? '' : state.peer ? 'ok' : 'warn');
     $('tPeer').textContent = !state.connected ? '—' : state.peer ? 'Đồng bộ' : 'Mất loa kia';
     $('rowConnTxt').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối loa';
-    $('homeSub').textContent = state.connected ? `Đang điều khiển ${side.toLowerCase()} qua ${via}` : 'Cặp loa không dây chủ động hai đường tiếng';
-    $('fwProto').textContent = state.proto ? 'V&X ' + state.proto : '—';
+    $('homeSub').textContent = state.connected ? `Đang điều khiển ${side.toLowerCase()} qua ${via}` : modelOf(products.find(x => x.key === currentKey)?.model || 4).tagline;
     // highlight the speaker we talk to; the other one is lit too when the pair is synced
+    if (screen === 'home') renderHomeList();
     const hp = $('heroPair');
     hp.classList.toggle('dim', state.connected && !state.peer);
     hp.querySelectorAll('.side').forEach(s => {
@@ -694,63 +798,116 @@
   }
 
   // =====================================================================
-  // connection
+  // connection: one "Find speaker" button, USB as an extra, silent reconnect
   // =====================================================================
   const cMsg = (t, warn) => { const m = $('cMsg'); m.className = 'msg' + (warn ? ' warn' : ''); m.innerHTML = t; };
-  async function startLink(l) {
-    link = l; state.connected = true; sentKey = ""; inFlight = false; renderStatus();
+  const timeout = (ms, what) => new Promise((_, rej) => setTimeout(() => rej(new Error(what)), ms));
+
+  // after any link opens: ask who it is, remember it, show it
+  async function startLink(l, btId) {
+    link = l; state.connected = true; sentKey = ""; inFlight = false;
+    info.model = 0; info.features = 0; info.fw = '';
+    const got = new Promise(res => { infoWaiter = res; });
+    await gaia(CMD_GET_INFO);
+    await Promise.race([got, new Promise(res => setTimeout(res, 1500))]);
+    if (!info.model) { info.model = 4; info.features = MODELS[4].features; }
+    const key = 'm' + info.model;
+    let p = products.find(x => x.key === key);
+    if (!p) { p = { key, model: info.model }; products.push(p); }
+    p.kind = l.kind; p.last = Date.now(); if (btId) p.btId = btId;
+    saveProducts();
+    currentKey = key;
     await gaia(CMD_GET_STATE);
     clearInterval(pollTimer);
     pollTimer = setInterval(() => { if (link && !dragging) gaia(CMD_GET_STATE).catch(() => {}); }, 3000);
-    cMsg('');
-    if (splashDone) enterApp();
+    cMsg(''); $('addSheet').hidden = true;
+    if (splashDone) openProduct(key);
   }
   async function disconnectLink() {
     const l = link; link = null; if (l) { try { await l.close(); } catch {} } onDisconnect();
   }
-  function onDisconnect() { state.connected = false; cmdChar = null; clearInterval(pollTimer); renderStatus(); }
+  function onDisconnect() { state.connected = false; cmdChar = null; clearInterval(pollTimer); renderStatus(); if (screen === 'home') renderHomeList(); }
 
-  async function connectBluetooth(all) {
-    if (link) await disconnectLink();
-    let step = 'chọn loa';
+  // open GATT on a chosen / remembered device
+  async function openBluetooth(device) {
+    let step = 'kết nối';
+    const t0 = Date.now();
+    device.addEventListener('gattserverdisconnected', () => {
+      if (!(link && link.kind === 'bt')) return;
+      link = null; onDisconnect(); log('Mất kết nối Bluetooth.');
+      if (Date.now() - t0 < 15000) {
+        showScreen('home');
+        cMsg('Loa ngắt ngay sau khi nối. Nếu loa vừa được nạp lại firmware: vào <b>Cài đặt → Bluetooth</b> trên điện thoại, chọn loa → <b>Quên thiết bị này</b>, rồi bấm Tìm loa lại.', true);
+      }
+    });
     try {
-      const opts = all ? { acceptAllDevices: true, optionalServices: [GAIA_SERVICE] }
-                       : { filters: [{ namePrefix: 'V&X' }, { namePrefix: 'LE-V&X' }, { services: [GAIA_SERVICE] }], optionalServices: [GAIA_SERVICE] };
-      const device = await navigator.bluetooth.requestDevice(opts);
-      const t0 = Date.now();
-      device.addEventListener('gattserverdisconnected', () => {
-        if (!(link && link.kind === 'bt')) return;
-        link = null; onDisconnect(); log('Mất kết nối Bluetooth.');
-        // dropped right after connecting: the speaker refused to pair (it only pairs in pairing mode)
-        if (Date.now() - t0 < 15000) {
-          showScreen('connect');
-          cMsg('Loa ngắt ngay vì chưa cho ghép. Giữ nút Play 2.5 giây tới khi đèn nháy chậm, bấm Bluetooth lại và chọn <b>Ghép nối</b> khi iPhone hỏi.', true);
-        }
-      });
       cMsg(`<span class="spin"></span>Đang kết nối ${device.name || 'loa'}…`);
       log('Đang kết nối ' + (device.name || device.id) + '…');
-      step = 'kết nối GATT';
-      const server = await device.gatt.connect();
-      step = 'tìm dịch vụ điều khiển';
+      const server = await Promise.race([device.gatt.connect(), timeout(12000, 'loa không trả lời (ngoài tầm hoặc đang tắt)')]);
+      step = 'mở kênh điều khiển';
       const svc = await server.getPrimaryService(GAIA_SERVICE);
-      step = 'mở kênh lệnh';
       cmdChar = await svc.getCharacteristic(GAIA_COMMAND);
       const resp = await svc.getCharacteristic(GAIA_RESPONSE);
-      step = 'bật thông báo (ghép nối)';
+      step = 'ghép nối';
       await resp.startNotifications(); resp.addEventListener('characteristicvaluechanged', onResponse);
-      log('Đã kết nối qua Bluetooth.');
       const ch = cmdChar;
-      step = 'gửi lệnh đầu tiên (ghép nối)';
-      await startLink({ kind: 'bt', send: b => ch.writeValue(new Uint8Array(b)), close: () => device.gatt.disconnect() });  // first encrypted write: the phone pairs here
+      await startLink({ kind: 'bt', send: b => ch.writeValue(new Uint8Array(b)), close: () => device.gatt.disconnect() }, device.id);
+      log('Đã kết nối qua Bluetooth.');
+      return true;
     } catch (e) {
       link = null; onDisconnect();
       const msg = errText(e);
-      if (e && e.name === 'NotFoundError' && /cancel/i.test(msg)) { cMsg(''); return; }
       log(`Không kết nối được (bước: ${step}): ${msg}`);
-      if (/security|auth|encrypt|insufficient|pair/i.test(msg) || /ghép nối/.test(step))
-        cMsg(`Lỗi ở bước ${step}. Loa chưa cho ghép: giữ nút Play 2.5 giây tới khi đèn nháy chậm rồi thử lại, và bấm <b>Ghép nối</b> khi iPhone hỏi.<br><small>${msg}</small>`, true);
-      else if (step === 'tìm dịch vụ điều khiển') cMsg(`Thiết bị này không có dịch vụ điều khiển V&amp;X.<br><small>${msg}</small>`, true);
-      else cMsg(`Không kết nối được (bước: ${step}).<br><small>${msg}</small>`, true);
+      if (step === 'ghép nối' || /security|auth|encrypt|insufficient|pair/i.test(msg))
+        cMsg(`Không ghép được với loa. Vào <b>Cài đặt → Bluetooth</b>, nếu thấy loa V&amp;X thì chọn <b>Quên thiết bị này</b>, rồi bấm Tìm loa lại.<br><small>${msg}</small>`, true);
+      else if (step === 'mở kênh điều khiển') cMsg(`Thiết bị này không phải loa V&amp;X.<br><small>${msg}</small>`, true);
+      else cMsg(`Không kết nối được: ${msg}`, true);
+      return false;
+    }
+  }
+  // "Find speaker": the chooser only lists speakers advertising the V&X control service
+  async function findBluetooth(all) {
+    if (link) await disconnectLink();
+    let device;
+    try {
+      device = await navigator.bluetooth.requestDevice(all
+        ? { acceptAllDevices: true, optionalServices: [GAIA_SERVICE] }
+        : { filters: [{ services: [GAIA_SERVICE] }, { namePrefix: 'V&X' }], optionalServices: [GAIA_SERVICE] });
+    } catch (e) {
+      const msg = errText(e);
+      if (/cancel/i.test(msg)) { cMsg(''); return; }
+      cMsg('Không mở được Bluetooth: ' + msg + '. Trên iPhone kiểm tra <b>Cài đặt → Bluefy → Bluetooth</b> đã bật.', true);
+      return;
+    }
+    await openBluetooth(device);
+  }
+  // tap on a remembered speaker: reuse the permission if the browser keeps it, else ask again
+  async function reconnect(key) {
+    const p = products.find(x => x.key === key);
+    if (link && currentKey === key) { openProduct(key); return; }
+    if (p && p.kind === 'usb' && navigator.hid) {
+      const d = (await navigator.hid.getDevices()).find(x => x.collections.some(c => c.usagePage === 0xff00));
+      if (d) { await openUsb(d); return; }
+    }
+    if (p && p.btId && navigator.bluetooth && navigator.bluetooth.getDevices) {
+      try {
+        const d = (await navigator.bluetooth.getDevices()).find(x => x.id === p.btId);
+        if (d && await openBluetooth(d)) return;
+      } catch {}
+    }
+    if (navigator.bluetooth) await findBluetooth(false);
+    else if (navigator.hid) await connectUsb();
+    else cMsg('Trình duyệt này không có Bluetooth. iPhone: mở bằng Bluefy. Android / máy tính: Chrome.', true);
+  }
+  // on start: USB that was allowed before connects by itself; Bluetooth if the browser remembers it
+  async function autoReconnect() {
+    if (link || !products.length) return;
+    const last = products.slice().sort((a, b) => b.last - a.last)[0];
+    if (last.btId && navigator.bluetooth && navigator.bluetooth.getDevices) {
+      try {
+        const d = (await navigator.bluetooth.getDevices()).find(x => x.id === last.btId);
+        if (d) await openBluetooth(d);
+      } catch {}
     }
   }
   // Bluefy and some browsers reject with strings or plain objects, not Error
@@ -785,21 +942,17 @@
       if (!list.length) return;
       cMsg('<span class="spin"></span>Đang kết nối qua USB…');
       await openUsb(list[0]);
-    } catch (e) { log('USB lỗi: ' + e.message); cMsg('USB lỗi: ' + e.message, true); link = null; onDisconnect(); }
+    } catch (e) { log('USB lỗi: ' + errText(e)); cMsg('USB lỗi: ' + errText(e), true); link = null; onDisconnect(); }
   }
 
-  $('btBtn').onclick = () => connectBluetooth(false);
-  $('btAllBtn').onclick = () => { if (navigator.bluetooth) connectBluetooth(true); };
+  $('findBtn').onclick = () => navigator.bluetooth ? findBluetooth(false) : (navigator.hid ? connectUsb() : cMsg('Trình duyệt này không có Bluetooth. iPhone: mở bằng Bluefy. Android / máy tính: Chrome.', true));
+  $('btAllBtn').onclick = () => { if (navigator.bluetooth) findBluetooth(true); };
   $('usbBtn').onclick = connectUsb;
-  const why = (btn, text) => { btn.disabled = true; btn.insertAdjacentHTML('beforeend', `<span class="why">${text}</span>`); };
-  if (!navigator.hid) why($('usbBtn'), 'Chỉ có trên Chrome / Edge máy tính');
-  else {
+  $('usbBtn').hidden = !navigator.hid;
+  $('btAllBtn').hidden = !navigator.bluetooth;
+  if (navigator.hid) {
     navigator.hid.addEventListener('disconnect', () => { if (link && link.kind === 'usb') { link = null; onDisconnect(); log('Đã rút USB.'); } });
     navigator.hid.getDevices().then(ds => { const d = ds.find(x => x.collections.some(c => c.usagePage === 0xff00)); if (d && !link) openUsb(d).catch(() => {}); });
-  }
-  if (!navigator.bluetooth) {
-    why($('btBtn'), /iPhone|iPad/.test(navigator.userAgent) ? 'Trên iPhone hãy mở trang này bằng app Bluefy' : 'Dùng Chrome trên Android hoặc máy tính');
-    $('btAllBtn').hidden = true;
   }
 
   renderModes(); renderPlacement(); renderStatus(); render();
