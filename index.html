@@ -294,6 +294,24 @@
   .placebox .note { margin-top: 8px; }
   #v-speaker .row.open { background: var(--sel); }
   #app.offline #secPlace { opacity: .35; pointer-events: none; filter: grayscale(1); }
+  /* about page */
+  .about-hero { width: 46%; max-width: 190px; margin: 18px auto 0; }
+  .about-hero img { width: 100%; height: auto; display: block; position: relative; }
+  .about-hero .spk { filter: drop-shadow(0 18px 22px rgba(0,0,0,.25)); }
+  .about-name { text-align: center; font-weight: 300; font-size: 28px; margin: 20px 0 6px; }
+  .about-tag { text-align: center; color: var(--muted); font-size: 15px; margin: 0 auto; max-width: 34ch; }
+  .highlights { display: grid; gap: 10px; margin-top: 30px; }
+  .hl { display: flex; gap: 14px; align-items: flex-start; padding: 16px; border-radius: 16px; background: var(--chip); }
+  .hl svg { width: 28px; height: 28px; flex: none; stroke: var(--text); fill: none; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; margin-top: 2px; }
+  .hl b { font-weight: 500; font-size: 15px; display: block; margin-bottom: 3px; }
+  .hl p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+  .about-h { margin: 32px 0 12px; }
+  .specgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--hair); border-radius: 16px; overflow: hidden; }
+  .specgrid > div { background: var(--bg); padding: 14px 16px; display: flex; flex-direction: column; gap: 3px; }
+  .specgrid span { color: var(--muted); font-size: 12px; letter-spacing: .04em; }
+  .specgrid b { font-weight: 400; font-size: 16px; }
+  #v-info details { margin-top: 18px; }
+  #v-info .foot { line-height: 1.7; }
 </style>
 </head>
 <body>
@@ -425,9 +443,14 @@
   <div class="view" id="v-info" hidden>
     <div class="wrap">
       <button class="backlink" data-back><span>‹</span><span class="backname">V&amp;X mark 4</span></button>
-      <h1 class="title">Giới thiệu</h1>
-      <p class="sub" id="aboutText"></p>
-      <div class="rows spec" id="specRows"></div>
+      <div class="about-hero" id="aboutHero"></div>
+      <h1 class="about-name" id="aboutName">V&amp;X mark 4</h1>
+      <p class="about-tag" id="aboutText"></p>
+
+      <div class="highlights" id="aboutHighlights"></div>
+
+      <div class="eyebrow about-h">Thông số</div>
+      <div class="specgrid" id="specRows"></div>
 
       <details class="guide" id="guide"><summary>Nút bấm &amp; đèn báo</summary>
         <div class="keys" style="margin-top:14px">
@@ -442,7 +465,7 @@
       </details>
 
       <details><summary>Nhật ký kết nối</summary><div id="log" class="log"></div></details>
-      <p class="foot">Thiết kế &amp; chế tạo bởi V&amp;X · 2026</p>
+      <p class="foot">Thiết kế &amp; chế tạo bởi V&amp;X · 2026<br><span id="verLine">App 4.3</span></p>
     </div>
   </div>
 
@@ -504,8 +527,13 @@
     4: {
       name: 'mark 4', image: 'img/speaker-front.png', drivers: true,
       tagline: 'Cặp loa không dây chủ động hai đường tiếng',
-      about: 'V&X mark 4 là cặp loa bookshelf không dây, được thiết kế và chế tạo thủ công với mong muốn mang tiếng nhạc tự nhiên, cân bằng vào căn phòng nhỏ.',
-      specs: [['Nhà sáng tạo', 'V&X'], ['Năm', '2026'], ['Loa', '2 đường tiếng, không dây'], ['Phân tần', 'Chủ động 3 kHz, đã chỉnh pha']],
+      about: 'Cặp loa bookshelf không dây, thiết kế và chế tạo thủ công để mang tiếng nhạc tự nhiên, cân bằng vào căn phòng nhỏ.',
+      highlights: [
+        ['wave', 'Âm thanh liền mạch', 'Phân tần chủ động 3 kHz, treble và bass được chỉnh cho cùng pha.'],
+        ['pair', 'Stereo không dây', 'Hai loa tự tìm nhau, chỉnh một loa là cả cặp đổi theo.'],
+        ['room', 'Hợp mọi chỗ đặt', 'Free, Wall, Corner: bass gọn dù loa đứng giữa phòng hay sát góc.']
+      ],
+      specs: [['Loa bass', '5.5″'], ['Loa treble', '1″ dome'], ['Phân tần', '3 kHz, LR4'], ['Thùng', 'Kín'], ['Kết nối', 'Bluetooth, USB'], ['Điều khiển', 'App V&X']],
       guide: true,
       features: F_WHEEL | F_PLACEMENT | F_PAIR | F_USB | F_ALIGNED
     }
@@ -558,9 +586,16 @@
     $('tilePeer').hidden = !pair;
     $('wheelBlock').hidden = !(f & F_WHEEL);
     $('tilePlace').hidden = !(f & F_PLACEMENT);
+    const esc = v => v.replace(/&/g, '&amp;');
+    $('aboutHero').innerHTML = speakerHTML(m);
+    $('aboutName').textContent = 'V&X ' + m.name;
     $('aboutText').textContent = m.about;
-    $('specRows').innerHTML = [['Sản phẩm', 'V&X ' + m.name], ...m.specs, ['Firmware', info.model === id && info.fw ? info.fw : '—'], ['App', 'web 3.0']]
-      .map(([k, v]) => `<div class="row"><span>${k}</span><span>${v.replace(/&(?!amp;)/g, '&amp;')}</span></div>`).join('');
+    const ICONS = { wave: '<path d="M3 12h2l2-6 3 12 3-9 2 5 2-2h4"/>', pair: '<rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/>',
+                    room: '<path d="M4 20V5h16"/><rect x="7" y="8" width="4" height="7" rx="1"/>' };
+    $('aboutHighlights').innerHTML = (m.highlights || []).map(([ic, t, d]) =>
+      `<div class="hl"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[ic] || ''}</svg><div><b>${esc(t)}</b><p>${esc(d)}</p></div></div>`).join('');
+    $('specRows').innerHTML = m.specs.map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('');
+    $('verLine').textContent = 'App 4.3' + (info.model === id && info.fw ? ' · Firmware ' + info.fw : '');
     $('guide').hidden = !m.guide;
     renderStatus();
   }
