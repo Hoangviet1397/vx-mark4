@@ -122,7 +122,7 @@
   .chev { color: var(--muted); }
 
   /* sound */
-  .wheel { position: relative; width: 100%; aspect-ratio: 1; margin: 0 0 -6px; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .wheel { position: relative; width: 100%; aspect-ratio: 1; margin: 0 0 -6px; touch-action: none; -webkit-touch-callout: none; contain: layout paint; user-select: none; -webkit-user-select: none; }
   .ring { position: absolute; inset: 17%; border-radius: 50%; border: 1px solid var(--hair); }
   .ring.inner { inset: 39.5%; border-style: dashed; opacity: .6; }
   .glow { position: absolute; inset: 17%; border-radius: 50%; pointer-events: none; transition: background .25s; }
@@ -130,7 +130,7 @@
          color: var(--text); pointer-events: none; transition: opacity .25s; white-space: nowrap; padding-left: .22em; }
   @media (max-width: 480px) { .lbl:not(.sub) { font-size: 10px; letter-spacing: .12em; padding-left: .12em; } }
   .lbl.sub { font-size: 10px; letter-spacing: .12em; padding-left: .12em; color: var(--muted); }
-  .knob { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: var(--text);
+  .knob { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: var(--text); transform: translateZ(0);
           box-shadow: 0 2px 10px rgba(0,0,0,.35); pointer-events: none; will-change: left, top; }
   .knob::after { content: ""; position: absolute; inset: 11px; border-radius: 50%; background: var(--bg); opacity: .9; }
   .centre { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; border-radius: 50%; background: var(--muted); }
@@ -547,9 +547,14 @@
   wheel.addEventListener('pointermove', e => { if (dragging) move(e, false); });
   const end = e => { if (!dragging) return; dragging = false; move(e, true); };
   wheel.addEventListener('pointerup', end); wheel.addEventListener('pointercancel', end);
+  // While dragging only the knob moves, at most once per frame; the mode list,
+  // the home tiles and the speaker are updated once, when the finger lifts.
+  let frame = 0;
   function move(e, final) {
     const p = fromPointer(e); state.angle = p.ang; state.distance = p.dist;
-    cancelAnimationFrame(anim); shown = { angle: p.ang, distance: p.dist }; render(); renderModes(); scheduleSend(final);
+    cancelAnimationFrame(anim); shown = { angle: p.ang, distance: p.dist };
+    if (final) { cancelAnimationFrame(frame); frame = 0; render(); renderModes(); scheduleSend(true); return; }
+    if (!frame) frame = requestAnimationFrame(() => { frame = 0; render(); });
   }
 
   // ---------- listening modes (Beocreate) + user modes ----------
