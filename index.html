@@ -613,15 +613,26 @@
   }
 
   // ---------- sending (throttled while dragging, final value always sent) ----------
+  // Latest value wins: at most one wheel write is in flight. When it is
+  // answered, the newest position (if it changed) goes out straight away, so
+  // the speaker follows the finger at the link's own pace instead of working
+  // through a backlog. USB is fast enough for the same 30 ms pacing.
+  let inFlight = false, sentKey = '';
   function scheduleSend(final) {
-    if (!link) return;
+    if (!link || !final) return;   // only when the finger lifts (or a mode is tapped): no stream of writes while dragging
     pendingSend = true;
-    if (final) { clearTimeout(sendTimer); sendTimer = null; flushSend(); return; }
-    if (!sendTimer) sendTimer = setTimeout(() => { sendTimer = null; flushSend(); }, Math.max(0, 90 - (Date.now() - lastSend)));
+    if (final) { clearTimeout(sendTimer); sendTimer = null; }
+    if (!inFlight && !sendTimer) sendTimer = setTimeout(() => { sendTimer = null; flushSend(); }, final ? 0 : Math.max(0, 30 - (Date.now() - lastSend)));
   }
   function flushSend() {
-    if (!pendingSend) return; pendingSend = false; lastSend = Date.now();
-    gaia(CMD_SET_BEOSONIC, [state.angle >> 8, state.angle & 0xff, state.distance]).catch(e => log('Lỗi gửi: ' + e.message));
+    if (!pendingSend || inFlight || !link) return;
+    pendingSend = false;
+    const key = state.angle + '/' + state.distance;
+    if (key === sentKey) return;
+    sentKey = key; lastSend = Date.now(); inFlight = true;
+    gaia(CMD_SET_BEOSONIC, [state.angle >> 8, state.angle & 0xff, state.distance])
+      .catch(e => { sentKey = ''; log('Lỗi gửi: ' + errText(e)); })
+      .finally(() => { inFlight = false; if (pendingSend) flushSend(); });
   }
   // One packet format for both links (firmware sink_loudness.h):
   //   [vendor_hi, vendor_lo, cmd_hi, cmd_lo, payload] -> [vendor, cmd|0x8000, status, state...]
@@ -639,7 +650,8 @@
     const p = v.slice(5);
     state.proto = p[0]; state.placement = p[1]; state.role = p[5]; state.peer = !!p[6];
     const angle = (p[2] << 8) | p[3], distance = p[4];
-    if ((angle !== state.angle || distance !== state.distance) && !dragging && !pendingSend && !sendTimer) {
+    if ((angle !== state.angle || distance !== state.distance) && !dragging && !pendingSend && !sendTimer && !inFlight) {
+      sentKey = angle + "/" + distance;
       state.angle = angle; state.distance = distance; animateTo(); renderModes();
     }
     renderStatus(); renderPlacement();
@@ -684,7 +696,7 @@
   // =====================================================================
   const cMsg = (t, warn) => { const m = $('cMsg'); m.className = 'msg' + (warn ? ' warn' : ''); m.innerHTML = t; };
   async function startLink(l) {
-    link = l; state.connected = true; renderStatus();
+    link = l; state.connected = true; sentKey = ""; inFlight = false; renderStatus();
     await gaia(CMD_GET_STATE);
     clearInterval(pollTimer);
     pollTimer = setInterval(() => { if (link && !dragging) gaia(CMD_GET_STATE).catch(() => {}); }, 3000);
