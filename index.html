@@ -279,6 +279,12 @@
   .addbox .alt { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
   .mark h1 { font-weight: 300; }
   .mark .model { letter-spacing: .12em; padding-left: .12em; text-transform: none; font-size: 15px; color: var(--text); opacity: .85; }
+  /* not connected: everything that talks to the speaker is greyed out and inert */
+  #app.offline #facts, #app.offline #twsBox, #app.offline #tilePlace,
+  #app.offline #wheelBlock .wheel, #app.offline #wheelBlock .readout, #app.offline #wheelBlock section, #app.offline #secPlace {
+    opacity: .35; pointer-events: none; filter: grayscale(1); transition: opacity .3s; }
+  #app.offline .hero { opacity: .45; }
+  #app.offline #syncNote { opacity: 1; }
 </style>
 </head>
 <body>
@@ -452,7 +458,6 @@
     </div>
   </div>
   <p class="msg" id="cMsg"></p>
-  <p class="foot"><button class="textbtn" id="demoBtn">Xem app không cần loa</button></p>
 </div>
 
 <script>
@@ -566,7 +571,6 @@
   const connectHere = () => { if (link) return; if (products.length) reconnect(currentKey || products[0].key); else openAdd(); };
   $('chip').onclick = connectHere;
   $('rowConn').onclick = async () => { if (link) await disconnectLink(); else connectHere(); };
-  $('demoBtn').onclick = () => { log('Xem app không kết nối loa.'); closeSheet(); applyModel(4); showScreen('app'); showTab('speaker'); };
 
   // stereo pair (TWS) controls: the same as the button combos on the speaker
   const CMD_TWS = 0x0005;
@@ -602,11 +606,6 @@
       b.onclick = () => { if (live) { closeSheet(); openProduct(p.key); } else reconnect(p.key); };
       box.appendChild(b);
     });
-    const add = document.createElement('button');
-    add.className = 'product add';
-    add.innerHTML = '<div class="pimg plus">+</div><div class="pmeta"><b>Thêm loa</b><span>Tìm loa V&amp;X ở gần</span></div>';
-    add.onclick = openAdd;
-    box.appendChild(add);
     if (!products.length) $('addSheet').hidden = false;
   }
   function openAdd() { if (!sheetOpen) openSheet(); $('addSheet').hidden = false; }
@@ -842,6 +841,7 @@
     $('tPlace').textContent = PLACES[state.placement];
   }
   function renderStatus() {
+    $('app').classList.toggle('offline', !state.connected);   // controls greyed out until a speaker is connected
     const via = link ? (link.kind === 'usb' ? 'USB' : 'Bluetooth') : '';
     const side = state.role === 1 ? 'Loa trái' : state.role === 2 ? 'Loa phải' : 'Loa';
     const chip = $('chip'), pair = !$('tilePeer').hidden;
@@ -866,7 +866,7 @@
 
     });
     const n = $('homeNote'), sn = $('syncNote');
-    if (!state.connected) { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = 'Chưa kết nối: chỉnh sửa chỉ để xem thử.'; }
+    if (!state.connected) { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = 'Kết nối với loa để chỉnh âm.'; }
     else if (!state.peer) { n.className = 'note warn'; n.textContent = pair ? 'Loa kia chưa nối: chỉnh sửa chỉ áp cho loa này.' : ''; sn.className = 'note warn'; sn.textContent = pair ? 'Chỉ áp cho loa này cho tới khi 2 loa nối lại.' : ''; }
     else { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = 'Áp cho cả 2 loa và được lưu lại.'; }
   }
@@ -950,7 +950,7 @@
     } catch (e) {
       const msg = errText(e);
       if (/cancel/i.test(msg)) { cMsg(''); return; }
-      cMsg('Không mở được Bluetooth: ' + msg + '. Trên iPhone kiểm tra <b>Cài đặt → Bluefy → Bluetooth</b> đã bật.', true);
+      cMsg(/adapter|unavailable|not available/i.test(msg) ? (IOS ? 'Bluetooth chưa sẵn sàng. Bật Bluetooth, và kiểm tra <b>Cài đặt → Bluefy → Bluetooth</b> đã bật.' : 'Máy này không có Bluetooth hoặc Bluetooth đang tắt.' + (navigator.hid ? ' Có thể nối loa bằng cáp USB.' : '')) : 'Không mở được Bluetooth: ' + msg, true);
       return;
     }
     await openBluetooth(device);
@@ -994,6 +994,7 @@
   }
 
   // USB: the speaker's vendor HID "datalink" interface (usage page 0xFF00, usage 1)
+  const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
   const HID_FILTER = [{ usagePage: 0xff00, usage: 0x01 }];
   async function openUsb(hid) {
     if (!hid.opened) await hid.open();
