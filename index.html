@@ -483,8 +483,6 @@
         <p class="sublead" id="aboutText"></p>
         <div class="eyebrow subh">Thông tin sản phẩm</div>
         <div class="setrows" id="specRows"></div>
-        <div class="eyebrow subh">Thông số</div>
-        <div class="setrows" id="techRows"></div>
       </div>
 
       <!-- settings > buttons and light -->
@@ -652,11 +650,8 @@
       ['Loại sản phẩm', 'V&X ' + m.name],
       ['Vai trò', !link ? '—' : state.role === 1 ? 'Loa trái' : state.role === 2 ? 'Loa phải' : 'Loa'],
       ['Phần mềm', live && info.fw ? info.fw : 'Kết nối để xem'],
-      ['Mã sản phẩm', (m.code || ('VX-' + String(id).padStart(4, '0')))],
-      ['Ứng dụng', 'web 4.4'],
-      ['Nhà sản xuất', 'V&X · 2026']
+      ['Mã sản phẩm', (m.code || ('VX-' + String(id).padStart(4, '0')))]
     ]);
-    $('techRows').innerHTML = rows(m.specs || []);
     $('guide').hidden = !m.guide;
     renderStatus();
   }
