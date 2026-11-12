@@ -62,12 +62,14 @@
   .stage { margin: 26px -20px 0; padding: 26px 20px 18px; background: var(--stage); }
   .pair { display: flex; justify-content: center; gap: 9%; }
   .pair .side { width: 38%; max-width: 168px; }
-  .pair img { width: 100%; height: auto; display: block; filter: drop-shadow(0 18px 22px rgba(0,0,0,.3)); user-select: none; -webkit-user-select: none; }
+  .spk { position: relative; filter: drop-shadow(0 18px 22px rgba(0,0,0,.3)); }
+  .spk svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .pair img { position: relative; width: 100%; height: auto; display: block; user-select: none; -webkit-user-select: none; }
   .pair .side { text-align: center; }
   .pair .side .eyebrow { display: block; margin-top: 12px; transition: color .3s; }
   .pair .side.lit .eyebrow { color: var(--text); }
-  .pair .side img { transition: opacity .3s; }
-  .pair.dim .side:not(.lit) img { opacity: .45; }
+  .pair .side .spk { transition: opacity .3s; }
+  .pair.dim .side:not(.lit) .spk { opacity: .45; }
   h2 { font-weight: 300; font-size: 28px; line-height: 1.15; margin: 28px 0 8px; letter-spacing: .01em; }
   .lead { color: var(--muted); margin: 0; font-size: 14px; }
   .steps { list-style: none; padding: 0; margin: 22px 0 0; counter-reset: s; }
@@ -215,29 +217,25 @@
     <linearGradient id="gEdge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".08" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <radialGradient id="gCone" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#3b3b3f"/><stop offset=".6" stop-color="#18181a"/><stop offset="1" stop-color="#0a0a0b"/></radialGradient>
     <radialGradient id="gDome" cx=".38" cy=".34" r=".7"><stop offset="0" stop-color="#d9d6cf"/><stop offset=".45" stop-color="#8b8780"/><stop offset="1" stop-color="#2c2b29"/></radialGradient>
+    <radialGradient id="gWave" cx=".5" cy=".5" r=".5"><stop offset=".45" stop-color="#050505"/><stop offset="1" stop-color="#2a2a2d"/></radialGradient>
+    <radialGradient id="gSurround" cx=".5" cy=".5" r=".5"><stop offset=".86" stop-color="#0a0a0b"/><stop offset=".93" stop-color="#2b2b2e"/><stop offset="1" stop-color="#0a0a0b"/></radialGradient>
     <radialGradient id="gCap" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#55555a"/><stop offset="1" stop-color="#121213"/></radialGradient>
-    <symbol id="speaker" viewBox="0 0 120 200">
-      <rect x="2" y="2" width="116" height="196" rx="9" fill="url(#gCab)"/>
-      <rect x="2" y="2" width="116" height="196" rx="9" fill="url(#gEdge)"/>
-      <rect x="2.5" y="2.5" width="115" height="195" rx="8.5" fill="none" stroke="#fff" stroke-opacity=".07"/>
-      <!-- tweeter -->
-      <circle cx="60" cy="50" r="19" fill="var(--drv)"/>
-      <circle cx="60" cy="50" r="17.5" fill="none" stroke="var(--metal)" stroke-opacity=".55" stroke-width=".8"/>
-      <circle cx="60" cy="50" r="12" fill="#111"/>
-      <circle cx="60" cy="50" r="8.5" fill="url(#gDome)"/>
-      <!-- woofer -->
-      <circle cx="60" cy="128" r="47" fill="var(--drv)"/>
-      <circle cx="60" cy="128" r="45.5" fill="none" stroke="var(--metal)" stroke-opacity=".5" stroke-width=".8"/>
-      <circle cx="60" cy="128" r="41" fill="#1d1d20"/>
-      <circle cx="60" cy="128" r="36" fill="url(#gCone)"/>
-      <circle cx="60" cy="128" r="36" fill="none" stroke="#000" stroke-opacity=".5"/>
-      <circle cx="60" cy="128" r="13" fill="url(#gCap)"/>
-      <!-- screws -->
-      <g fill="var(--metal)" fill-opacity=".6">
-        <circle cx="60" cy="83.5" r="1.3"/><circle cx="60" cy="172.5" r="1.3"/><circle cx="15.5" cy="128" r="1.3"/><circle cx="104.5" cy="128" r="1.3"/>
-      </g>
-      <!-- status light -->
-      <circle class="spk-led" cx="60" cy="190" r="1.6" fill="var(--faint)"/>
+    <!-- drivers seen through the grille slots of the Fusion render (img/speaker-front.png, 364 x 568) -->
+    <symbol id="drivers" viewBox="0 0 364 568">
+      <rect x="10" y="10" width="344" height="548" rx="26" fill="#0c0c0d"/>
+      <!-- tweeter: faceplate, waveguide, dome -->
+      <circle cx="181.5" cy="120" r="92" fill="#141416"/>
+      <circle cx="181.5" cy="120" r="84" fill="none" stroke="#3a3936" stroke-width="2"/>
+      <circle cx="181.5" cy="120" r="62" fill="url(#gWave)"/>
+      <circle cx="181.5" cy="120" r="30" fill="url(#gDome)"/>
+      <circle cx="181.5" cy="120" r="30" fill="none" stroke="#000" stroke-opacity=".5"/>
+      <!-- woofer: basket rim, rubber surround, cone, dust cap -->
+      <circle cx="181.5" cy="387" r="152" fill="#141416"/>
+      <circle cx="181.5" cy="387" r="146" fill="none" stroke="#3a3936" stroke-width="2"/>
+      <circle cx="181.5" cy="387" r="138" fill="url(#gSurround)"/>
+      <circle cx="181.5" cy="387" r="120" fill="url(#gCone)"/>
+      <circle cx="181.5" cy="387" r="120" fill="none" stroke="#000" stroke-opacity=".6" stroke-width="2"/>
+      <circle cx="181.5" cy="387" r="44" fill="url(#gCap)"/>
     </symbol>
   </defs>
 </svg>
@@ -257,8 +255,8 @@
     <div class="top"><span class="word">V&amp;X<small>mark 4</small></span><span class="eyebrow" id="cStep">Kết nối</span></div>
     <div class="stage">
       <div class="pair">
-        <div class="side"><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"><span class="eyebrow">Trái</span></div>
-        <div class="side"><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"><span class="eyebrow">Phải</span></div>
+        <div class="side"><div class="spk"><svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"></div><span class="eyebrow">Trái</span></div>
+        <div class="side"><div class="spk"><svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"></div><span class="eyebrow">Phải</span></div>
       </div>
     </div>
     <h2>Kết nối với loa</h2>
@@ -292,8 +290,8 @@
     <div class="wrap">
       <div class="hero">
         <div class="pair" id="heroPair">
-          <div class="side" data-r="1"><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"><span class="eyebrow">Trái</span></div>
-          <div class="side" data-r="2"><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"><span class="eyebrow">Phải</span></div>
+          <div class="side" data-r="1"><div class="spk"><svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"></div><span class="eyebrow">Trái</span></div>
+          <div class="side" data-r="2"><div class="spk"><svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"></div><span class="eyebrow">Phải</span></div>
         </div>
       </div>
       <h1 class="title">V&amp;X mark 4</h1>
