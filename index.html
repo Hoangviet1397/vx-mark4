@@ -312,6 +312,25 @@
   .specgrid b { font-weight: 400; font-size: 16px; }
   #v-info details { margin-top: 18px; }
   #v-info .foot { line-height: 1.7; }
+  /* settings (speaker-app style list) */
+  .bigtitle { font-weight: 500; font-size: 34px; margin: 18px 0 26px; letter-spacing: -.01em; }
+  .setrows { display: grid; gap: 8px; }
+  .srow { appearance: none; display: flex; justify-content: space-between; align-items: center; gap: 14px; width: 100%; border: 0; text-align: left;
+          border-radius: 14px; background: var(--chip); padding: 18px; color: var(--text); font: 16px/1.25 inherit; cursor: pointer; }
+  .srow i { font-style: normal; font-size: 22px; color: var(--muted); }
+  .srow.info { cursor: default; }
+  .srow em { font-style: normal; color: var(--muted); text-align: right; }
+  .srow span { display: inline-flex; align-items: center; gap: 10px; }
+  .setbtns { display: grid; justify-items: center; gap: 10px; margin-top: 26px; }
+  .setbtns .btn { width: auto; min-width: 190px; padding: 14px 26px; }
+  .btn.soft { background: var(--chip); border-color: transparent; }
+  .subhead { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; margin: max(16px, calc(env(safe-area-inset-top) + 4px)) 0 18px; }
+  .subhead b { text-align: center; font-weight: 500; font-size: 18px; }
+  .backicon { appearance: none; border: 0; background: none; color: var(--text); cursor: pointer; padding: 0; width: 34px; height: 34px; }
+  .backicon svg { width: 28px; height: 28px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .sublead { font-size: 16px; margin: 0 0 8px; }
+  .subh { margin: 26px 0 10px; }
+  #setLog .log { max-height: none; }
 </style>
 </head>
 <body>
@@ -442,37 +461,64 @@
   <!-- 3c. info -->
   <div class="view" id="v-info" hidden>
     <div class="wrap">
-      <button class="backlink" data-back><span>‹</span><span class="backname">V&amp;X mark 4</span></button>
-      <div class="about-hero" id="aboutHero"></div>
-      <h1 class="about-name" id="aboutName">V&amp;X mark 4</h1>
-      <p class="about-tag" id="aboutText"></p>
-
-      <div class="highlights" id="aboutHighlights"></div>
-
-      <div class="eyebrow about-h">Thông số</div>
-      <div class="specgrid" id="specRows"></div>
-
-      <details class="guide" id="guide"><summary>Nút bấm &amp; đèn báo</summary>
-        <div class="keys" style="margin-top:14px">
-          <span class="k"><i>Play</i></span><span>Phát / dừng · giữ: ghép điện thoại</span>
-          <span class="k"><i>Rew</i> <i>Next</i></span><span>Bài trước / sau · giữ: âm lượng</span>
-          <span class="k"><i>Next</i>+<i>Play</i></span><span>Đổi vị trí Free → Wall → Corner</span>
-          <span class="k"><i>Rew</i>+<i>Play</i> giữ</span><span>Ghép 2 loa với nhau</span>
+      <!-- settings -->
+      <div id="setMain">
+        <button class="backlink" data-back><span>‹</span><span class="backname">V&amp;X mark 4</span></button>
+        <h1 class="bigtitle">Cài đặt</h1>
+        <div class="setrows">
+          <button class="srow" data-sub="setAbout"><span>Giới thiệu</span><i>›</i></button>
+          <button class="srow" data-sub="setGuide" id="guide"><span>Nút bấm &amp; đèn báo</span><i>›</i></button>
+          <button class="srow" data-sub="setLog"><span>Nhật ký kết nối</span><i>›</i></button>
         </div>
-        <div class="ledrow" style="margin-top:8px"><i class="led slow"></i>Nháy chậm: chờ ghép điện thoại</div>
-        <div class="ledrow"><i class="led double"></i>Nháy đôi: đang tìm loa kia</div>
-        <div class="ledrow"><i class="led solid"></i>Sáng 2.5 giây: đã kết nối</div>
-      </details>
+        <div class="setbtns">
+          <button class="btn primary" id="setConn">Kết nối</button>
+          <button class="btn soft" id="removeProduct">Xoá loa khỏi app</button>
+        </div>
+        <p class="foot">Thiết kế &amp; chế tạo bởi V&amp;X · 2026</p>
+      </div>
 
-      <details><summary>Nhật ký kết nối</summary><div id="log" class="log"></div></details>
-      <p class="foot">Thiết kế &amp; chế tạo bởi V&amp;X · 2026<br><span id="verLine">App 4.3</span></p>
+      <!-- settings > about -->
+      <div id="setAbout" class="subpage" hidden>
+        <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Giới thiệu</b><span></span></div>
+        <p class="sublead" id="aboutText"></p>
+        <div class="eyebrow subh">Thông tin sản phẩm</div>
+        <div class="setrows" id="specRows"></div>
+        <div class="eyebrow subh">Thông số</div>
+        <div class="setrows" id="techRows"></div>
+      </div>
+
+      <!-- settings > buttons and light -->
+      <div id="setGuide" class="subpage" hidden>
+        <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Nút bấm &amp; đèn báo</b><span></span></div>
+        <div class="eyebrow subh">Nút bấm</div>
+        <div class="setrows">
+          <div class="srow info"><span>Play</span><em>Phát / dừng · giữ: ghép điện thoại</em></div>
+          <div class="srow info"><span>Rew · Next</span><em>Bài trước / sau · giữ: âm lượng</em></div>
+          <div class="srow info"><span>Next + Play</span><em>Đổi vị trí Free → Wall → Corner</em></div>
+          <div class="srow info"><span>Rew + Play (giữ)</span><em>Ghép 2 loa với nhau</em></div>
+          <div class="srow info"><span>Rew + Next (giữ)</span><em>Tách 2 loa</em></div>
+        </div>
+        <div class="eyebrow subh">Đèn báo</div>
+        <div class="setrows">
+          <div class="srow info"><span><i class="led slow"></i>Nháy chậm</span><em>Chờ ghép điện thoại</em></div>
+          <div class="srow info"><span><i class="led double"></i>Nháy đôi</span><em>Đang tìm loa kia</em></div>
+          <div class="srow info"><span><i class="led solid"></i>Sáng 2.5 giây</span><em>Đã kết nối</em></div>
+          <div class="srow info"><span><i class="led off"></i>Tắt</span><em>Đang phát nhạc</em></div>
+        </div>
+      </div>
+
+      <!-- settings > log -->
+      <div id="setLog" class="subpage" hidden>
+        <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Nhật ký kết nối</b><span></span></div>
+        <div id="log" class="log"></div>
+      </div>
     </div>
   </div>
 
   <nav class="tabs"><div class="wrap">
     <button data-tab="speaker" id="navSpeaker"><span class="navthumb" id="navThumb"></span><svg class="caret" viewBox="0 0 24 24" id="navCaret" aria-label="Loa của tôi"><path d="M6 15l6-6 6 6"/></svg></button>
     <button data-tab="sound" aria-label="Âm thanh"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="15.5" cy="9" r="2"/></svg></button>
-    <button data-tab="info" aria-label="Thông tin"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><path d="M12 7.6v.2"/></svg></button>
+    <button data-tab="info" aria-label="Cài đặt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
   </div></nav>
 </div>
 
@@ -562,6 +608,7 @@
   let tab = 'speaker';
   function showTab(name, anchor) {
     tab = name;
+    if (name === 'info' && $('setMain')) ['setMain', 'setAbout', 'setGuide', 'setLog'].forEach(x => $(x).hidden = x !== 'setMain');
     ['speaker', 'sound', 'info'].forEach(t => $('v-' + t).hidden = t !== name);
     document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
     if (anchor) requestAnimationFrame(() => $(anchor).scrollIntoView({ behavior: 'smooth', block: 'start' }));
@@ -569,6 +616,17 @@
     if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
   }
   document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+  const showSub = id => { ['setMain', 'setAbout', 'setGuide', 'setLog'].forEach(x => $(x).hidden = x !== id); window.scrollTo(0, 0); };
+  document.querySelectorAll('[data-sub]').forEach(b => b.onclick = () => showSub(b.dataset.sub));
+  document.querySelectorAll('[data-up]').forEach(b => b.onclick = () => showSub('setMain'));
+  $('setConn').onclick = () => $('rowConn').onclick();
+  $('removeProduct').onclick = async () => {
+    if (!currentKey || !confirm('Xoá loa này khỏi app? Loa vẫn giữ nguyên thiết lập; muốn dùng lại chỉ cần Tìm loa.')) return;
+    if (link) await disconnectLink();
+    products = products.filter(x => x.key !== currentKey); saveProducts();
+    currentKey = null; showTab('speaker');
+    if (products.length) openProduct(products[0].key); else openAdd();
+  };
   document.querySelectorAll('[data-back]').forEach(el => el.onclick = () => showTab('speaker'));
   $('tilePlace').onclick = () => { const b = $('secPlace'); b.hidden = !b.hidden; $('tilePlace').classList.toggle('open', !b.hidden); };
   document.querySelectorAll('[data-go]').forEach(el => el.onclick = () => showTab(el.dataset.go, el.dataset.anchor));
@@ -586,16 +644,19 @@
     $('tilePeer').hidden = !pair;
     $('wheelBlock').hidden = !(f & F_WHEEL);
     $('tilePlace').hidden = !(f & F_PLACEMENT);
-    const esc = v => v.replace(/&/g, '&amp;');
-    $('aboutHero').innerHTML = speakerHTML(m);
-    $('aboutName').textContent = 'V&X ' + m.name;
-    $('aboutText').textContent = m.about;
-    const ICONS = { wave: '<path d="M3 12h2l2-6 3 12 3-9 2 5 2-2h4"/>', pair: '<rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/>',
-                    room: '<path d="M4 20V5h16"/><rect x="7" y="8" width="4" height="7" rx="1"/>' };
-    $('aboutHighlights').innerHTML = (m.highlights || []).map(([ic, t, d]) =>
-      `<div class="hl"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[ic] || ''}</svg><div><b>${esc(t)}</b><p>${esc(d)}</p></div></div>`).join('');
-    $('specRows').innerHTML = m.specs.map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('');
-    $('verLine').textContent = 'App 4.3' + (info.model === id && info.fw ? ' · Firmware ' + info.fw : '');
+    const esc = v => String(v).replace(/&/g, '&amp;');
+    const live = info.model === id && link;
+    $('aboutText').textContent = `${'V&X ' + m.name} này đã được lưu trong app trên máy này.`;
+    const rows = (list) => list.map(([k, v]) => `<div class="srow info"><span>${esc(k)}</span><em>${esc(v)}</em></div>`).join('');
+    $('specRows').innerHTML = rows([
+      ['Loại sản phẩm', 'V&X ' + m.name],
+      ['Vai trò', !link ? '—' : state.role === 1 ? 'Loa trái' : state.role === 2 ? 'Loa phải' : 'Loa'],
+      ['Phần mềm', live && info.fw ? info.fw : 'Kết nối để xem'],
+      ['Mã sản phẩm', (m.code || ('VX-' + String(id).padStart(4, '0')))],
+      ['Ứng dụng', 'web 4.4'],
+      ['Nhà sản xuất', 'V&X · 2026']
+    ]);
+    $('techRows').innerHTML = rows(m.specs || []);
     $('guide').hidden = !m.guide;
     renderStatus();
   }
@@ -896,6 +957,8 @@
     $('chipTxt').textContent = state.connected ? `${side} · ${via}` : 'Chưa kết nối · chạm để nối';
     $('tPeer').textContent = !state.connected ? 'Chưa nối' : state.peer ? 'Stereo · đồng bộ' : 'Một loa';
     $('rowConnTxt').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
+    $('setConn').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
+    $('setConn').classList.toggle('primary', !state.connected);
     // one speaker in use (no peer): show only that speaker, not the pair
     const solo = pair && state.connected && !state.peer;
     $('heroPair').querySelectorAll('.side').forEach(el => {
