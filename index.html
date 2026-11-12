@@ -702,7 +702,16 @@
       const opts = all ? { acceptAllDevices: true, optionalServices: [GAIA_SERVICE] }
                        : { filters: [{ namePrefix: 'V&X' }, { namePrefix: 'LE-V&X' }, { services: [GAIA_SERVICE] }], optionalServices: [GAIA_SERVICE] };
       const device = await navigator.bluetooth.requestDevice(opts);
-      device.addEventListener('gattserverdisconnected', () => { if (link && link.kind === 'bt') { link = null; onDisconnect(); log('Mất kết nối Bluetooth.'); } });
+      const t0 = Date.now();
+      device.addEventListener('gattserverdisconnected', () => {
+        if (!(link && link.kind === 'bt')) return;
+        link = null; onDisconnect(); log('Mất kết nối Bluetooth.');
+        // dropped right after connecting: the speaker refused to pair (it only pairs in pairing mode)
+        if (Date.now() - t0 < 15000) {
+          showScreen('connect');
+          cMsg('Loa ngắt ngay vì chưa cho ghép. Giữ nút Play 2.5 giây tới khi đèn nháy chậm, bấm Bluetooth lại và chọn <b>Ghép nối</b> khi iPhone hỏi.', true);
+        }
+      });
       cMsg(`<span class="spin"></span>Đang kết nối ${device.name || 'loa'}…`);
       log('Đang kết nối ' + (device.name || device.id) + '…');
       const svc = await (await device.gatt.connect()).getPrimaryService(GAIA_SERVICE);
