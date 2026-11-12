@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>BT test</title>
+<style>body{background:#111;color:#eee;font:28px/1.4 sans-serif;padding:40px}b{font-size:56px}</style></head><body>
+<b id="r">…</b><p id="d"></p>
+<script>
+var bt = 'bluetooth' in navigator, sc = window.isSecureContext, gd = !!(navigator.bluetooth && navigator.bluetooth.getDevices);
+document.getElementById('r').textContent = 'Web Bluetooth: ' + (bt ? 'CÓ' : 'KHÔNG');
+document.getElementById('d').textContent = 'secure=' + sc + ' getDevices=' + gd + ' | ' + navigator.userAgent;
+if (bt && navigator.bluetooth.getAvailability) navigator.bluetooth.getAvailability().then(function(a){ document.getElementById('d').textContent += ' | available=' + a; });
+</script></body></html>
