@@ -373,64 +373,32 @@
   <!-- 3c. info -->
   <div class="view" id="v-info" hidden>
     <div class="wrap">
-      <h1 class="title">Thông tin</h1>
-      <p class="sub">V&amp;X mark 4: cặp loa bookshelf không dây, mỗi loa có DSP, DAC và phân tần chủ động riêng.</p>
+      <h1 class="title">Giới thiệu</h1>
+      <p class="sub">V&amp;X mark 4 là cặp loa bookshelf không dây, được thiết kế và chế tạo thủ công với mong muốn mang tiếng nhạc tự nhiên, cân bằng vào căn phòng nhỏ.</p>
 
-      <section>
-        <div class="eyebrow">Thông số</div>
-        <div class="rows spec">
-          <div class="row"><span>Kiểu loa</span><span>Bookshelf 2 đường tiếng, thùng kín</span></div>
-          <div class="row"><span>Loa bass</span><span>Nubert 5.5″, 8 Ω</span></div>
-          <div class="row"><span>Loa treble</span><span>DX25BG60-04</span></div>
-          <div class="row"><span>Phân tần</span><span>Chủ động, Linkwitz-Riley bậc 4 @ 3 kHz</span></div>
-          <div class="row"><span>Xử lý số</span><span>Qualcomm QCC3034</span></div>
-          <div class="row"><span>DAC</span><span>ESS ES9023P, I²S</span></div>
-          <div class="row"><span>Không dây</span><span>Bluetooth, True Wireless Stereo</span></div>
-          <div class="row"><span>Điều khiển</span><span>App qua Bluetooth LE hoặc USB</span></div>
-        </div>
-      </section>
+      <div class="rows spec">
+        <div class="row"><span>Sản phẩm</span><span>V&amp;X mark 4</span></div>
+        <div class="row"><span>Nhà sáng tạo</span><span id="creator">V&amp;X</span></div>
+        <div class="row"><span>Năm</span><span>2026</span></div>
+        <div class="row"><span>Loa</span><span>2 đường tiếng, không dây</span></div>
+        <div class="row"><span>Phiên bản app</span><span>2.1</span></div>
+        <div class="row"><span>Giao thức</span><span id="fwProto">—</span></div>
+      </div>
 
-      <section>
-        <div class="eyebrow">Tính năng</div>
-        <div class="feature"><b>Vòng chỉnh âm</b><p>Chỉnh bass (shelf 100 Hz, ±6 dB) và treble (shelf 10 kHz, ±8 dB) bằng một núm duy nhất. Cả 2 loa đổi cùng lúc và tự lưu.</p></div>
-        <div class="feature"><b>Bù vị trí đặt loa</b><p>Free, Wall, Corner: giảm phần bass bị tường và góc phòng làm dày lên, để tiếng cân bằng ở mọi chỗ đặt.</p></div>
-        <div class="feature"><b>Bass thích ứng theo âm lượng</b><p>Nghe nhỏ vẫn đủ bass; mở lớn thì tự giới hạn dải trầm sâu để loa bass không quá tải.</p></div>
-        <div class="feature"><b>Stereo không dây</b><p>Hai loa tự tìm nhau khi bật, một loa nhận nhạc và chuyển kênh cho loa kia.</p></div>
-      </section>
-
-      <section>
-        <div class="eyebrow">Nút bấm</div>
-        <div class="keys">
-          <span class="k"><i>Play</i></span><span>Phát / dừng</span>
-          <span class="k"><i>Play</i> giữ</span><span>Ghép điện thoại</span>
-          <span class="k"><i>Play</i> giữ lâu</span><span>Xoá danh sách ghép đôi</span>
-          <span class="k"><i>Rew</i> <i>Next</i></span><span>Bài trước / bài sau</span>
-          <span class="k"><i>Rew</i> <i>Next</i> giữ</span><span>Giảm / tăng âm lượng</span>
+      <details class="guide"><summary>Nút bấm &amp; đèn báo</summary>
+        <div class="keys" style="margin-top:14px">
+          <span class="k"><i>Play</i></span><span>Phát / dừng · giữ: ghép điện thoại</span>
+          <span class="k"><i>Rew</i> <i>Next</i></span><span>Bài trước / sau · giữ: âm lượng</span>
           <span class="k"><i>Next</i>+<i>Play</i></span><span>Đổi vị trí Free → Wall → Corner</span>
           <span class="k"><i>Rew</i>+<i>Play</i> giữ</span><span>Ghép 2 loa với nhau</span>
-          <span class="k"><i>Rew</i>+<i>Next</i> giữ</span><span>Tách 2 loa</span>
         </div>
-      </section>
-
-      <section>
-        <div class="eyebrow">Đèn báo</div>
-        <div class="ledrow"><i class="led slow"></i>Nháy chậm: đang chờ ghép điện thoại</div>
+        <div class="ledrow" style="margin-top:8px"><i class="led slow"></i>Nháy chậm: chờ ghép điện thoại</div>
         <div class="ledrow"><i class="led double"></i>Nháy đôi: đang tìm loa kia</div>
         <div class="ledrow"><i class="led solid"></i>Sáng 2.5 giây: đã kết nối</div>
-        <div class="ledrow"><i class="led tick"></i>Chớp ngắn mỗi 3 giây: chờ / mất loa kia</div>
-        <div class="ledrow"><i class="led off"></i>Tắt: đang phát nhạc</div>
-      </section>
-
-      <section>
-        <div class="eyebrow">Phần mềm</div>
-        <div class="rows spec">
-          <div class="row"><span>Giao thức điều khiển</span><span id="fwProto">—</span></div>
-          <div class="row"><span>App</span><span>web 2.0</span></div>
-        </div>
-      </section>
+      </details>
 
       <details><summary>Nhật ký kết nối</summary><div id="log" class="log"></div></details>
-      <p class="foot">Vòng chỉnh âm dùng cách tính của Beocreate 2 (mã nguồn mở).</p>
+      <p class="foot">Thiết kế &amp; chế tạo bởi V&amp;X · 2026</p>
     </div>
   </div>
 
