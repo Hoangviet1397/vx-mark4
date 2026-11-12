@@ -11,21 +11,21 @@
   :root {
     --bg: #0b0b0c; --surface: #151517; --raise: #1c1c1f; --text: #f2f0ec; --muted: #8b8780; --faint: #3a3936;
     --hair: rgba(242, 240, 236, .13); --chip: rgba(242, 240, 236, .07);
-    --ok: #7fc59a; --warn: #e2a35b;
+    --ok: #7fc59a; --warn: #e2a35b; --accent: #e9cf9a; --sel: rgba(233, 207, 154, .22);
     --cab1: #2a2a2d; --cab2: #19191b; --drv: #0d0d0e; --metal: #6d6a65; --stage: radial-gradient(120% 80% at 50% 30%, #222225 0%, #0b0b0c 70%);
   }
   @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]) {
       --bg: #f3f1ec; --surface: #ffffff; --raise: #faf9f6; --text: #16161a; --muted: #7a766f; --faint: #cfcac2;
       --hair: rgba(22, 22, 26, .13); --chip: rgba(22, 22, 26, .06);
-      --ok: #2f7d4f; --warn: #b5651d;
+      --ok: #2f7d4f; --warn: #b5651d; --accent: #f1d49a; --sel: #f7ead0;
       --cab1: #3a3a3e; --cab2: #232326; --drv: #111113; --metal: #8d8a84; --stage: radial-gradient(120% 80% at 50% 30%, #ffffff 0%, #ebe8e1 75%);
     }
   }
   :root[data-theme="light"] {
     --bg: #f3f1ec; --surface: #ffffff; --raise: #faf9f6; --text: #16161a; --muted: #7a766f; --faint: #cfcac2;
     --hair: rgba(22, 22, 26, .13); --chip: rgba(22, 22, 26, .06);
-    --ok: #2f7d4f; --warn: #b5651d;
+    --ok: #2f7d4f; --warn: #b5651d; --accent: #f1d49a; --sel: #f7ead0;
     --cab1: #3a3a3e; --cab2: #232326; --drv: #111113; --metal: #8d8a84; --stage: radial-gradient(120% 80% at 50% 30%, #ffffff 0%, #ebe8e1 75%);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -124,7 +124,7 @@
   .chev { color: var(--muted); }
 
   /* sound */
-  .wheel { position: relative; width: 100%; aspect-ratio: 1; margin: 0 0 -6px; touch-action: none; -webkit-touch-callout: none; contain: layout paint; user-select: none; -webkit-user-select: none; }
+  .wheel { position: relative; width: 100%; aspect-ratio: 1; margin: 0 0 -6px; -webkit-touch-callout: none; contain: layout paint; user-select: none; -webkit-user-select: none; }
   .ring { position: absolute; inset: 17%; border-radius: 50%; border: 1px solid var(--hair); }
   .ring.inner { inset: 39.5%; border-style: dashed; opacity: .6; }
   .glow { position: absolute; inset: 17%; border-radius: 50%; pointer-events: none; transition: background .25s; }
@@ -231,6 +231,54 @@
   .back { appearance: none; display: inline-flex; align-items: baseline; gap: 10px; border: 0; background: none; color: var(--text); cursor: pointer; padding: 0; font: inherit; }
   .back > span:first-child { font: 300 26px/1 inherit; color: var(--muted); }
   .side.solo { width: 46%; }
+
+  /* v4: minimal product page, product switcher sheet, drag pad on the ring only */
+  .pad { position: absolute; border-radius: 50%; touch-action: none; cursor: grab; z-index: 1; }
+  .knob { z-index: 2; }
+  .hero { margin: 0 -20px; padding: max(36px, calc(env(safe-area-inset-top) + 20px)) 20px 8px; background: none; }
+  .ptitle { text-align: center; font-weight: 300; font-size: 26px; margin: 18px 0 10px; letter-spacing: .01em; }
+  .chipwrap { display: flex; justify-content: center; }
+  .chip { appearance: none; display: inline-flex; align-items: center; gap: 9px; border: 0; border-radius: 999px; padding: 10px 18px;
+          background: var(--chip); color: var(--muted); font: 15px/1 inherit; cursor: pointer; }
+  .chip svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .chip.on { color: var(--text); }
+  .chip.on svg { stroke: var(--ok); }
+  #facts { grid-template-columns: 1fr 1fr; margin-top: 26px; }
+  #facts .tile { appearance: none; border: 0; text-align: left; font: inherit; color: var(--text); flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px; min-height: 76px; cursor: pointer; }
+  #facts .tile svg { width: 30px; height: 30px; flex: none; stroke: var(--muted); fill: none; stroke-width: 1.3; }
+  #facts .tile span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  #facts .tile b { font-weight: 400; font-size: 15px; }
+  #facts .tile em { font-style: normal; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #facts .tile.open { background: var(--sel); }
+  .twsbox { margin-top: 10px; padding: 16px; border-radius: 16px; background: var(--chip); display: grid; gap: 10px; animation: fadein .2s ease; }
+  .twsbox p { margin: 0 0 4px; color: var(--muted); font-size: 14px; }
+  #v-speaker .rows { border-top: 0; margin-top: 10px; display: grid; gap: 10px; }
+  #v-speaker .row { appearance: none; width: 100%; border: 0; border-radius: 16px; background: var(--chip); padding: 18px; color: var(--text); font: 16px/1.2 inherit; cursor: pointer; }
+  #v-speaker .row em { font-style: normal; color: var(--muted); margin-right: 10px; }
+  #v-speaker .row .chev { font-style: normal; color: var(--muted); font-size: 20px; }
+  .view .title { margin-top: max(24px, calc(env(safe-area-inset-top) + 8px)); }
+  nav.tabs { background: color-mix(in srgb, var(--bg) 92%, transparent); border-top: 0; }
+  nav.tabs button { flex-direction: row; justify-content: center; gap: 6px; padding: 12px 0; border-radius: 999px; margin: 8px 10px; }
+  nav.tabs button.on { background: var(--sel); color: var(--text); }
+  nav.tabs svg { width: 26px; height: 26px; }
+  .navthumb { width: 46px; height: 30px; display: inline-flex; align-items: center; justify-content: center; }
+  .navthumb img { height: 30px; width: auto; }
+  nav.tabs svg.caret { width: 20px; height: 20px; stroke-width: 2; }
+  .backdrop { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.32); animation: fade .2s; }
+  .sheetpanel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; max-height: 88vh; overflow: auto; background: var(--surface);
+                border-radius: 22px 22px 0 0; padding: 10px 20px max(24px, env(safe-area-inset-bottom)); box-shadow: 0 -6px 30px rgba(0,0,0,.18);
+                animation: slideup .28s cubic-bezier(.2,.7,.2,1); max-width: 520px; margin: 0 auto; }
+  @keyframes slideup { from { transform: translateY(40%); opacity: .4; } to { transform: none; opacity: 1; } }
+  .grab { width: 44px; height: 5px; border-radius: 3px; background: var(--hair); margin: 0 auto 18px; }
+  .sheettop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .sheettop b { font-weight: 400; font-size: 22px; }
+  .plusbtn { appearance: none; width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--accent); color: #1a1a1a; font: 300 26px/1 inherit; cursor: pointer; }
+  .sheetpanel .product { background: none; padding: 10px 2px; border-radius: 12px; }
+  .sheetpanel .product:hover, .sheetpanel .product.live { background: var(--chip); box-shadow: none; }
+  .addbox { padding: 16px 0 4px; }
+  .addbox .alt { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+  .mark h1 { font-weight: 300; }
+  .mark .model { letter-spacing: .12em; padding-left: .12em; text-transform: none; font-size: 15px; color: var(--text); opacity: .85; }
 </style>
 </head>
 <body>
@@ -268,59 +316,32 @@
 <div id="splash" class="screen">
   <div class="mark">
     <h1>V&amp;X</h1>
-    <div class="model">speakers</div>
-    <div class="rule"></div>
+    <div class="model">Est. 2026</div>
   </div>
 </div>
 
-<!-- ============ 2. my speakers ============ -->
-<div id="home" class="screen" hidden>
-  <div class="wrap homewrap">
-    <div class="top"><span class="word">V&amp;X</span><button class="iconbtn" id="addTop" aria-label="Thêm loa">+</button></div>
-    <h2>Loa của tôi</h2>
-    <div class="products" id="products"></div>
-
-    <div class="sheet" id="addSheet" hidden>
-      <div class="sheet-head"><b>Thêm loa</b><button class="linkbtn" id="addClose">Đóng</button></div>
-      <p class="lead">Bật loa lên rồi bấm <b>Tìm loa</b>. Không cần giữ nút nào trên loa.</p>
-      <button class="btn primary" id="findBtn">Tìm loa</button>
-      <div class="alt">
-        <button class="textbtn" id="usbBtn">Nối bằng cáp USB</button>
-        <button class="textbtn" id="btAllBtn">Không thấy loa?</button>
-      </div>
-    </div>
-    <p class="msg" id="cMsg"></p>
-    <p class="foot"><button class="textbtn" id="demoBtn">Xem app không cần loa</button></p>
-  </div>
-</div>
-
-<!-- ============ 3. one speaker ============ -->
+<!-- ============ the app (one speaker at a time) ============ -->
 <div id="app" class="screen" hidden>
-  <header><div class="wrap">
-    <button class="back" id="backBtn" aria-label="Loa của tôi"><span>‹</span><span class="word" id="appWord">V&amp;X<small>mark 4</small></span></button>
-    <button class="pill" id="pill"><i class="dot" id="pillDot"></i><span id="pillTxt">Chưa kết nối</span></button>
-  </div></header>
 
-  <!-- 3a. speaker -->
+  <!-- speaker -->
   <div class="view" id="v-speaker">
     <div class="wrap">
-      <div class="hero">
-        <div class="pair" id="heroPair"></div>
-      </div>
-      <h1 class="title" id="pTitle">V&amp;X mark 4</h1>
-      <p class="sub" id="homeSub">Cặp loa không dây chủ động hai đường tiếng</p>
+      <div class="hero"><div class="pair" id="heroPair"></div></div>
+      <h1 class="ptitle" id="pTitle">V&amp;X mark 4</h1>
+      <div class="chipwrap"><button class="chip" id="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
 
-      <div class="facts">
-        <div class="tile link" data-go="sound"><span class="eyebrow">Âm thanh</span><b id="tSound">Optimal</b></div>
-        <div class="tile link" id="tilePlace" data-go="sound" data-anchor="secPlace"><span class="eyebrow">Vị trí</span><b id="tPlace">Free</b></div>
-        <div class="tile" id="tilePeer"><span class="eyebrow">Cặp loa</span><b><i class="dot" id="tPeerDot"></i><span id="tPeer">—</span></b></div>
-        <div class="tile"><span class="eyebrow">Kết nối</span><b id="tLink">—</b></div>
+      <div class="facts" id="facts">
+        <button class="tile" data-go="sound"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="15" cy="9.5" r="2"/></svg><span><b>Âm thanh</b><em id="tSound">Optimal</em></span></button>
+        <button class="tile" id="tilePeer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/></svg><span><b>Cặp loa</b><em id="tPeer">Chưa nối</em></span></button>
       </div>
-
+      <div class="twsbox" id="twsBox" hidden>
+        <p id="twsText"></p>
+        <button class="btn primary" id="twsPair">Ghép với loa kia</button>
+        <button class="btn" id="twsEnd">Tách 2 loa</button>
+      </div>
       <div class="rows">
-        <div class="row btnrow" data-go="sound"><span>Chỉnh âm</span><span class="chev">›</span></div>
-        <div class="row btnrow" data-go="info"><span>Thông tin sản phẩm</span><span class="chev">›</span></div>
-        <div class="row btnrow" id="rowConn"><span id="rowConnTxt">Kết nối loa</span><span class="chev">›</span></div>
+        <button class="row btnrow" id="tilePlace" data-go="sound" data-anchor="secPlace"><span>Vị trí đặt loa</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
+        <button class="row btnrow" id="rowConn"><span id="rowConnTxt">Kết nối</span><span><i class="chev">›</i></span></button>
       </div>
       <p class="note" id="homeNote"></p>
     </div>
@@ -343,6 +364,7 @@
         <div class="lbl sub" data-a="45">Bass +</div>
         <div class="lbl sub" data-a="225">Bass −</div>
         <div class="lbl sub" data-a="315">Treble −</div>
+        <div class="pad" id="pad"></div>
         <div class="knob" id="knob"></div>
       </div>
       <div class="readout">
@@ -409,10 +431,28 @@
   </div>
 
   <nav class="tabs"><div class="wrap">
-    <button data-tab="speaker"><svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><circle cx="12" cy="7" r="1.6"/><circle cx="12" cy="14.5" r="3.6"/></svg>Loa</button>
-    <button data-tab="sound"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="15.5" cy="9" r="2"/><path d="M12 12h0"/></svg>Âm thanh</button>
-    <button data-tab="info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><path d="M12 7.6v.2"/></svg>Thông tin</button>
+    <button data-tab="speaker" id="navSpeaker"><span class="navthumb" id="navThumb"></span><svg class="caret" viewBox="0 0 24 24" id="navCaret" aria-label="Loa của tôi"><path d="M6 15l6-6 6 6"/></svg></button>
+    <button data-tab="sound" aria-label="Âm thanh"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="15.5" cy="9" r="2"/></svg></button>
+    <button data-tab="info" aria-label="Thông tin"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5"/><path d="M12 7.6v.2"/></svg></button>
   </div></nav>
+</div>
+
+<!-- ============ "My speakers" sheet ============ -->
+<div class="backdrop" id="backdrop" hidden></div>
+<div class="sheetpanel" id="sheet" hidden>
+  <div class="grab"></div>
+  <div class="sheettop"><b>Loa của tôi</b><button class="plusbtn" id="addTop" aria-label="Thêm loa">+</button></div>
+  <div class="products" id="products"></div>
+  <div class="addbox" id="addSheet" hidden>
+    <p class="lead">Bật loa lên rồi bấm <b>Tìm loa</b>. Không cần giữ nút nào trên loa.</p>
+    <button class="btn primary" id="findBtn">Tìm loa</button>
+    <div class="alt">
+      <button class="textbtn" id="usbBtn">Nối bằng cáp USB</button>
+      <button class="textbtn" id="btAllBtn">Không thấy loa?</button>
+    </div>
+  </div>
+  <p class="msg" id="cMsg"></p>
+  <p class="foot"><button class="textbtn" id="demoBtn">Xem app không cần loa</button></p>
 </div>
 
 <script>
@@ -472,9 +512,9 @@
   function showScreen(name) {
     if (screen === name) return;
     screen = name;
-    ['splash', 'home', 'app'].forEach(s => { const el = $(s); el.hidden = s !== name; el.classList.toggle('enter', s === name); });
+    if (name === 'home') { openSheet(); return; }
+    ['splash', 'app'].forEach(s => { const el = $(s); el.hidden = s !== name; el.classList.toggle('enter', s === name); });
     window.scrollTo(0, 0);
-    if (name === 'home') renderHomeList();
   }
   let tab = 'speaker';
   function showTab(name, anchor) {
@@ -491,7 +531,7 @@
   // fill the speaker view for one model: picture, names, which controls exist
   function applyModel(id) {
     const m = modelOf(id), f = (info.model === id && info.features) ? info.features : m.features;
-    $('appWord').innerHTML = `V&amp;X<small>${m.name}</small>`;
+    $('navThumb').innerHTML = `<img src="${m.image}" alt="">`;
     $('pTitle').textContent = 'V&X ' + m.name;
     const pair = f & F_PAIR;
     $('heroPair').innerHTML = pair
@@ -511,14 +551,41 @@
     const p = products.find(x => x.key === key);
     currentKey = key;
     applyModel(p ? p.model : 4);
+    closeSheet();
     showScreen('app');
     const h = location.hash.slice(1);
     showTab(['speaker', 'sound', 'info'].includes(h) ? h : 'speaker');
   }
-  $('backBtn').onclick = () => { history.replaceState(null, '', '#'); showScreen('home'); };
-  $('pill').onclick = () => { if (link) showTab('speaker'); else reconnect(currentKey); };
-  $('rowConn').onclick = async () => { if (link) await disconnectLink(); else reconnect(currentKey); };
-  $('demoBtn').onclick = () => { log('Xem app không kết nối loa.'); currentKey = null; applyModel(4); showScreen('app'); showTab('speaker'); };
+  // "My speakers" bottom sheet: the speaker thumbnail + caret in the tab bar opens it
+  let sheetOpen = false;
+  function openSheet() { sheetOpen = true; $('sheet').hidden = false; $('backdrop').hidden = false; renderHomeList(); }
+  function closeSheet() { sheetOpen = false; $('sheet').hidden = true; $('backdrop').hidden = true; $('addSheet').hidden = true; }
+  $('backdrop').onclick = closeSheet;
+  $('navCaret').addEventListener('click', e => { e.stopPropagation(); openSheet(); });
+  $('navSpeaker').addEventListener('click', () => { if (tab === 'speaker') openSheet(); }, true);
+  const connectHere = () => { if (link) return; if (products.length) reconnect(currentKey || products[0].key); else openAdd(); };
+  $('chip').onclick = connectHere;
+  $('rowConn').onclick = async () => { if (link) await disconnectLink(); else connectHere(); };
+  $('demoBtn').onclick = () => { log('Xem app không kết nối loa.'); closeSheet(); applyModel(4); showScreen('app'); showTab('speaker'); };
+
+  // stereo pair (TWS) controls: the same as the button combos on the speaker
+  const CMD_TWS = 0x0005;
+  $('tilePeer').onclick = () => { const b = $('twsBox'); b.hidden = !b.hidden; $('tilePeer').classList.toggle('open', !b.hidden); renderTws(); };
+  function renderTws() {
+    const t = $('twsText');
+    if (!state.connected) t.textContent = 'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.';
+    else if (state.peer) t.textContent = 'Hai loa đang chơi stereo (trái / phải). Tách ra nếu muốn dùng từng loa riêng.';
+    else t.textContent = 'Đang dùng một loa. Bật loa kia, để gần, rồi bấm Ghép. Thường mất 10–30 giây.';
+    $('twsPair').hidden = state.connected && state.peer;
+    $('twsEnd').hidden = !(state.connected && state.peer);
+  }
+  const twsCmd = async (op, msg) => {
+    if (!link) { connectHere(); return; }
+    try { await gaia(CMD_TWS, [op]); $('twsText').textContent = msg; log(msg); }
+    catch (e) { log('Lỗi: ' + errText(e)); }
+  };
+  $('twsPair').onclick = () => twsCmd(1, 'Đang tìm loa kia… Đèn nháy đôi là đang tìm.');
+  $('twsEnd').onclick = () => twsCmd(2, 'Đã tách: mỗi loa giờ chơi riêng.');
 
   // "My speakers": one card per remembered speaker, plus "add"
   function renderHomeList() {
@@ -532,7 +599,7 @@
         <div class="pmeta"><b>V&amp;X ${m.name}</b>
         <span><i class="dot ${live ? (state.peer || !(m.features & F_PAIR) ? 'ok' : 'warn') : ''}"></i>${live ? 'Đã kết nối · ' + (link.kind === 'usb' ? 'USB' : 'Bluetooth') : 'Chạm để kết nối'}</span></div>
         <span class="chev">›</span>`;
-      b.onclick = () => live ? openProduct(p.key) : reconnect(p.key);
+      b.onclick = () => { if (live) { closeSheet(); openProduct(p.key); } else reconnect(p.key); };
       box.appendChild(b);
     });
     const add = document.createElement('button');
@@ -540,18 +607,18 @@
     add.innerHTML = '<div class="pimg plus">+</div><div class="pmeta"><b>Thêm loa</b><span>Tìm loa V&amp;X ở gần</span></div>';
     add.onclick = openAdd;
     box.appendChild(add);
-    if (!products.length) openAdd();
+    if (!products.length) $('addSheet').hidden = false;
   }
-  function openAdd() { $('addSheet').hidden = false; $('addSheet').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
-  $('addTop').onclick = openAdd;
-  $('addClose').onclick = () => { $('addSheet').hidden = true; };
+  function openAdd() { if (!sheetOpen) openSheet(); $('addSheet').hidden = false; }
+  $('addTop').onclick = () => { $('addSheet').hidden = !$('addSheet').hidden; };
 
   // splash: short, tap to skip
   let splashDone = false;
   const leaveSplash = () => {
     if (splashDone) return; splashDone = true;
-    if (link && currentKey) openProduct(currentKey);
-    else { showScreen('home'); autoReconnect(); }
+    const last = products.slice().sort((a, b) => b.last - a.last)[0];
+    openProduct(link && currentKey ? currentKey : last ? last.key : null);
+    if (!link) { if (products.length) autoReconnect(); else openAdd(); }
   };
   $('splash').onclick = leaveSplash;
   setTimeout(leaveSplash, 1500);
@@ -583,6 +650,7 @@
     wheel.querySelector('.ring:not(.inner)').style.inset = inset(RING);
     wheel.querySelector('.ring.inner').style.inset = inset(RING * 0.32);
     glow.style.inset = inset(RING);
+    $('pad').style.inset = inset(RING * 1.12);   /* slightly outside the ring so the knob at the edge is easy to grab */
     wheel.querySelectorAll('.lbl').forEach(l => {
       const a = +l.dataset.a, sub = l.classList.contains('sub'), p = toXY(a, sub ? RING * 0.64 : RING + GAP);
       l.style.left = p.x + '%'; l.style.top = p.y + '%';
@@ -632,10 +700,11 @@
     if (dist <= 2) { dist = 0; ang = 0; }
     return { ang, dist };
   }
-  wheel.addEventListener('pointerdown', e => { dragging = true; wheel.setPointerCapture(e.pointerId); move(e, false); });
-  wheel.addEventListener('pointermove', e => { if (dragging) move(e, false); });
+  const pad = $('pad');
+  pad.addEventListener('pointerdown', e => { dragging = true; pad.setPointerCapture(e.pointerId); move(e, false); });
+  pad.addEventListener('pointermove', e => { if (dragging) move(e, false); });
   const end = e => { if (!dragging) return; dragging = false; move(e, true); };
-  wheel.addEventListener('pointerup', end); wheel.addEventListener('pointercancel', end);
+  pad.addEventListener('pointerup', end); pad.addEventListener('pointercancel', end);
   // While dragging only the knob moves, at most once per frame; the mode list,
   // the home tiles and the speaker are updated once, when the finger lifts.
   let frame = 0;
@@ -775,15 +844,20 @@
   function renderStatus() {
     const via = link ? (link.kind === 'usb' ? 'USB' : 'Bluetooth') : '';
     const side = state.role === 1 ? 'Loa trái' : state.role === 2 ? 'Loa phải' : 'Loa';
-    $('pillDot').className = 'dot ' + (!state.connected ? '' : state.peer ? 'ok' : 'warn');
-    $('pillTxt').textContent = state.connected ? `${side} · ${via}` : 'Chưa kết nối';
-    $('tLink').textContent = state.connected ? via : 'Chưa nối';
-    $('tPeerDot').className = 'dot ' + (!state.connected ? '' : state.peer ? 'ok' : 'warn');
-    $('tPeer').textContent = !state.connected ? '—' : state.peer ? 'Đồng bộ' : 'Mất loa kia';
-    $('rowConnTxt').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối loa';
-    $('homeSub').textContent = state.connected ? `Đang điều khiển ${side.toLowerCase()} qua ${via}` : modelOf(products.find(x => x.key === currentKey)?.model || 4).tagline;
+    const chip = $('chip'), pair = !$('tilePeer').hidden;
+    chip.classList.toggle('on', state.connected);
+    $('chipTxt').textContent = state.connected ? `${side} · ${via}` : 'Chưa kết nối · chạm để nối';
+    $('tPeer').textContent = !state.connected ? 'Chưa nối' : state.peer ? 'Stereo · đồng bộ' : 'Một loa';
+    $('rowConnTxt').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
+    // one speaker in use (no peer): show only that speaker, not the pair
+    const solo = pair && state.connected && !state.peer;
+    $('heroPair').querySelectorAll('.side').forEach(el => {
+      el.hidden = solo && +el.dataset.r !== (state.role || 1);
+      el.classList.toggle('solo', solo);
+    });
+    if (!$('twsBox').hidden) renderTws();
     // highlight the speaker we talk to; the other one is lit too when the pair is synced
-    if (screen === 'home') renderHomeList();
+    if (sheetOpen) renderHomeList();
     const hp = $('heroPair');
     hp.classList.toggle('dim', state.connected && !state.peer);
     hp.querySelectorAll('.side').forEach(s => {
@@ -792,8 +866,8 @@
 
     });
     const n = $('homeNote'), sn = $('syncNote');
-    if (!state.connected) { n.className = 'note'; n.textContent = 'Chưa kết nối: các chỉnh sửa chỉ để xem thử, chưa gửi xuống loa.'; sn.className = 'note'; sn.textContent = n.textContent; }
-    else if (!state.peer) { n.className = 'note warn'; n.textContent = 'Loa kia chưa nối: chỉnh sửa chỉ áp cho loa này, khi 2 loa nối lại sẽ tự đồng bộ.'; sn.className = 'note warn'; sn.textContent = 'Chỉ áp cho loa này cho tới khi 2 loa nối lại.'; }
+    if (!state.connected) { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = 'Chưa kết nối: chỉnh sửa chỉ để xem thử.'; }
+    else if (!state.peer) { n.className = 'note warn'; n.textContent = pair ? 'Loa kia chưa nối: chỉnh sửa chỉ áp cho loa này.' : ''; sn.className = 'note warn'; sn.textContent = pair ? 'Chỉ áp cho loa này cho tới khi 2 loa nối lại.' : ''; }
     else { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = 'Áp cho cả 2 loa và được lưu lại.'; }
   }
 
@@ -820,13 +894,13 @@
     await gaia(CMD_GET_STATE);
     clearInterval(pollTimer);
     pollTimer = setInterval(() => { if (link && !dragging) gaia(CMD_GET_STATE).catch(() => {}); }, 3000);
-    cMsg(''); $('addSheet').hidden = true;
+    cMsg(''); closeSheet();
     if (splashDone) openProduct(key);
   }
   async function disconnectLink() {
     const l = link; link = null; if (l) { try { await l.close(); } catch {} } onDisconnect();
   }
-  function onDisconnect() { state.connected = false; cmdChar = null; clearInterval(pollTimer); renderStatus(); if (screen === 'home') renderHomeList(); }
+  function onDisconnect() { state.connected = false; cmdChar = null; clearInterval(pollTimer); renderStatus(); if (sheetOpen) renderHomeList(); }
 
   // open GATT on a chosen / remembered device
   async function openBluetooth(device) {
@@ -836,7 +910,7 @@
       if (!(link && link.kind === 'bt')) return;
       link = null; onDisconnect(); log('Mất kết nối Bluetooth.');
       if (Date.now() - t0 < 15000) {
-        showScreen('home');
+        openSheet();
         cMsg('Loa ngắt ngay sau khi nối. Nếu loa vừa được nạp lại firmware: vào <b>Cài đặt → Bluetooth</b> trên điện thoại, chọn loa → <b>Quên thiết bị này</b>, rồi bấm Tìm loa lại.', true);
       }
     });
