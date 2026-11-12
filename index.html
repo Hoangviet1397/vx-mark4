@@ -62,12 +62,12 @@
   .stage { margin: 26px -20px 0; padding: 26px 20px 18px; background: var(--stage); }
   .pair { display: flex; justify-content: center; gap: 9%; }
   .pair .side { width: 38%; max-width: 168px; }
-  .pair svg { width: 100%; height: auto; display: block; filter: drop-shadow(0 18px 22px rgba(0,0,0,.35)); }
+  .pair img { width: 100%; height: auto; display: block; filter: drop-shadow(0 18px 22px rgba(0,0,0,.3)); user-select: none; -webkit-user-select: none; }
   .pair .side { text-align: center; }
   .pair .side .eyebrow { display: block; margin-top: 12px; transition: color .3s; }
   .pair .side.lit .eyebrow { color: var(--text); }
-  .pair .side svg { transition: opacity .3s; }
-  .pair.dim .side:not(.lit) svg { opacity: .45; }
+  .pair .side img { transition: opacity .3s; }
+  .pair.dim .side:not(.lit) img { opacity: .45; }
   h2 { font-weight: 300; font-size: 28px; line-height: 1.15; margin: 28px 0 8px; letter-spacing: .01em; }
   .lead { color: var(--muted); margin: 0; font-size: 14px; }
   .steps { list-style: none; padding: 0; margin: 22px 0 0; counter-reset: s; }
@@ -257,8 +257,8 @@
     <div class="top"><span class="word">V&amp;X<small>mark 4</small></span><span class="eyebrow" id="cStep">Kết nối</span></div>
     <div class="stage">
       <div class="pair">
-        <div class="side"><svg viewBox="0 0 120 200"><use href="#speaker"/></svg><span class="eyebrow">Trái</span></div>
-        <div class="side"><svg viewBox="0 0 120 200"><use href="#speaker"/></svg><span class="eyebrow">Phải</span></div>
+        <div class="side"><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"><span class="eyebrow">Trái</span></div>
+        <div class="side"><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"><span class="eyebrow">Phải</span></div>
       </div>
     </div>
     <h2>Kết nối với loa</h2>
@@ -292,8 +292,8 @@
     <div class="wrap">
       <div class="hero">
         <div class="pair" id="heroPair">
-          <div class="side" data-r="1"><svg viewBox="0 0 120 200"><use href="#speaker"/></svg><span class="eyebrow">Trái</span></div>
-          <div class="side" data-r="2"><svg viewBox="0 0 120 200"><use href="#speaker"/></svg><span class="eyebrow">Phải</span></div>
+          <div class="side" data-r="1"><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"><span class="eyebrow">Trái</span></div>
+          <div class="side" data-r="2"><img src="img/speaker-front.png" alt="V&amp;X mark 4" draggable="false"><span class="eyebrow">Phải</span></div>
         </div>
       </div>
       <h1 class="title">V&amp;X mark 4</h1>
@@ -688,7 +688,7 @@
     hp.querySelectorAll('.side').forEach(s => {
       const me = +s.dataset.r === state.role, lit = state.connected && (me || state.peer || !state.role);
       s.classList.toggle('lit', lit);
-      s.querySelector('svg').style.setProperty('--faint', lit ? 'var(--ok)' : '');
+
     });
     const n = $('homeNote'), sn = $('syncNote');
     if (!state.connected) { n.className = 'note'; n.textContent = 'Chưa kết nối: các chỉnh sửa chỉ để xem thử, chưa gửi xuống loa.'; sn.className = 'note'; sn.textContent = n.textContent; }
