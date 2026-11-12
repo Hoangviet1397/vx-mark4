@@ -698,6 +698,7 @@
 
   async function connectBluetooth(all) {
     if (link) await disconnectLink();
+    let step = 'chọn loa';
     try {
       const opts = all ? { acceptAllDevices: true, optionalServices: [GAIA_SERVICE] }
                        : { filters: [{ namePrefix: 'V&X' }, { namePrefix: 'LE-V&X' }, { services: [GAIA_SERVICE] }], optionalServices: [GAIA_SERVICE] };
@@ -714,21 +715,37 @@
       });
       cMsg(`<span class="spin"></span>Đang kết nối ${device.name || 'loa'}…`);
       log('Đang kết nối ' + (device.name || device.id) + '…');
-      const svc = await (await device.gatt.connect()).getPrimaryService(GAIA_SERVICE);
+      step = 'kết nối GATT';
+      const server = await device.gatt.connect();
+      step = 'tìm dịch vụ điều khiển';
+      const svc = await server.getPrimaryService(GAIA_SERVICE);
+      step = 'mở kênh lệnh';
       cmdChar = await svc.getCharacteristic(GAIA_COMMAND);
       const resp = await svc.getCharacteristic(GAIA_RESPONSE);
+      step = 'bật thông báo (ghép nối)';
       await resp.startNotifications(); resp.addEventListener('characteristicvaluechanged', onResponse);
       log('Đã kết nối qua Bluetooth.');
       const ch = cmdChar;
+      step = 'gửi lệnh đầu tiên (ghép nối)';
       await startLink({ kind: 'bt', send: b => ch.writeValue(new Uint8Array(b)), close: () => device.gatt.disconnect() });  // first encrypted write: the phone pairs here
     } catch (e) {
       link = null; onDisconnect();
-      if (e.name === 'NotFoundError' && /cancel/i.test(e.message)) { cMsg(''); return; }
-      log('Không kết nối được: ' + e.message);
-      if (/security|auth|encrypt|insufficient/i.test(e.message)) cMsg('Loa chưa cho ghép. Giữ nút Play 2.5 giây rồi thử lại.', true);
-      else if (/service/i.test(e.message)) cMsg('Thiết bị này không phải loa V&amp;X, hoặc loa chưa bật điều khiển.', true);
-      else cMsg('Không kết nối được: ' + e.message, true);
+      const msg = errText(e);
+      if (e && e.name === 'NotFoundError' && /cancel/i.test(msg)) { cMsg(''); return; }
+      log(`Không kết nối được (bước: ${step}): ${msg}`);
+      if (/security|auth|encrypt|insufficient|pair/i.test(msg) || /ghép nối/.test(step))
+        cMsg(`Lỗi ở bước ${step}. Loa chưa cho ghép: giữ nút Play 2.5 giây tới khi đèn nháy chậm rồi thử lại, và bấm <b>Ghép nối</b> khi iPhone hỏi.<br><small>${msg}</small>`, true);
+      else if (step === 'tìm dịch vụ điều khiển') cMsg(`Thiết bị này không có dịch vụ điều khiển V&amp;X.<br><small>${msg}</small>`, true);
+      else cMsg(`Không kết nối được (bước: ${step}).<br><small>${msg}</small>`, true);
     }
+  }
+  // Bluefy and some browsers reject with strings or plain objects, not Error
+  function errText(e) {
+    if (e == null) return 'không rõ lỗi';
+    if (typeof e === 'string') return e;
+    const parts = [e.name, e.message, e.code !== undefined ? 'code ' + e.code : ''].filter(Boolean);
+    if (parts.length) return parts.join(': ');
+    try { return JSON.stringify(e); } catch { return String(e); }
   }
 
   // USB: the speaker's vendor HID "datalink" interface (usage page 0xFF00, usage 1)
