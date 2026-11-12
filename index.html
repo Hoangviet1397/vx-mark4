@@ -285,6 +285,15 @@
     opacity: .35; pointer-events: none; filter: grayscale(1); transition: opacity .3s; }
   #app.offline .hero { opacity: .45; }
   #app.offline #syncNote { opacity: 1; }
+  .backlink { appearance: none; display: inline-flex; align-items: baseline; gap: 8px; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0;
+              font: 15px/1 inherit; margin-top: max(20px, calc(env(safe-area-inset-top) + 6px)); }
+  .backlink span:first-child { font-size: 24px; line-height: .8; }
+  .backlink + .title { margin-top: 10px; }
+  .placebox { margin-top: -2px; padding: 14px; border-radius: 16px; background: var(--chip); animation: fadein .2s ease; }
+  .placebox .place-fig { margin-top: 10px; }
+  .placebox .note { margin-top: 8px; }
+  #v-speaker .row.open { background: var(--sel); }
+  #app.offline #secPlace { opacity: .35; pointer-events: none; filter: grayscale(1); }
 </style>
 </head>
 <body>
@@ -346,7 +355,24 @@
         <button class="btn" id="twsEnd">Tách 2 loa</button>
       </div>
       <div class="rows">
-        <button class="row btnrow" id="tilePlace" data-go="sound" data-anchor="secPlace"><span>Vị trí đặt loa</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
+        <button class="row btnrow" id="tilePlace"><span>Vị trí đặt loa</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
+      <div class="placebox" id="secPlace" hidden>
+        <div class="seg" id="placement">
+          <i class="slider" id="segSlider"></i>
+          <button data-p="0">Free<small>Xa tường</small></button>
+          <button data-p="1">Wall<small>Sát tường</small></button>
+          <button data-p="2">Corner<small>Trong góc</small></button>
+        </div>
+        <div class="place-fig">
+          <svg viewBox="0 0 300 120" aria-hidden="true">
+            <path class="wall" id="wallBack" d="M20 18 H280"/>
+            <path class="wall" id="wallSide" d="M20 18 V108"/>
+            <g id="figSpk"><rect class="spk" x="-9" y="-14" width="18" height="28" rx="3"/>
+              <path class="wave" d="M-16 22 Q0 34 16 22"/><path class="wave" d="M-24 30 Q0 48 24 30"/></g>
+          </svg>
+        </div>
+        <p class="note" id="placeNote"></p>
+      </div>
         <button class="row btnrow" id="rowConn"><span id="rowConnTxt">Kết nối</span><span><i class="chev">›</i></span></button>
       </div>
       <p class="note" id="homeNote"></p>
@@ -356,6 +382,7 @@
   <!-- 3b. sound -->
   <div class="view" id="v-sound" hidden>
     <div class="wrap">
+      <button class="backlink" data-back><span>‹</span><span class="backname">V&amp;X mark 4</span></button>
       <h1 class="title">Âm thanh</h1>
       <p class="sub">Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.</p>
       <div id="wheelBlock">
@@ -391,30 +418,13 @@
 
       </div>
 
-      <section id="secPlace">
-        <div class="eyebrow">Vị trí đặt loa</div>
-        <div class="seg" id="placement">
-          <i class="slider" id="segSlider"></i>
-          <button data-p="0">Free<small>Xa tường</small></button>
-          <button data-p="1">Wall<small>Sát tường</small></button>
-          <button data-p="2">Corner<small>Trong góc</small></button>
-        </div>
-        <div class="place-fig">
-          <svg viewBox="0 0 300 120" aria-hidden="true">
-            <path class="wall" id="wallBack" d="M20 18 H280"/>
-            <path class="wall" id="wallSide" d="M20 18 V108"/>
-            <g id="figSpk"><rect class="spk" x="-9" y="-14" width="18" height="28" rx="3"/>
-              <path class="wave" d="M-16 22 Q0 34 16 22"/><path class="wave" d="M-24 30 Q0 48 24 30"/></g>
-          </svg>
-        </div>
-        <p class="note" id="placeNote"></p>
-      </section>
     </div>
   </div>
 
   <!-- 3c. info -->
   <div class="view" id="v-info" hidden>
     <div class="wrap">
+      <button class="backlink" data-back><span>‹</span><span class="backname">V&amp;X mark 4</span></button>
       <h1 class="title">Giới thiệu</h1>
       <p class="sub" id="aboutText"></p>
       <div class="rows spec" id="specRows"></div>
@@ -531,6 +541,8 @@
     if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
   }
   document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+  document.querySelectorAll('[data-back]').forEach(el => el.onclick = () => showTab('speaker'));
+  $('tilePlace').onclick = () => { const b = $('secPlace'); b.hidden = !b.hidden; $('tilePlace').classList.toggle('open', !b.hidden); };
   document.querySelectorAll('[data-go]').forEach(el => el.onclick = () => showTab(el.dataset.go, el.dataset.anchor));
 
   // fill the speaker view for one model: picture, names, which controls exist
@@ -538,13 +550,13 @@
     const m = modelOf(id), f = (info.model === id && info.features) ? info.features : m.features;
     $('navThumb').innerHTML = `<img src="${m.image}" alt="">`;
     $('pTitle').textContent = 'V&X ' + m.name;
+    document.querySelectorAll('.backname').forEach(e => e.textContent = 'V&X ' + m.name);
     const pair = f & F_PAIR;
     $('heroPair').innerHTML = pair
       ? `<div class="side" data-r="1">${speakerHTML(m)}<span class="eyebrow">Trái</span></div><div class="side" data-r="2">${speakerHTML(m)}<span class="eyebrow">Phải</span></div>`
       : `<div class="side solo" data-r="0">${speakerHTML(m)}</div>`;
     $('tilePeer').hidden = !pair;
     $('wheelBlock').hidden = !(f & F_WHEEL);
-    $('secPlace').hidden = !(f & F_PLACEMENT);
     $('tilePlace').hidden = !(f & F_PLACEMENT);
     $('aboutText').textContent = m.about;
     $('specRows').innerHTML = [['Sản phẩm', 'V&X ' + m.name], ...m.specs, ['Firmware', info.model === id && info.fw ? info.fw : '—'], ['App', 'web 3.0']]
