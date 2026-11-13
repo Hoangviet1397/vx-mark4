@@ -769,6 +769,33 @@
   .seg .slider { transition: transform .32s cubic-bezier(.2,.7,.2,1), width .32s; }
   .view .wrap { will-change: transform; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  /* the two folding rows are the headings: one list, no labels above */
+  #secRoomGroup { margin-top: 32px !important; }
+  #secRoomGroup .roomrows { border-top: 1px solid var(--hair) !important; }
+  #homeRows { border-top: 0 !important; margin-top: 0 !important; }
+  /* room picture: the speaker walks to its place, sound keeps coming out */
+  #figSpk { transition: transform .6s cubic-bezier(.3,.7,.2,1); }
+  .place-fig .wall { transition: opacity .5s ease; }
+  .place-fig .wave { transform-box: fill-box; transform-origin: 50% 0; animation: wavePulse 2.4s ease-out infinite; }
+  .place-fig .wave + .wave { animation-delay: .5s; }
+  @keyframes wavePulse { 0% { opacity: 0; transform: scale(.7); } 30% { opacity: .6; } 100% { opacity: 0; transform: scale(1.25); } }
+  /* modes: underline grows from the centre, the chosen word lifts a little */
+  .modes button { transition: color .25s, transform .25s; }
+  .modes button::after { transform-origin: 50% 50%; transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+  .modes button.active { transform: translateY(-1px); }
+  /* rows: the value on the right fades when it changes, the arrow turns */
+  .row em { transition: color .25s; }
+  .row.open em { color: var(--accent); }
+  /* knobs: the value glows briefly while held */
+  .tknob .num { transition: color .25s; }
+  .tknob.held .num { color: var(--accent); }
+  .tknob .fill { transition: stroke .25s; }
+  /* status chip breathes while not connected */
+  .chip:not(.on) svg { animation: chipBreath 2.8s ease-in-out infinite; }
+  @keyframes chipBreath { 50% { opacity: .35; } }
+  /* settings rows and stations: arrows nudge on press */
+  .srow:active i, .row:active .chev { transform: translateX(3px); }
+  .row.open:active .chev { transform: rotate(90deg); }
 </style>
 </head>
 <body>
@@ -863,9 +890,8 @@
       </div>
 
       <section id="secRoomGroup">
-        <div class="eyebrow homeh">Phòng nghe</div>
       <div class="rows roomrows">
-        <button class="row btnrow" id="tilePlace"><span>Bù phòng</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
+        <button class="row btnrow" id="tilePlace"><span>Phòng nghe</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
       <!-- one of four: three placements, or the room measurement (which the
            speaker uses in place of the placement bands, firmware sink_loudness.c) -->
       <div id="roomPanel" hidden>
@@ -920,9 +946,8 @@
 
       <!-- everything about connecting in one place: the phone's link to the
            speaker, and the two speakers' link to each other -->
-      <div class="eyebrow homeh">Kết nối</div>
       <div class="rows" id="homeRows">
-        <button class="row btnrow" id="rowConn"><span>Điện thoại · Cặp loa</span><span><em id="tConn">Chưa nối</em><i class="chev">›</i></span></button>
+        <button class="row btnrow" id="rowConn"><span>Kết nối</span><span><em id="tConn">Chưa nối</em><i class="chev">›</i></span></button>
         <div class="connbox" id="connBox" hidden>
           <div class="cb-line"><div><b>Điện thoại</b><small id="connText"></small></div><button class="btn primary" id="connBtn">Kết nối</button></div>
           <div id="tilePeer">
@@ -1591,7 +1616,7 @@
       k.querySelector('.fill').setAttribute('d', Math.abs(a) < 0.5 ? '' : arcPath(Math.min(0, a), Math.max(0, a), 52));
       k.setAttribute('aria-valuenow', v.toFixed(1));
     });
-    const s = beosonic(state.angle, state.distance), d = toneFromKnob ? tone : s;
+    const d = toneFromKnob ? tone : beosonic(shown.angle, shown.distance);   // follows the knob animation
     $('numBass').innerHTML = fmtDb(d.bass) + '<small>dB</small>'; $('numTreble').innerHTML = fmtDb(d.treble) + '<small>dB</small>';
   }
   function setTone(key, v, final) {
@@ -1739,7 +1764,10 @@
     $('figSpk').style.transform = `translate(${pos[0]}px, ${pos[1]}px)`;
     $('wallSide').style.opacity = state.placement === 2 ? 1 : .25;
     $('wallBack').style.opacity = state.placement === 0 ? .25 : 1;
-    $('placeNote').textContent = PLACE_NOTES[state.placement];
+    if ($('placeNote').textContent !== PLACE_NOTES[state.placement]) {
+      $('placeNote').textContent = PLACE_NOTES[state.placement];
+      if (typeof riseIn === 'function') riseIn([$('placeNote')], 0);
+    }
     renderHome();
     if (typeof roomPick !== 'undefined') renderRoomMode();
   }
@@ -2426,8 +2454,10 @@
     const roomBtn = document.querySelector('#placement [data-p="room"]');
     roomBtn.hidden = !hasRoom; $('placement').classList.toggle('four', hasRoom);
     const room = hasRoom && roomModeNow() === 'room';
-    document.querySelector('#secPlace .place-fig').hidden = room; $('placeNote').hidden = room;
+    const fig = document.querySelector('#secPlace .place-fig'), was = $('secRoom').hidden ? 'place' : 'room';
+    fig.hidden = room; $('placeNote').hidden = room;
     $('secRoom').hidden = !room;
+    if (typeof riseIn === 'function' && was !== (room ? 'room' : 'place')) riseIn(room ? [...$('secRoom').children] : [fig, $('placeNote')]);
     $('tPlace').textContent = room ? (state.roomOn ? 'Đo phòng' : 'Đo phòng · chưa đo') : PLACES[state.placement];
     if (room) roomRender();
   }
@@ -2493,9 +2523,16 @@
   // the page changes tab (the page follows the finger), folding rows open
   // and close smoothly. Off with "reduce motion".
   // =====================================================================
-  const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const TABS = ['speaker', 'radio', 'info'];
-  const EASE = 'cubic-bezier(.2,.7,.2,1)';
+  var STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;   // var: riseIn() may run during start-up
+  var TABS = ['speaker', 'radio', 'info'];
+  var EASE = 'cubic-bezier(.2,.7,.2,1)';
+  // children rise in one after the other
+  function riseIn(els, step = 45) {
+    if (STILL) return;
+    els.filter(e => e && !e.hidden && e.animate).forEach((e, i) =>
+      e.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }],
+                { duration: 340, delay: i * step, easing: EASE, fill: 'backwards' }));
+  }
   function slideIn(el, dir) {
     if (STILL || !el || !el.animate) return;
     el.animate([{ transform: `translateX(${dir * 40}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, easing: EASE });
@@ -2508,6 +2545,7 @@
       el.hidden = false;
       const h = el.scrollHeight;
       el.animate([{ height: '0px', opacity: 0 }, { height: h + 'px', opacity: 1 }], { duration: 260, easing: EASE }).onfinish = () => { el.style.overflow = ''; };
+      riseIn([...el.querySelectorAll(':scope > *, :scope > .placebox > *, :scope > #tilePeer > *')].filter(x => !x.classList.contains('placebox') && x.id !== 'tilePeer'), 40);
       setTimeout(() => { if (!el.hidden) { el.getAnimations().forEach(x => x.cancel()); el.style.overflow = ''; } }, 320);   // backup when animations are paused
     } else {
       const h = el.scrollHeight;
@@ -2519,7 +2557,11 @@
   { const show = showTab; showTab = (name, anchor) => {
       const from = TABS.indexOf(tab), to = TABS.indexOf(name);
       show(name, anchor);
-      if (from !== to && to >= 0) slideIn($('v-' + name).querySelector('.wrap'), to > from ? 1 : -1);
+      if (from !== to && to >= 0) {
+        const wrap = $('v-' + name).querySelector('.wrap');
+        slideIn(wrap, to > from ? 1 : -1);
+        riseIn([...wrap.children].slice(0, 14), 35);
+      }
     }; }
   // settings sub pages slide in from the right, back from the left
   { const sub = showSub; window.vxShowSub = sub; }
@@ -2655,7 +2697,9 @@
     $('radioFavSec').hidden = !radioFavs.length;
     fill('radioFav', radioFavs); fill('radioVN', RADIO.vn); fill('radioWorld', RADIO.world); fill('radioFound', radioFound);
     const now = $('radioNow'), playing = radioNow && !radioAudio.paused;
+    const wasHidden = now.hidden;
     now.hidden = !radioNow;
+    if (wasHidden && radioNow && typeof riseIn === 'function') riseIn([now], 0);
     if (radioNow) {
       $('rnName').textContent = radioNow.name;
       $('rnSub').textContent = phase === 'loading' ? tr('Đang kết nối…') : playing ? (radioNow.tag || tr('Đang phát')) : tr('Đã dừng');
