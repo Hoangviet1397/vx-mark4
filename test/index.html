@@ -1,0 +1,1877 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0b0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<title>VX Lento</title>
+<style>
+  :root {
+    --bg: #0b0b0c; --surface: #151517; --raise: #1c1c1f; --text: #f2f0ec; --muted: #8b8780; --faint: #3a3936;
+    --hair: rgba(242, 240, 236, .13); --chip: rgba(242, 240, 236, .07);
+    --ok: #7fc59a; --warn: #e2a35b; --accent: #e9cf9a; --sel: rgba(233, 207, 154, .22);
+    --cab1: #2a2a2d; --cab2: #19191b; --drv: #0d0d0e; --metal: #6d6a65; --stage: radial-gradient(120% 80% at 50% 30%, #222225 0%, #0b0b0c 70%);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f3f1ec; --surface: #ffffff; --raise: #faf9f6; --text: #16161a; --muted: #7a766f; --faint: #cfcac2;
+      --hair: rgba(22, 22, 26, .13); --chip: rgba(22, 22, 26, .06);
+      --ok: #2f7d4f; --warn: #b5651d; --accent: #f1d49a; --sel: #f7ead0;
+      --cab1: #3a3a3e; --cab2: #232326; --drv: #111113; --metal: #8d8a84; --stage: radial-gradient(120% 80% at 50% 30%, #ffffff 0%, #ebe8e1 75%);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f3f1ec; --surface: #ffffff; --raise: #faf9f6; --text: #16161a; --muted: #7a766f; --faint: #cfcac2;
+    --hair: rgba(22, 22, 26, .13); --chip: rgba(22, 22, 26, .06);
+    --ok: #2f7d4f; --warn: #b5651d; --accent: #f1d49a; --sel: #f7ead0;
+    --cab1: #3a3a3e; --cab2: #232326; --drv: #111113; --metal: #8d8a84; --stage: radial-gradient(120% 80% at 50% 30%, #ffffff 0%, #ebe8e1 75%);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body { font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+         -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; }
+  [hidden] { display: none !important; }
+  button { font-family: inherit; }
+  .eyebrow { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---------- screens ---------- */
+  .screen { min-height: 100vh; min-height: 100dvh; }
+  .screen.enter { animation: screenIn .45s cubic-bezier(.2,.7,.2,1); }
+  @keyframes screenIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* splash */
+  #splash { display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: var(--bg); }
+  .mark { text-align: center; }
+  .mark h1 { margin: 0; font-weight: 200; font-size: 64px; letter-spacing: .14em; padding-left: .14em; line-height: 1;
+             animation: markIn 1.2s cubic-bezier(.2,.7,.2,1) both; }
+  .mark .model { margin-top: 14px; font-size: 12px; letter-spacing: .5em; padding-left: .5em; text-transform: uppercase; color: var(--muted);
+                 animation: fade 1s .5s both; }
+  .mark .rule { width: 36px; height: 1px; background: var(--hair); margin: 22px auto 0; animation: grow 1s .7s both; }
+  @keyframes markIn { from { opacity: 0; letter-spacing: .5em; } to { opacity: 1; letter-spacing: .14em; } }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  /* connect */
+  #connect .wrap { padding-top: max(28px, env(safe-area-inset-top)); padding-bottom: max(28px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+  .top { display: flex; align-items: baseline; justify-content: space-between; }
+  .word { font-weight: 300; font-size: 22px; letter-spacing: .1em; }
+  .word small { font-size: 10px; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); margin-left: 8px; }
+  .stage { margin: 26px -20px 0; padding: 26px 20px 18px; background: var(--stage); }
+  .pair { display: flex; justify-content: center; gap: 9%; }
+  .pair .side { width: 38%; max-width: 168px; }
+  .spk { position: relative; filter: drop-shadow(0 18px 22px rgba(0,0,0,.3)); }
+  .spk svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .pair img { position: relative; width: 100%; height: auto; display: block; user-select: none; -webkit-user-select: none; }
+  .pair .side { text-align: center; }
+  .pair .side .eyebrow { display: block; margin-top: 12px; transition: color .3s; }
+  .pair .side.lit .eyebrow { color: var(--text); }
+  .pair .side .spk { transition: opacity .3s; }
+  .pair.dim .side:not(.lit) .spk { opacity: .45; }
+  h2 { font-weight: 300; font-size: 28px; line-height: 1.15; margin: 28px 0 8px; letter-spacing: .01em; }
+  .lead { color: var(--muted); margin: 0; font-size: 14px; }
+  .steps { list-style: none; padding: 0; margin: 22px 0 0; counter-reset: s; }
+  .steps li { position: relative; padding: 0 0 14px 34px; color: var(--muted); font-size: 14px; counter-increment: s; }
+  .steps li::before { content: counter(s); position: absolute; left: 0; top: 1px; width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--hair);
+                      font-size: 11px; line-height: 20px; text-align: center; color: var(--text); }
+  .steps b { color: var(--text); font-weight: 500; }
+  .actions { margin-top: auto; padding-top: 24px; display: grid; gap: 10px; }
+  .btn { appearance: none; width: 100%; border-radius: 999px; padding: 15px 18px; font: 500 13px/1 inherit; letter-spacing: .16em; text-transform: uppercase;
+         cursor: pointer; border: 1px solid var(--hair); background: transparent; color: var(--text); transition: background .2s, color .2s, border-color .2s, opacity .2s; }
+  .btn.primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .btn:disabled { opacity: .35; cursor: default; }
+  .btn .why { display: block; margin-top: 6px; font-size: 10px; letter-spacing: .06em; text-transform: none; opacity: .8; font-weight: 400; }
+  .textbtn { appearance: none; background: none; border: 0; color: var(--muted); font: 13px/1.4 inherit; cursor: pointer; padding: 8px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hair); }
+  .textbtn:hover { color: var(--text); }
+  .msg { min-height: 1.4em; margin: 12px 0 0; font-size: 13px; color: var(--muted); text-align: center; }
+  .msg.warn { color: var(--warn); }
+  .spin { display: inline-block; width: 12px; height: 12px; border: 1.5px solid var(--hair); border-top-color: var(--text); border-radius: 50%;
+          animation: rot .8s linear infinite; vertical-align: -2px; margin-right: 8px; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  /* app shell */
+  #app header { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  #app header .wrap { display: flex; align-items: center; justify-content: space-between; padding-top: max(14px, env(safe-area-inset-top)); padding-bottom: 12px; }
+  .pill { appearance: none; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--hair); background: transparent; color: var(--text);
+          border-radius: 999px; padding: 7px 13px; font: 12px/1 inherit; cursor: pointer; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); flex: none; transition: background .3s; }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); } .dot.warn { background: var(--warn); }
+  .view { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
+  .view .title { font-weight: 300; font-size: 30px; line-height: 1.1; margin: 12px 0 4px; }
+  .view .sub { color: var(--muted); font-size: 14px; margin: 0 0 8px; }
+
+  nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; border-top: 1px solid var(--hair);
+             background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+             padding-bottom: env(safe-area-inset-bottom); }
+  nav.tabs .wrap { display: grid; grid-template-columns: repeat(3, 1fr); }
+  nav.tabs button { appearance: none; background: none; border: 0; color: var(--muted); padding: 10px 0 9px; cursor: pointer;
+                    display: flex; flex-direction: column; align-items: center; gap: 4px; font: 10px/1 inherit; letter-spacing: .14em; text-transform: uppercase; transition: color .2s; }
+  nav.tabs svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+  nav.tabs button.on { color: var(--text); }
+
+  /* speaker (home) */
+  .hero { margin: 0 -20px; padding: 18px 20px 22px; background: var(--stage); }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+  .tile { background: var(--chip); border-radius: 16px; padding: 14px 15px; min-height: 78px; display: flex; flex-direction: column; justify-content: space-between; }
+  .tile b { font-weight: 400; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .tile.link { cursor: pointer; transition: background .2s; } .tile.link:hover { background: var(--hair); }
+  .rows { margin-top: 24px; border-top: 1px solid var(--hair); }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--hair); gap: 12px; font-size: 15px; }
+  .row span:last-child { color: var(--muted); text-align: right; }
+  .row.btnrow { cursor: pointer; } .row.btnrow:hover span:first-child { opacity: .8; }
+  .chev { color: var(--muted); }
+
+  /* sound */
+  .wheel { position: relative; width: 100%; aspect-ratio: 1; margin: 0 0 -6px; -webkit-touch-callout: none; contain: layout paint; user-select: none; -webkit-user-select: none; }
+  .ring { position: absolute; inset: 17%; border-radius: 50%; border: 1px solid var(--hair); }
+  .ring.inner { inset: 39.5%; border-style: dashed; opacity: .6; }
+  .glow { position: absolute; inset: 17%; border-radius: 50%; pointer-events: none; transition: background .25s; }
+  .lbl { position: absolute; transform: translate(-50%, -50%); font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+         color: var(--text); pointer-events: none; transition: opacity .25s; white-space: nowrap; padding-left: .22em; }
+  @media (max-width: 480px) { .lbl:not(.sub) { font-size: 10px; letter-spacing: .12em; padding-left: .12em; } }
+  .lbl.sub { font-size: 10px; letter-spacing: .12em; padding-left: .12em; color: var(--muted); }
+  .knob { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: var(--text); transform: translateZ(0);
+          box-shadow: 0 2px 10px rgba(0,0,0,.35); pointer-events: none; will-change: left, top; }
+  .knob::after { content: ""; position: absolute; inset: 11px; border-radius: 50%; background: var(--bg); opacity: .9; }
+  .centre { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; border-radius: 50%; background: var(--muted); }
+  .readout { display: flex; justify-content: space-between; align-items: flex-end; padding: 18px 0 0; border-top: 1px solid var(--hair); }
+  .readout div { display: flex; flex-direction: column; gap: 2px; }
+  .readout div:last-child { align-items: flex-end; }
+  .num { font-weight: 200; font-size: 34px; line-height: 1.05; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+  .num small { font-size: 13px; color: var(--muted); font-weight: 400; margin-left: 3px; }
+  .note { font-size: 13px; color: var(--muted); margin: 14px 0 0; }
+  .note.warn { color: var(--warn); }
+
+  section { margin-top: 34px; }
+  section > .eyebrow { margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .linkbtn { appearance: none; background: none; border: 0; color: var(--muted); font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; padding: 0; }
+  .linkbtn:hover { color: var(--text); }
+  .modes { display: flex; gap: 22px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+  .modes::-webkit-scrollbar { display: none; }
+  .modes button { appearance: none; background: none; border: 0; color: var(--muted); font: 300 19px/1.2 inherit; padding: 4px 0 8px;
+                  cursor: pointer; white-space: nowrap; position: relative; transition: color .2s; }
+  .modes button::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--text); transform: scaleX(0); transition: transform .25s; }
+  .modes button.active { color: var(--text); }
+  .modes button.active::after { transform: scaleX(1); }
+  .modes button.add { color: var(--text); font-size: 15px; letter-spacing: .02em; opacity: .9; animation: fadein .3s ease; }
+  .modes button.add::after { transform: scaleX(1); background: var(--hair); }
+  @keyframes fadein { from { opacity: 0; transform: translateY(3px); } to { opacity: .9; transform: none; } }
+  .modes button .x { display: none; margin-left: 6px; font-size: 14px; color: var(--muted); }
+  .modes.editing button.user .x { display: inline; }
+  .modes.editing button.user { color: var(--text); }
+  .savebox { display: flex; gap: 8px; margin-top: 14px; animation: fadein .25s ease; }
+  .savebox input { flex: 1; min-width: 0; background: var(--chip); color: var(--text); border: 1px solid var(--hair); border-radius: 999px;
+                   padding: 9px 16px; font: 15px/1.2 inherit; outline: none; }
+  .savebox input:focus { border-color: var(--text); }
+  .small { appearance: none; border: 1px solid var(--hair); background: transparent; color: var(--text); border-radius: 999px; padding: 9px 16px;
+           font: 500 12px/1 inherit; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; }
+  .small.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+  .seg { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--chip); border-radius: 14px; padding: 4px; }
+  .seg .slider { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 3); border-radius: 10px; background: var(--surface);
+                 box-shadow: 0 1px 6px rgba(0,0,0,.25); transition: transform .3s cubic-bezier(.3,.7,.2,1); }
+  .seg button { position: relative; appearance: none; background: none; border: 0; color: var(--muted); font: 500 14px/1.2 inherit; padding: 11px 4px 10px; cursor: pointer; transition: color .2s; }
+  .seg button small { display: block; font-weight: 400; font-size: 11px; margin-top: 2px; opacity: .8; }
+  .seg button.active { color: var(--text); }
+  .place-fig { display: flex; justify-content: center; margin: 16px 0 0; }
+  .place-fig svg { width: 100%; max-width: 300px; height: auto; }
+  .place-fig .wall { stroke: var(--muted); stroke-width: 2; fill: none; transition: opacity .3s; }
+  .place-fig .spk { fill: var(--text); transition: transform .45s cubic-bezier(.3,.7,.2,1); }
+  .place-fig .wave { fill: none; stroke: var(--muted); stroke-width: 1; opacity: .5; }
+
+  /* info */
+  .spec { margin-top: 8px; }
+  .spec .row span:first-child { color: var(--muted); font-size: 14px; }
+  .spec .row span:last-child { color: var(--text); font-size: 14px; }
+  .feature { padding: 16px 0; border-bottom: 1px solid var(--hair); }
+  .feature b { display: block; font-weight: 400; font-size: 16px; margin-bottom: 3px; }
+  .feature p { margin: 0; color: var(--muted); font-size: 14px; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; font-size: 14px; margin-top: 4px; }
+  .keys .k { white-space: nowrap; }
+  .keys .k i { font-style: normal; border: 1px solid var(--hair); border-radius: 6px; padding: 1px 7px; font-size: 12px; }
+  .keys span:nth-child(even) { color: var(--muted); }
+  .ledrow { display: flex; align-items: center; gap: 14px; padding: 10px 0; font-size: 14px; color: var(--muted); }
+  .led { width: 9px; height: 9px; border-radius: 50%; background: var(--text); flex: none; }
+  .led.slow { animation: blink 1.6s steps(1) infinite; }
+  .led.double { animation: dbl 1.8s infinite; }
+  .led.solid { box-shadow: 0 0 8px var(--text); }
+  .led.tick { animation: tick 3s infinite; }
+  .led.off { background: var(--faint); }
+  @keyframes blink { 50% { opacity: .1; } }
+  @keyframes dbl { 0%, 8%, 20%, 28% { opacity: 1; } 9%, 19%, 29%, 100% { opacity: .1; } }
+  @keyframes tick { 0%, 5% { opacity: 1; } 6%, 100% { opacity: .1; } }
+  .foot { margin: 30px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
+  details { margin-top: 26px; color: var(--muted); font-size: 12px; }
+  summary { cursor: pointer; letter-spacing: .18em; text-transform: uppercase; font-size: 10px; }
+  .log { font: 11px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; max-height: 160px; overflow: auto; margin-top: 8px; }
+
+  /* my speakers */
+  .homewrap { padding-top: max(28px, env(safe-area-inset-top)); padding-bottom: max(28px, env(safe-area-inset-bottom)); }
+  .iconbtn { appearance: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--hair); background: transparent; color: var(--text); font: 300 22px/1 inherit; cursor: pointer; }
+  .products { display: grid; gap: 12px; margin-top: 18px; }
+  .product { appearance: none; display: flex; align-items: center; gap: 16px; width: 100%; text-align: left; border: 0; border-radius: 20px; padding: 14px 16px;
+             background: var(--chip); color: var(--text); cursor: pointer; font: inherit; transition: background .2s; }
+  .product:hover { background: var(--hair); }
+  .product.live { background: var(--surface); box-shadow: 0 1px 12px rgba(0,0,0,.12); }
+  .pimg { width: 64px; flex: none; }
+  .pimg .spk { filter: drop-shadow(0 6px 8px rgba(0,0,0,.25)); }
+  .pimg img { width: 100%; height: auto; display: block; position: relative; }
+  .pimg.plus { height: 64px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--hair); border-radius: 14px; font: 200 30px/1 inherit; color: var(--muted); }
+  .pmeta { flex: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .pmeta b { font-weight: 400; font-size: 17px; }
+  .pmeta span { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 7px; }
+  .product.add .pmeta b { color: var(--text); }
+  .sheet { margin-top: 18px; padding: 18px; border-radius: 20px; background: var(--surface); box-shadow: 0 1px 12px rgba(0,0,0,.12); animation: fadein .25s ease; }
+  .sheet-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .sheet-head b { font-weight: 400; font-size: 18px; }
+  .sheet .lead { margin-bottom: 16px; }
+  .sheet .alt { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+  .back { appearance: none; display: inline-flex; align-items: baseline; gap: 10px; border: 0; background: none; color: var(--text); cursor: pointer; padding: 0; font: inherit; }
+  .back > span:first-child { font: 300 26px/1 inherit; color: var(--muted); }
+  .side.solo { width: 46%; }
+
+  /* v4: minimal product page, product switcher sheet, drag pad on the ring only */
+  .pad { position: absolute; border-radius: 50%; touch-action: none; cursor: grab; z-index: 1; }
+  .knob { z-index: 2; }
+  .hero { margin: 0 -20px; padding: max(36px, calc(env(safe-area-inset-top) + 20px)) 20px 8px; background: none; }
+  .ptitle { text-align: center; font-weight: 300; font-size: 26px; margin: 18px 0 10px; letter-spacing: .01em; }
+  .chipwrap { display: flex; justify-content: center; }
+  .chip { appearance: none; display: inline-flex; align-items: center; gap: 9px; border: 0; border-radius: 999px; padding: 10px 18px;
+          background: var(--chip); color: var(--muted); font: 15px/1 inherit; cursor: pointer; }
+  .chip svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .chip.on { color: var(--text); }
+  .chip.on svg { stroke: var(--ok); }
+  #facts { grid-template-columns: 1fr 1fr; margin-top: 26px; }
+  #facts .tile { appearance: none; border: 0; text-align: left; font: inherit; color: var(--text); flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px; min-height: 76px; cursor: pointer; }
+  #facts .tile svg { width: 30px; height: 30px; flex: none; stroke: var(--muted); fill: none; stroke-width: 1.3; }
+  #facts .tile span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  #facts .tile b { font-weight: 400; font-size: 15px; }
+  #facts .tile em { font-style: normal; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #facts .tile.open { background: var(--sel); }
+  .twsbox { margin-top: 10px; padding: 16px; border-radius: 16px; background: var(--chip); display: grid; gap: 10px; animation: fadein .2s ease; }
+  .twsbox p { margin: 0 0 4px; color: var(--muted); font-size: 14px; }
+  #v-speaker .rows { border-top: 0; margin-top: 10px; display: grid; gap: 10px; }
+  #v-speaker .row { appearance: none; width: 100%; border: 0; border-radius: 16px; background: var(--chip); padding: 18px; color: var(--text); font: 16px/1.2 inherit; cursor: pointer; }
+  #v-speaker .row em { font-style: normal; color: var(--muted); margin-right: 10px; }
+  #v-speaker .row .chev { font-style: normal; color: var(--muted); font-size: 20px; }
+  .view .title { margin-top: max(24px, calc(env(safe-area-inset-top) + 8px)); }
+  nav.tabs { background: color-mix(in srgb, var(--bg) 92%, transparent); border-top: 0; }
+  nav.tabs button { flex-direction: row; justify-content: center; gap: 6px; padding: 12px 0; border-radius: 999px; margin: 8px 10px; }
+  nav.tabs button.on { background: var(--sel); color: var(--text); }
+  nav.tabs svg { width: 26px; height: 26px; }
+  .navthumb { width: 46px; height: 30px; display: inline-flex; align-items: center; justify-content: center; }
+  .navthumb img { height: 30px; width: auto; }
+  nav.tabs svg.caret { width: 20px; height: 20px; stroke-width: 2; }
+  .backdrop { position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.32); animation: fade .2s; }
+  .sheetpanel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; max-height: 88vh; overflow: auto; background: var(--surface);
+                border-radius: 22px 22px 0 0; padding: 10px 20px max(24px, env(safe-area-inset-bottom)); box-shadow: 0 -6px 30px rgba(0,0,0,.18);
+                animation: slideup .28s cubic-bezier(.2,.7,.2,1); max-width: 520px; margin: 0 auto; }
+  @keyframes slideup { from { transform: translateY(40%); opacity: .4; } to { transform: none; opacity: 1; } }
+  .grab { width: 44px; height: 5px; border-radius: 3px; background: var(--hair); margin: 0 auto 18px; }
+  .sheettop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .sheettop b { font-weight: 400; font-size: 22px; }
+  .plusbtn { appearance: none; width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--accent); color: #1a1a1a; font: 300 26px/1 inherit; cursor: pointer; }
+  .sheetpanel .product { background: none; padding: 10px 2px; border-radius: 12px; }
+  .sheetpanel .product:hover, .sheetpanel .product.live { background: var(--chip); box-shadow: none; }
+  .addbox { padding: 16px 0 4px; }
+  .addbox .alt { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+  .mark h1 { font-weight: 300; }
+  .mark .model { letter-spacing: .12em; padding-left: .12em; text-transform: none; font-size: 15px; color: var(--text); opacity: .85; }
+  /* not connected: everything that talks to the speaker is greyed out and inert */
+  #app.offline #facts, #app.offline #twsBox, #app.offline #tilePlace,
+  #app.offline #wheelBlock .wheel, #app.offline #wheelBlock .readout, #app.offline #wheelBlock section, #app.offline #secPlace {
+    opacity: .35; pointer-events: none; filter: grayscale(1); transition: opacity .3s; }
+  #app.offline .hero { opacity: .45; }
+  #app.offline #syncNote { opacity: 1; }
+  .backlink { appearance: none; display: inline-flex; align-items: baseline; gap: 8px; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0;
+              font: 15px/1 inherit; margin-top: max(20px, calc(env(safe-area-inset-top) + 6px)); }
+  .backlink span:first-child { font-size: 24px; line-height: .8; }
+  .backlink + .title { margin-top: 10px; }
+  .placebox { margin-top: -2px; padding: 14px; border-radius: 16px; background: var(--chip); animation: fadein .2s ease; }
+  .placebox .place-fig { margin-top: 10px; }
+  .placebox .note { margin-top: 8px; }
+  #v-speaker .row.open { background: var(--sel); }
+  /* room compensation */
+  .roombox .note:first-child { margin-top: 0; }
+  .roomprog { position: relative; width: 120px; height: 120px; margin: 6px auto 0; }
+  .roomprog svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .roomprog .rp-bg { fill: none; stroke: var(--hair); stroke-width: 4; }
+  .roomprog .rp-fg { fill: none; stroke: var(--text); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset .5s ease; }
+  .roomprog b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 300; font-size: 26px; }
+  .roomstep { text-align: center; font-size: 14px; margin: 12px 4px 0; min-height: 42px; }
+  .roomsw { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .roomsw b { display: block; font-weight: 500; font-size: 15px; }
+  .roomsw small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .switch { appearance: none; border: 0; padding: 0; width: 50px; height: 30px; border-radius: 15px; background: var(--faint); position: relative; cursor: pointer; flex: none; transition: background .2s; }
+  .switch i { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .2s; }
+  .switch.on { background: var(--ok); } .switch.on i { transform: translateX(20px); }
+  .switch:disabled { opacity: .4; cursor: default; }
+  .roomdet { margin-top: 12px; } .roomdet summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+  .roombtns.two { grid-template-columns: 1fr 1fr; }
+  #roomGraph { display: block; width: 100%; height: auto; margin-top: 12px; }
+  #roomGraph .rg-grid { stroke: var(--hair); stroke-width: 1; }
+  #roomGraph .rg-lbl { fill: var(--muted); font-size: 9px; }
+  #roomGraph .rg-meas { fill: none; stroke: var(--muted); stroke-width: 1.4; }
+  #roomGraph .rg-after { fill: none; stroke: var(--text); stroke-width: 2; }
+  #roomGraph .rg-tgt { fill: none; stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 4 3; }
+    .roomlegend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .roomlegend .lg { display: inline-block; width: 14px; height: 0; border-top: 2px solid; vertical-align: middle; margin-right: 5px; }
+  .roomlegend .lg.meas { border-color: var(--muted); } .roomlegend .lg.after { border-color: var(--text); }
+  .roomlegend .lg.tgt { border-color: var(--accent); border-top-style: dashed; }
+  .roombtns { display: grid; gap: 8px; margin-top: 14px; }
+  #app.offline #secPlace { opacity: .35; pointer-events: none; filter: grayscale(1); }
+  /* about page */
+  .about-hero { width: 46%; max-width: 190px; margin: 18px auto 0; }
+  .about-hero img { width: 100%; height: auto; display: block; position: relative; }
+  .about-hero .spk { filter: drop-shadow(0 18px 22px rgba(0,0,0,.25)); }
+  .about-name { text-align: center; font-weight: 300; font-size: 28px; margin: 20px 0 6px; }
+  .about-tag { text-align: center; color: var(--muted); font-size: 15px; margin: 0 auto; max-width: 34ch; }
+  .highlights { display: grid; gap: 10px; margin-top: 30px; }
+  .hl { display: flex; gap: 14px; align-items: flex-start; padding: 16px; border-radius: 16px; background: var(--chip); }
+  .hl svg { width: 28px; height: 28px; flex: none; stroke: var(--text); fill: none; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; margin-top: 2px; }
+  .hl b { font-weight: 500; font-size: 15px; display: block; margin-bottom: 3px; }
+  .hl p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+  .about-h { margin: 32px 0 12px; }
+  .specgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--hair); border-radius: 16px; overflow: hidden; }
+  .specgrid > div { background: var(--bg); padding: 14px 16px; display: flex; flex-direction: column; gap: 3px; }
+  .specgrid span { color: var(--muted); font-size: 12px; letter-spacing: .04em; }
+  .specgrid b { font-weight: 400; font-size: 16px; }
+  #v-info details { margin-top: 18px; }
+  #v-info .foot { line-height: 1.7; }
+  /* settings (speaker-app style list) */
+  .bigtitle { font-weight: 500; font-size: 34px; margin: 18px 0 26px; letter-spacing: -.01em; }
+  .setrows { display: grid; gap: 8px; }
+  .srow { appearance: none; display: flex; justify-content: space-between; align-items: center; gap: 14px; width: 100%; border: 0; text-align: left;
+          border-radius: 14px; background: var(--chip); padding: 18px; color: var(--text); font: 16px/1.25 inherit; cursor: pointer; }
+  .srow i { font-style: normal; font-size: 22px; color: var(--muted); }
+  .srow.info { cursor: default; }
+  .srow em { font-style: normal; color: var(--muted); text-align: right; }
+  .srow span { display: inline-flex; align-items: center; gap: 10px; }
+  .setbtns { display: grid; justify-items: center; gap: 10px; margin-top: 26px; }
+  .setbtns .btn { width: auto; min-width: 190px; padding: 14px 26px; }
+  .btn.soft { background: var(--chip); border-color: transparent; }
+  .subhead { display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; margin: max(16px, calc(env(safe-area-inset-top) + 4px)) 0 18px; }
+  .subhead b { text-align: center; font-weight: 500; font-size: 18px; }
+  .backicon { appearance: none; border: 0; background: none; color: var(--text); cursor: pointer; padding: 0; width: 34px; height: 34px; }
+  .backicon svg { width: 28px; height: 28px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .sublead { font-size: 16px; margin: 0 0 8px; }
+  .subh { margin: 26px 0 10px; }
+  #setLog .log { max-height: none; }
+  .askwrap { position: fixed; inset: 0; z-index: 90; display: flex; align-items: flex-end; justify-content: center; padding: 16px;
+             background: rgba(0, 0, 0, .35); animation: fadein .2s ease; }
+  .askcard { width: 100%; max-width: 440px; background: var(--surface); color: var(--text); border-radius: 22px; padding: 22px 18px 18px;
+             margin-bottom: env(safe-area-inset-bottom); box-shadow: 0 10px 40px rgba(0, 0, 0, .25); animation: screenIn .3s cubic-bezier(.2,.7,.2,1); }
+  .askcard p { margin: 0 4px 2px; font-size: 16px; line-height: 1.45; }
+  /* Atelier VX lettering: a classic book serif (Cormorant Garamond, has the
+     Vietnamese tone marks), softer than inscriptional capitals. */
+  :root { --serif: "Cormorant Garamond", "Garamond", "Times New Roman", serif; }
+  .mark .atelier { font-family: var(--serif); font-size: 13px; letter-spacing: .5em; padding-left: .5em; text-transform: uppercase; color: var(--muted);
+                   margin-bottom: 14px; animation: fade 1s .3s both; }
+  .mark h1 { font-family: var(--serif); font-weight: 500; font-size: 68px; letter-spacing: .12em; padding-left: .12em; }
+  .mark .est { margin-top: 16px; font-size: 12px; letter-spacing: .5em; padding-left: .5em; text-transform: uppercase; color: var(--muted);
+               animation: fade 1s .5s both; }
+  .mark .model { margin-top: 14px; font-family: var(--serif); font-style: italic; font-size: 19px; letter-spacing: .04em; padding-left: 0;
+                 text-transform: none; opacity: .85; }
+  .ptitle { font-family: var(--serif); font-weight: 500; font-size: 32px; letter-spacing: .04em; }
+  .backname { font-family: var(--serif); font-size: 17px; }
+  .langrow .tick { opacity: 0; color: var(--text); font-size: 18px; } .langrow.on .tick { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- one drawing of the speaker, reused everywhere -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="gCab" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--cab1)"/><stop offset="1" stop-color="var(--cab2)"/></linearGradient>
+    <linearGradient id="gEdge" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".08" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="gCone" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#3b3b3f"/><stop offset=".6" stop-color="#18181a"/><stop offset="1" stop-color="#0a0a0b"/></radialGradient>
+    <radialGradient id="gDome" cx=".38" cy=".34" r=".7"><stop offset="0" stop-color="#d9d6cf"/><stop offset=".45" stop-color="#8b8780"/><stop offset="1" stop-color="#2c2b29"/></radialGradient>
+    <radialGradient id="gWave" cx=".5" cy=".5" r=".5"><stop offset=".45" stop-color="#050505"/><stop offset="1" stop-color="#2a2a2d"/></radialGradient>
+    <radialGradient id="gSurround" cx=".5" cy=".5" r=".5"><stop offset=".86" stop-color="#0b0b0c"/><stop offset=".93" stop-color="#232325"/><stop offset="1" stop-color="#0b0b0c"/></radialGradient>
+    <radialGradient id="gDomeBlack" cx=".4" cy=".35" r=".65"><stop offset="0" stop-color="#4a4a4e"/><stop offset=".5" stop-color="#1b1b1d"/><stop offset="1" stop-color="#0a0a0b"/></radialGradient>
+    <radialGradient id="gBore" cx=".5" cy=".5" r=".5"><stop offset=".8" stop-color="#000" stop-opacity=".18"/><stop offset=".9" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".08"/></radialGradient>
+    <radialGradient id="gCap" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#55555a"/><stop offset="1" stop-color="#121213"/></radialGradient>
+    <!-- drivers seen through the grille slots of the Fusion render (img/speaker-front.png, 364 x 568) -->
+    <symbol id="drivers" viewBox="0 0 364 568">
+      <!-- as built (photos): white printed baffle, black tweeter plate, woofer in a white counterbore -->
+      <rect x="10" y="10" width="344" height="548" rx="26" fill="#0d0d0e"/>
+      <!-- tweeter: round black faceplate, shallow waveguide, black dome -->
+      <circle cx="181.5" cy="120" r="92" fill="#121213"/>
+      <circle cx="181.5" cy="120" r="46" fill="url(#gWave)"/>
+      <circle cx="181.5" cy="120" r="27" fill="url(#gDomeBlack)"/>
+      <!-- woofer: white counterbore ring, rubber surround, black cone -->
+      <circle cx="181.5" cy="387" r="152" fill="#ecebe6"/>
+      <circle cx="181.5" cy="387" r="152" fill="url(#gBore)"/>
+      <circle cx="181.5" cy="387" r="128" fill="url(#gSurround)"/>
+      <circle cx="181.5" cy="387" r="112" fill="url(#gCone)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ============ 1. splash ============ -->
+<div id="splash" class="screen">
+  <div class="mark">
+    <div class="atelier" data-noi18n>Atelier</div>
+    <h1>VX</h1>
+    <div class="est" data-noi18n>Est. 2026</div>
+  </div>
+</div>
+
+<!-- ============ the app (one speaker at a time) ============ -->
+<div id="app" class="screen" hidden>
+
+  <!-- speaker -->
+  <div class="view" id="v-speaker">
+    <div class="wrap">
+      <div class="hero"><div class="pair" id="heroPair"></div></div>
+      <h1 class="ptitle" id="pTitle">VX Lento</h1>
+      <div class="chipwrap"><button class="chip" id="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
+
+      <div class="facts" id="facts">
+        <button class="tile" data-go="sound"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="15" cy="9.5" r="2"/></svg><span><b>Âm thanh</b><em id="tSound">Optimal</em></span></button>
+        <button class="tile" id="tilePeer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/></svg><span><b>Cặp loa</b><em id="tPeer">Chưa nối</em></span></button>
+      </div>
+      <div class="twsbox" id="twsBox" hidden>
+        <p id="twsText"></p>
+        <button class="btn primary" id="twsPair">Ghép với loa kia</button>
+        <button class="btn" id="twsEnd">Tách 2 loa</button>
+      </div>
+      <div class="rows">
+        <button class="row btnrow" id="tilePlace"><span>Vị trí đặt loa</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
+      <div class="placebox" id="secPlace" hidden>
+        <div class="seg" id="placement">
+          <i class="slider" id="segSlider"></i>
+          <button data-p="0">Free<small>Xa tường</small></button>
+          <button data-p="1">Wall<small>Sát tường</small></button>
+          <button data-p="2">Corner<small>Trong góc</small></button>
+        </div>
+        <div class="place-fig">
+          <svg viewBox="0 0 300 120" aria-hidden="true">
+            <path class="wall" id="wallBack" d="M20 18 H280"/>
+            <path class="wall" id="wallSide" d="M20 18 V108"/>
+            <g id="figSpk"><rect class="spk" x="-9" y="-14" width="18" height="28" rx="3"/>
+              <path class="wave" d="M-16 22 Q0 34 16 22"/><path class="wave" d="M-24 30 Q0 48 24 30"/></g>
+          </svg>
+        </div>
+        <p class="note" id="placeNote"></p>
+      </div>
+        <button class="row btnrow" id="tileRoom" hidden><span>Hiệu chỉnh phòng</span><span><em id="tRoom">Tắt</em><i class="chev">›</i></span></button>
+      <div class="placebox roombox" id="secRoom" hidden>
+        <div id="roomIdle">
+          <p class="note">Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.</p>
+          <div class="roombtns"><button class="btn primary" id="roomStart">Hiệu chỉnh</button></div>
+        </div>
+        <div id="roomRun" hidden>
+          <div class="roomprog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="rp-bg" cx="60" cy="60" r="52"/><circle class="rp-fg" id="roomRing" cx="60" cy="60" r="52"/></svg><b id="roomCount"></b></div>
+          <p class="roomstep" id="roomStep"></p>
+          <div class="roombtns"><button class="btn soft" id="roomCancel">Huỷ</button></div>
+        </div>
+        <div id="roomDoneBox" hidden>
+          <div class="roomsw">
+            <div><b id="roomSwState">Đang bật</b><small id="roomSummary"></small></div>
+            <button class="switch" id="roomSwitch" role="switch" aria-checked="true" aria-label="Bật hiệu chỉnh phòng"><i></i></button>
+          </div>
+          <details class="roomdet" id="roomDet">
+            <summary>Chi tiết</summary>
+            <svg id="roomGraph" viewBox="0 0 320 176" role="img" aria-label="Đáp tuyến bass trước và sau hiệu chỉnh"></svg>
+            <div class="roomlegend"><span><i class="lg meas"></i>Đo được</span><span><i class="lg after"></i>Sau hiệu chỉnh</span><span><i class="lg tgt"></i>Mục tiêu</span></div>
+            <p class="note" id="roomBands"></p>
+          </details>
+          <div class="roombtns two"><button class="btn soft" id="roomRedo">Đo lại</button><button class="btn soft" id="roomDelete">Xoá</button></div>
+        </div>
+        <p class="note" id="roomMsg"></p>
+      </div>
+        <button class="row btnrow" id="rowConn"><span id="rowConnTxt">Kết nối</span><span><i class="chev">›</i></span></button>
+      </div>
+      <p class="note" id="homeNote"></p>
+    </div>
+  </div>
+
+  <!-- 3b. sound -->
+  <div class="view" id="v-sound" hidden>
+    <div class="wrap">
+      <button class="backlink" data-back><span>‹</span><span class="backname">VX Lento</span></button>
+      <h1 class="title">Âm thanh</h1>
+      <p class="sub">Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.</p>
+      <div id="wheelBlock">
+      <div class="wheel" id="wheel">
+        <div class="glow" id="glow"></div>
+        <div class="ring"></div><div class="ring inner"></div><div class="centre"></div>
+        <div class="lbl" data-a="180">Bright</div>
+        <div class="lbl" data-a="0">Warm</div>
+        <div class="lbl" data-a="270">Relaxed</div>
+        <div class="lbl" data-a="90">Energetic</div>
+        <div class="lbl sub" data-a="135">Treble +</div>
+        <div class="lbl sub" data-a="45">Bass +</div>
+        <div class="lbl sub" data-a="225">Bass −</div>
+        <div class="lbl sub" data-a="315">Treble −</div>
+        <div class="pad" id="pad"></div>
+        <div class="knob" id="knob"></div>
+      </div>
+      <div class="readout">
+        <div><span class="eyebrow">Bass</span><span class="num" id="numBass">0.0<small>dB</small></span></div>
+        <div><span class="eyebrow">Treble</span><span class="num" id="numTreble">0.0<small>dB</small></span></div>
+      </div>
+      <p class="note" id="syncNote"></p>
+
+      <section>
+        <div class="eyebrow">Chế độ nghe <button class="linkbtn" id="editBtn" hidden>Sửa</button></div>
+        <div class="modes" id="modes"></div>
+        <form class="savebox" id="saveBox" hidden>
+          <input id="saveName" maxlength="18" placeholder="Tên chế độ, ví dụ: Tối nay" autocomplete="off">
+          <button type="submit" class="small on">Lưu</button>
+          <button type="button" class="small" id="saveCancel">Huỷ</button>
+        </form>
+      </section>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 3c. info -->
+  <div class="view" id="v-info" hidden>
+    <div class="wrap">
+      <!-- settings -->
+      <div id="setMain">
+        <button class="backlink" data-back><span>‹</span><span class="backname">VX Lento</span></button>
+        <h1 class="bigtitle">Cài đặt</h1>
+        <div class="setrows">
+          <button class="srow" data-sub="setAbout"><span>Giới thiệu</span><i>›</i></button>
+          <button class="srow" data-sub="setGuide" id="guide"><span>Nút bấm &amp; đèn báo</span><i>›</i></button>
+          <button class="srow" data-sub="setLog"><span>Nhật ký kết nối</span><i>›</i></button>
+          <button class="srow" data-sub="setLang"><span>Ngôn ngữ</span><span><em id="langNow" data-noi18n>Tiếng Việt</em><i>›</i></span></button>
+          <div class="srow info"><span>Phần mềm</span><em id="fwNow">Kết nối để xem</em></div>
+        </div>
+        <div class="setbtns">
+          <button class="btn primary" id="setConn">Kết nối</button>
+          <button class="btn soft" id="removeProduct">Xoá loa khỏi app</button>
+        </div>
+        <p class="foot">Chế tác tại Atelier VX · 2026</p>
+      </div>
+
+      <!-- settings > about -->
+      <div id="setAbout" class="subpage" hidden>
+        <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Giới thiệu</b><span></span></div>
+        <p class="sublead" id="aboutText"></p>
+        <div class="eyebrow subh">Thông tin sản phẩm</div>
+        <div class="setrows" id="specRows"></div>
+      </div>
+
+      <!-- settings > buttons and light -->
+      <div id="setGuide" class="subpage" hidden>
+        <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Nút bấm &amp; đèn báo</b><span></span></div>
+        <div class="eyebrow subh">Nút bấm</div>
+        <div class="setrows">
+          <div class="srow info"><span>Play</span><em>Phát / dừng · giữ: ghép điện thoại</em></div>
+          <div class="srow info"><span>Rew · Next</span><em>Bài trước / sau · giữ: âm lượng</em></div>
+          <div class="srow info"><span>Next + Play</span><em>Đổi vị trí Free → Wall → Corner</em></div>
+          <div class="srow info"><span>Rew + Play (giữ)</span><em>Ghép 2 loa với nhau</em></div>
+          <div class="srow info"><span>Rew + Next (giữ)</span><em>Tách 2 loa</em></div>
+        </div>
+        <div class="eyebrow subh">Đèn báo</div>
+        <div class="setrows">
+          <div class="srow info"><span><i class="led slow"></i>Nháy chậm</span><em>Chờ ghép điện thoại</em></div>
+          <div class="srow info"><span><i class="led double"></i>Nháy đôi</span><em>Đang tìm loa kia</em></div>
+          <div class="srow info"><span><i class="led solid"></i>Sáng 2.5 giây</span><em>Đã kết nối</em></div>
+          <div class="srow info"><span><i class="led off"></i>Tắt</span><em>Đang phát nhạc</em></div>
+        </div>
+      </div>
+
+      <!-- settings > language -->
+      <div id="setLang" class="subpage" hidden>
+        <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Ngôn ngữ</b><span></span></div>
+        <div class="setrows" data-noi18n>
+          <button class="srow langrow" data-lang="vi"><span>Tiếng Việt</span><i class="tick">✓</i></button>
+          <button class="srow langrow" data-lang="en"><span>English</span><i class="tick">✓</i></button>
+        </div>
+      </div>
+
+      <!-- settings > log -->
+      <div id="setLog" class="subpage" hidden>
+        <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Nhật ký kết nối</b><span></span></div>
+        <div id="log" class="log"></div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="tabs"><div class="wrap">
+    <button data-tab="speaker" id="navSpeaker"><span class="navthumb" id="navThumb"></span><svg class="caret" viewBox="0 0 24 24" id="navCaret" aria-label="Loa của tôi"><path d="M6 15l6-6 6 6"/></svg></button>
+    <button data-tab="sound" aria-label="Âm thanh"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="15.5" cy="9" r="2"/></svg></button>
+    <button data-tab="info" aria-label="Cài đặt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
+  </div></nav>
+</div>
+
+<!-- ============ small question (connect? switch to the main speaker?) ============ -->
+<div class="askwrap" id="ask" hidden>
+  <div class="askcard" role="dialog" aria-modal="true" aria-labelledby="askText">
+    <p id="askText"></p>
+    <div class="roombtns two"><button class="btn soft" id="askNo">Để sau</button><button class="btn primary" id="askYes">Kết nối</button></div>
+  </div>
+</div>
+
+<!-- ============ "My speakers" sheet ============ -->
+<div class="backdrop" id="backdrop" hidden></div>
+<div class="sheetpanel" id="sheet" hidden>
+  <div class="grab"></div>
+  <div class="sheettop"><b>Loa của tôi</b><button class="plusbtn" id="addTop" aria-label="Thêm loa">+</button></div>
+  <div class="products" id="products"></div>
+  <div class="addbox" id="addSheet" hidden>
+    <p class="lead">Bật loa lên rồi bấm <b>Tìm loa</b>. Không cần giữ nút nào trên loa.</p>
+    <button class="btn primary" id="findBtn">Tìm loa</button>
+    <div class="alt">
+      <button class="textbtn" id="usbBtn">Nối bằng cáp USB</button>
+      <button class="textbtn" id="btAllBtn">Không thấy loa?</button>
+    </div>
+  </div>
+  <p class="msg" id="cMsg"></p>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  // ---------- GAIA over GATT (Qualcomm ADK6) ----------
+  const GAIA_SERVICE  = '00001100-d102-11e1-9b23-00025b00a5a5';
+  const GAIA_COMMAND  = '00001101-d102-11e1-9b23-00025b00a5a5';
+  const GAIA_RESPONSE = '00001102-d102-11e1-9b23-00025b00a5a5';
+  // VX vendor commands (firmware sink_loudness.c)
+  const VX_VENDOR = 0x7658, CMD_GET_STATE = 0x0001, CMD_SET_BEOSONIC = 0x0002, CMD_SET_PLACEMENT = 0x0003, CMD_GET_INFO = 0x0004;
+  const MAX_DIST = 50;
+  const PLACES = ['Free', 'Wall', 'Corner'];
+  const PLACE_NOTES = ['Loa cách tường trên 50 cm. Âm chuẩn, không bù.',
+                       'Loa sát tường sau: giảm 4 dB quanh 100 Hz cho bass gọn lại.',
+                       'Loa trong góc phòng: giảm 7 dB quanh 90 Hz, bù nhẹ 250 Hz.'];
+
+  const $ = id => document.getElementById(id);
+  const logEl = $('log');
+  const log = m => { logEl.textContent = `${new Date().toLocaleTimeString()} ${m}\n` + logEl.textContent.slice(0, 4000); };
+  const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+                  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } } };
+
+  let cmdChar = null, link = null;   // link: { kind: 'bt' | 'usb', send(bytes), close() }
+  const state = { angle: 0, distance: 0, placement: 0, role: 0, peer: false, connected: false, proto: 0, roomOn: false, roomStored: false, measuring: false };
+  let shown = { angle: 0, distance: 0 };
+  let sendTimer = null, pendingSend = false, lastSend = 0, pollTimer = null, writing = Promise.resolve(), dragging = false;
+
+  // =====================================================================
+  // product catalog: one entry per VX model (model id from GET_INFO)
+  // =====================================================================
+  const F_WHEEL = 1, F_PLACEMENT = 2, F_PAIR = 4, F_USB = 8, F_ALIGNED = 16, F_ROOM = 32;
+  const MODELS = {
+    4: {
+      name: 'Lento', image: 'img/speaker-front.png', drivers: true,
+      tagline: 'Cặp loa không dây chủ động hai đường tiếng',
+      about: 'Cặp loa bookshelf không dây, chế tác thủ công tại Atelier VX để mang tiếng nhạc tự nhiên, cân bằng vào căn phòng nhỏ.',
+      highlights: [
+        ['wave', 'Âm thanh liền mạch', 'Phân tần chủ động 3 kHz, treble và bass được chỉnh cho cùng pha.'],
+        ['pair', 'Stereo không dây', 'Hai loa tự tìm nhau, chỉnh một loa là cả cặp đổi theo.'],
+        ['room', 'Hợp mọi chỗ đặt', 'Free, Wall, Corner: bass gọn dù loa đứng giữa phòng hay sát góc.']
+      ],
+      specs: [['Loa bass', '5.5″'], ['Loa treble', '1″ dome'], ['Phân tần', '3 kHz, LR4'], ['Thùng', 'Kín'], ['Kết nối', 'Bluetooth, USB'], ['Điều khiển', 'App VX']],
+      guide: true,
+      features: F_WHEEL | F_PLACEMENT | F_PAIR | F_USB | F_ALIGNED
+    }
+  };
+  const UNKNOWN_MODEL = { name: 'loa VX', image: 'img/speaker-front.png', drivers: true, tagline: 'Loa VX', about: 'Loa VX.', specs: [], guide: false, features: F_WHEEL };
+  const modelOf = id => MODELS[id] || Object.assign({}, UNKNOWN_MODEL, { name: 'loa VX ' + id });
+  const speakerHTML = m => `<div class="spk">${m.drivers ? '<svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg>' : ''}<img src="${m.image}" alt="VX ${m.name}" draggable="false"></div>`;
+
+  // remembered speakers (this browser): [{ key, model, btId, kind, last }]
+  let products = store.get('vx.products', []);
+  const saveProducts = () => store.set('vx.products', products);
+  let currentKey = null;              // product shown in the app view
+  const info = { model: 0, features: 0, fw: '' };   // from the connected speaker
+  // Test page (served under …/test/, or ?demo): with no speaker connected nothing is
+  // greyed out, changes stay in the page, room calibration is simulated (no mic, no
+  // sound). A real speaker can still be connected and then everything works as usual.
+  const DEMO = /[?&]demo\b/.test(location.search) || /\/test\//.test(location.pathname);
+  if (DEMO) info.features = MODELS[4].features | F_ROOM;
+
+  // =====================================================================
+  // screens and tabs
+  // =====================================================================
+  let screen = 'splash';
+  function showScreen(name) {
+    if (screen === name) return;
+    screen = name;
+    if (name === 'home') { openSheet(); return; }
+    ['splash', 'app'].forEach(s => { const el = $(s); el.hidden = s !== name; el.classList.toggle('enter', s === name); });
+    window.scrollTo(0, 0);
+  }
+  let tab = 'speaker';
+  function showTab(name, anchor) {
+    tab = name;
+    if (name === 'info' && $('setMain')) ['setMain', 'setAbout', 'setGuide', 'setLog', 'setLang'].forEach(x => $(x).hidden = x !== 'setMain');
+    ['speaker', 'sound', 'info'].forEach(t => $('v-' + t).hidden = t !== name);
+    document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
+    if (anchor) requestAnimationFrame(() => $(anchor).scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    else window.scrollTo(0, 0);
+    if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+  }
+  document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+  const showSub = id => { ['setMain', 'setAbout', 'setGuide', 'setLog', 'setLang'].forEach(x => $(x).hidden = x !== id); window.scrollTo(0, 0); };
+  document.querySelectorAll('[data-sub]').forEach(b => b.onclick = () => showSub(b.dataset.sub));
+  document.querySelectorAll('[data-up]').forEach(b => b.onclick = () => showSub('setMain'));
+  $('setConn').onclick = () => $('rowConn').onclick();
+  $('removeProduct').onclick = async () => {
+    if (!currentKey || !confirm(tr('Xoá loa này khỏi app? Loa vẫn giữ nguyên thiết lập; muốn dùng lại chỉ cần Tìm loa.'))) return;
+    if (link) await disconnectLink();
+    products = products.filter(x => x.key !== currentKey); saveProducts();
+    currentKey = null; showTab('speaker');
+    if (products.length) openProduct(products[0].key); else openAdd();
+  };
+  document.querySelectorAll('[data-back]').forEach(el => el.onclick = () => showTab('speaker'));
+  $('tilePlace').onclick = () => { const b = $('secPlace'); b.hidden = !b.hidden; $('tilePlace').classList.toggle('open', !b.hidden); };
+  document.querySelectorAll('[data-go]').forEach(el => el.onclick = () => showTab(el.dataset.go, el.dataset.anchor));
+
+  // fill the speaker view for one model: picture, names, which controls exist
+  function applyModel(id) {
+    const m = modelOf(id), f = (info.model === id && info.features) ? info.features : m.features;
+    $('navThumb').innerHTML = `<img src="${m.image}" alt="">`;
+    $('pTitle').textContent = 'VX ' + m.name;
+    document.querySelectorAll('.backname').forEach(e => e.textContent = 'VX ' + m.name);
+    const pair = f & F_PAIR;
+    $('heroPair').innerHTML = pair
+      ? `<div class="side" data-r="1">${speakerHTML(m)}<span class="eyebrow">Trái</span></div><div class="side" data-r="2">${speakerHTML(m)}<span class="eyebrow">Phải</span></div>`
+      : `<div class="side solo" data-r="0">${speakerHTML(m)}</div>`;
+    $('tilePeer').hidden = !pair;
+    $('wheelBlock').hidden = !(f & F_WHEEL);
+    $('tilePlace').hidden = !(f & F_PLACEMENT);
+    const esc = v => String(v).replace(/&/g, '&amp;');
+    const live = info.model === id && link;
+    $('aboutText').textContent = `${'VX ' + m.name} này đã được lưu trong app trên máy này.`;
+    const rows = (list) => list.map(([k, v]) => `<div class="srow info"><span>${esc(k)}</span><em>${esc(v)}</em></div>`).join('');
+    $('specRows').innerHTML = rows([
+      ['Loại sản phẩm', 'VX ' + m.name],
+      ['Vai trò', !link ? '—' : state.role === 1 ? 'Loa trái' : state.role === 2 ? 'Loa phải' : 'Loa'],
+      ['Phần mềm', live && info.fw ? info.fw : 'Kết nối để xem'],
+      ['Mã sản phẩm', (m.code || ('VX-' + String(id).padStart(4, '0')))]
+    ]);
+    $('guide').hidden = !m.guide;
+    renderStatus();
+  }
+  function openProduct(key) {
+    const p = products.find(x => x.key === key);
+    currentKey = key;
+    applyModel(p ? p.model : 4);
+    closeSheet();
+    showScreen('app');
+    const h = location.hash.slice(1);
+    showTab(['speaker', 'sound', 'info'].includes(h) ? h : 'speaker');
+  }
+  // "My speakers" bottom sheet: the speaker thumbnail + caret in the tab bar opens it
+  let sheetOpen = false;
+  function openSheet() { sheetOpen = true; $('sheet').hidden = false; $('backdrop').hidden = false; renderHomeList(); }
+  function closeSheet() { sheetOpen = false; $('sheet').hidden = true; $('backdrop').hidden = true; $('addSheet').hidden = true; }
+  $('backdrop').onclick = closeSheet;
+  $('navCaret').addEventListener('click', e => { e.stopPropagation(); openSheet(); });
+  $('navSpeaker').addEventListener('click', () => { if (tab === 'speaker') openSheet(); }, true);
+  const connectHere = () => { if (link) return; if (products.length) reconnect(currentKey || products[0].key); else openAdd(); };
+  $('chip').onclick = connectHere;
+  $('rowConn').onclick = async () => { if (link) await disconnectLink(); else connectHere(); };
+
+  // stereo pair (TWS) controls: the same as the button combos on the speaker
+  const CMD_TWS = 0x0005;
+  $('tilePeer').onclick = () => { const b = $('twsBox'); b.hidden = !b.hidden; $('tilePeer').classList.toggle('open', !b.hidden); renderTws(); };
+  function renderTws() {
+    const t = $('twsText');
+    if (!state.connected) t.textContent = 'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.';
+    else if (state.peer) t.textContent = 'Hai loa đang chơi stereo (trái / phải). Tách ra nếu muốn dùng từng loa riêng.';
+    else t.textContent = 'Đang dùng một loa. Bật loa kia, để gần, rồi bấm Ghép. Thường mất 10–30 giây.';
+    $('twsPair').hidden = state.connected && state.peer;
+    $('twsEnd').hidden = !(state.connected && state.peer);
+  }
+  const twsCmd = async (op, msg) => {
+    if (!link) { connectHere(); return; }
+    try { await gaia(CMD_TWS, [op]); $('twsText').textContent = msg; log(msg); }
+    catch (e) { log('Lỗi: ' + errText(e)); }
+  };
+  $('twsPair').onclick = () => twsCmd(1, 'Đang tìm loa kia… Đèn nháy đôi là đang tìm.');
+  $('twsEnd').onclick = () => twsCmd(2, 'Đã tách: mỗi loa giờ chơi riêng.');
+
+  // "My speakers": one card per remembered speaker, plus "add"
+  function renderHomeList() {
+    const box = $('products');
+    box.innerHTML = '';
+    products.slice().sort((a, b) => b.last - a.last).forEach(p => {
+      const m = modelOf(p.model), live = link && currentKey === p.key;
+      const b = document.createElement('button');
+      b.className = 'product' + (live ? ' live' : '');
+      b.innerHTML = `<div class="pimg">${speakerHTML(m)}</div>
+        <div class="pmeta"><b>VX ${m.name}</b>
+        <span><i class="dot ${live ? (state.peer || !(m.features & F_PAIR) ? 'ok' : 'warn') : ''}"></i>${live ? 'Đã kết nối · ' + (link.kind === 'usb' ? 'USB' : 'Bluetooth') : 'Chạm để kết nối'}</span></div>
+        <span class="chev">›</span>`;
+      b.onclick = () => { if (live) { closeSheet(); openProduct(p.key); } else reconnect(p.key); };
+      box.appendChild(b);
+    });
+    if (!products.length) $('addSheet').hidden = false;
+  }
+  function openAdd() { if (!sheetOpen) openSheet(); $('addSheet').hidden = false; }
+  $('addTop').onclick = () => { $('addSheet').hidden = !$('addSheet').hidden; };
+
+  // splash: short, tap to skip
+  let splashDone = false;
+  const leaveSplash = () => {
+    if (splashDone) return; splashDone = true;
+    const last = products.slice().sort((a, b) => b.last - a.last)[0];
+    openProduct(link && currentKey ? currentKey : last ? last.key : null);
+    if (!link) {
+      if (products.length) autoReconnect().then(ok => { if (!ok && !link) askConnect(); });
+      else if (!DEMO) openAdd();      // test page: straight to the speaker page
+    }
+  };
+  $('splash').onclick = leaveSplash;
+  setTimeout(leaveSplash, 1500);
+
+  // =====================================================================
+  // Beosonic maths (Bang & Olufsen Beocreate 2)
+  // =====================================================================
+  function beosonic(angle, distance) {
+    let a = angle - 45; while (a < 0) a += 360; while (a >= 360) a -= 360;
+    const d = distance / MAX_DIST; let off, bk, tk;
+    if (a < 45 || a >= 315) { off = (a > 180 ? a - 360 : a) / 45; bk = 1; tk = off; }
+    else if (a < 135) { off = (a - 90) / 45; bk = -off; tk = 1; }
+    else if (a < 225) { off = (a - 180) / 45; bk = -1; tk = -off; }
+    else { off = (a - 270) / 45; bk = off; tk = -1; }
+    return { bass: 6 * d * bk, treble: 8 * d * tk };
+  }
+
+  // ---------- wheel geometry: angle 0 = bottom, counter-clockwise ----------
+  const wheel = $('wheel'), knob = $('knob'), glow = $('glow');
+  let RING = 0.33;
+  const toXY = (ang, frac) => { const t = (ang - 90) * Math.PI / 180; return { x: 50 + Math.cos(t) * frac * 100, y: 50 - Math.sin(t) * frac * 100 }; };
+  const GAP = 0.03;
+  function layoutWheel() {
+    const W = wheel.clientWidth; if (!W) return;
+    const side = Math.max(...[...wheel.querySelectorAll('.lbl:not(.sub)')]
+      .filter(l => +l.dataset.a % 180 === 90).map(l => l.offsetWidth)) / W;
+    RING = Math.min(0.33, 0.5 - GAP - side);
+    const inset = r => ((0.5 - r) * 100).toFixed(2) + '%';
+    wheel.querySelector('.ring:not(.inner)').style.inset = inset(RING);
+    wheel.querySelector('.ring.inner').style.inset = inset(RING * 0.32);
+    glow.style.inset = inset(RING);
+    $('pad').style.inset = inset(RING * 1.12);   /* slightly outside the ring so the knob at the edge is easy to grab */
+    wheel.querySelectorAll('.lbl').forEach(l => {
+      const a = +l.dataset.a, sub = l.classList.contains('sub'), p = toXY(a, sub ? RING * 0.64 : RING + GAP);
+      l.style.left = p.x + '%'; l.style.top = p.y + '%';
+      if (!sub) {   // pin the edge facing the ring, so long and short words sit the same distance from it
+        const t = (a - 90) * Math.PI / 180, dx = Math.cos(t), dy = -Math.sin(t);
+        l.style.transform = `translate(${(-50 + 50 * dx).toFixed(1)}%, ${(-50 + 50 * dy).toFixed(1)}%)`;
+      }
+    });
+  }
+  new ResizeObserver(() => { layoutWheel(); render(); }).observe(wheel);
+  if (document.fonts) document.fonts.ready.then(() => { layoutWheel(); render(); });
+  const angDiff = (a, b) => { let d = Math.abs(a - b) % 360; return d > 180 ? 360 - d : d; };
+  const fmtDb = v => (Math.abs(v) < 0.05 ? '0.0' : (v > 0 ? '+' : '−') + Math.abs(v).toFixed(1));
+  function render() {
+    const p = toXY(shown.angle, RING * shown.distance / MAX_DIST);
+    knob.style.left = p.x + '%'; knob.style.top = p.y + '%';
+    const k = shown.distance / MAX_DIST, hue = Math.round(shown.angle - 105);
+    glow.style.background = k === 0 ? 'none' :
+      `radial-gradient(circle at ${50 + (p.x - 50) / (RING * 2)}% ${50 + (p.y - 50) / (RING * 2)}%, hsla(${hue}, 70%, 55%, ${0.10 + 0.32 * k}) 0%, transparent ${45 + 20 * k}%)`;
+    knob.style.boxShadow = k === 0 ? '0 2px 10px rgba(0,0,0,.35)' : `0 2px 10px rgba(0,0,0,.35), 0 0 ${14 + 26 * k}px hsla(${hue}, 75%, 60%, ${0.35 + 0.4 * k})`;
+    wheel.querySelectorAll('.lbl').forEach(l => {
+      const d = angDiff(+l.dataset.a, shown.angle);
+      l.style.opacity = l.classList.contains('sub')
+        ? (k * Math.max(0, 1 - d / 60) * 0.95).toFixed(2)
+        : (0.32 + 0.68 * (k === 0 ? 0.55 : Math.max(0.15, 1 - (d / 120) * k))).toFixed(2);
+    });
+    const g = beosonic(state.angle, state.distance);
+    $('numBass').innerHTML = fmtDb(g.bass) + '<small>dB</small>'; $('numTreble').innerHTML = fmtDb(g.treble) + '<small>dB</small>';
+  }
+  let anim = null;
+  function animateTo() {
+    cancelAnimationFrame(anim);
+    const step = () => {
+      let da = state.angle - shown.angle; if (da > 180) da -= 360; if (da < -180) da += 360;
+      if (shown.distance === 0) { shown.angle = state.angle; da = 0; }
+      const dd = state.distance - shown.distance;
+      if (Math.abs(da) < 0.5 && Math.abs(dd) < 0.2) { shown = { angle: state.angle, distance: state.distance }; render(); return; }
+      shown.angle = (shown.angle + da * 0.22 + 360) % 360; shown.distance += dd * 0.22; render(); anim = requestAnimationFrame(step);
+    };
+    step();
+  }
+  function fromPointer(ev) {
+    const r = wheel.getBoundingClientRect();
+    const dx = (ev.clientX - r.left) / r.width - 0.5, dy = (ev.clientY - r.top) / r.height - 0.5;
+    let ang = Math.round(Math.atan2(-dy, dx) * 180 / Math.PI + 90); ang = (ang + 360) % 360;
+    let dist = Math.round(Math.min(1, Math.hypot(dx, dy) / RING) * MAX_DIST);
+    if (dist <= 2) { dist = 0; ang = 0; }
+    return { ang, dist };
+  }
+  const pad = $('pad');
+  pad.addEventListener('pointerdown', e => { dragging = true; pad.setPointerCapture(e.pointerId); move(e, false); });
+  pad.addEventListener('pointermove', e => { if (dragging) move(e, false); });
+  const end = e => { if (!dragging) return; dragging = false; move(e, true); };
+  pad.addEventListener('pointerup', end); pad.addEventListener('pointercancel', end);
+  // While dragging only the knob moves, at most once per frame; the mode list,
+  // the home tiles and the speaker are updated once, when the finger lifts.
+  let frame = 0;
+  function move(e, final) {
+    const p = fromPointer(e); state.angle = p.ang; state.distance = p.dist;
+    cancelAnimationFrame(anim); shown = { angle: p.ang, distance: p.dist };
+    if (final) { cancelAnimationFrame(frame); frame = 0; render(); renderModes(); scheduleSend(true); return; }
+    if (!frame) frame = requestAnimationFrame(() => { frame = 0; render(); });
+  }
+
+  // ---------- listening modes (Beocreate) + user modes ----------
+  const builtin = [ { name: 'Optimal', angle: 0, distance: 0 }, { name: 'Clear', angle: 180, distance: 15 },
+                    { name: 'Dark', angle: 315, distance: 15 }, { name: 'Podcast', angle: 225, distance: 15 } ];
+  let userModes = store.get('vx.modes', []), editing = false;
+  const saveUser = m => { if (!store.set('vx.modes', m)) log('Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.'); };
+  const currentMode = () => [...builtin, ...userModes].find(m => m.angle === state.angle && m.distance === state.distance);
+  function renderModes() {
+    const box = $('modes'); box.innerHTML = ''; box.classList.toggle('editing', editing);
+    [...builtin, ...userModes].forEach((m, i) => {
+      const user = i >= builtin.length;
+      const b = document.createElement('button'); b.textContent = m.name;
+      b.classList.toggle('user', user);
+      b.classList.toggle('active', !editing && m.angle === state.angle && m.distance === state.distance);
+      if (user) { const x = document.createElement('span'); x.className = 'x'; x.textContent = '×'; b.appendChild(x); }
+      b.onclick = () => {
+        if (editing) { if (user) { userModes.splice(i - builtin.length, 1); saveUser(userModes); if (!userModes.length) editing = false; renderModes(); } return; }
+        state.angle = m.angle; state.distance = m.distance; animateTo(); renderModes(); scheduleSend(true);
+      };
+      box.appendChild(b);
+    });
+    if (!currentMode() && !editing && state.distance > 0 && $('saveBox').hidden) {
+      const s = document.createElement('button'); s.className = 'add'; s.textContent = '+ Lưu vị trí này';
+      s.onclick = openSave; box.appendChild(s);
+    }
+    $('editBtn').hidden = !userModes.length;
+    $('editBtn').textContent = editing ? 'Xong' : 'Sửa';
+    renderHome();
+  }
+  $('editBtn').onclick = () => { editing = !editing; $('saveBox').hidden = true; renderModes(); };
+  function openSave() {
+    $('saveBox').hidden = false; renderModes();
+    $('saveName').value = `Chế độ ${userModes.length + 1}`;
+    $('saveName').focus(); $('saveName').select();
+  }
+  $('saveCancel').onclick = () => { $('saveBox').hidden = true; renderModes(); };
+  $('saveBox').onsubmit = (e) => {
+    e.preventDefault();
+    const name = $('saveName').value.trim().slice(0, 18); if (!name) return;
+    const same = userModes.findIndex(m => m.name.toLowerCase() === name.toLowerCase());
+    const mode = { name, angle: state.angle, distance: state.distance };
+    if (same >= 0) userModes[same] = mode; else userModes.push(mode);
+    saveUser(userModes); $('saveBox').hidden = true; editing = false; renderModes();
+    log(`Đã lưu chế độ "${name}".`);
+  };
+
+  // ---------- placement ----------
+  const seg = document.querySelectorAll('#placement button');
+  seg.forEach(b => b.onclick = () => { state.placement = +b.dataset.p; renderPlacement(); if (link) gaia(CMD_SET_PLACEMENT, [state.placement]).catch(err => log('Lỗi: ' + err.message)); });
+  function renderPlacement() {
+    seg.forEach(b => b.classList.toggle('active', +b.dataset.p === state.placement));
+    $('segSlider').style.transform = `translateX(${state.placement * 100}%)`;
+    // little room plan: free = middle of the room, wall = against the back wall, corner = in the corner
+    const pos = [[170, 76], [170, 34], [42, 34]][state.placement];
+    $('figSpk').style.transform = `translate(${pos[0]}px, ${pos[1]}px)`;
+    $('wallSide').style.opacity = state.placement === 2 ? 1 : .25;
+    $('wallBack').style.opacity = state.placement === 0 ? .25 : 1;
+    $('placeNote').textContent = state.roomOn ? 'Đang dùng hiệu chỉnh phòng (đã đo cả tường và góc), nên Free/Wall/Corner tạm không có tác dụng.' : PLACE_NOTES[state.placement];
+    renderHome();
+  }
+
+  // ---------- sending (throttled while dragging, final value always sent) ----------
+  // Latest value wins: at most one wheel write is in flight. When it is
+  // answered, the newest position (if it changed) goes out straight away, so
+  // the speaker follows the finger at the link's own pace instead of working
+  // through a backlog. USB is fast enough for the same 30 ms pacing.
+  let inFlight = false, sentKey = '';
+  function scheduleSend(final) {
+    if (!link || !final) return;   // only when the finger lifts (or a mode is tapped): no stream of writes while dragging
+    pendingSend = true;
+    if (final) { clearTimeout(sendTimer); sendTimer = null; }
+    if (!inFlight && !sendTimer) sendTimer = setTimeout(() => { sendTimer = null; flushSend(); }, final ? 0 : Math.max(0, 30 - (Date.now() - lastSend)));
+  }
+  function flushSend() {
+    if (!pendingSend || inFlight || !link) return;
+    pendingSend = false;
+    const key = state.angle + '/' + state.distance;
+    if (key === sentKey) return;
+    sentKey = key; lastSend = Date.now(); inFlight = true;
+    gaia(CMD_SET_BEOSONIC, [state.angle >> 8, state.angle & 0xff, state.distance])
+      .catch(e => { sentKey = ''; log('Lỗi gửi: ' + errText(e)); })
+      .finally(() => { inFlight = false; if (pendingSend) flushSend(); });
+  }
+  // One packet format for both links (firmware sink_loudness.h):
+  //   [vendor_hi, vendor_lo, cmd_hi, cmd_lo, payload] -> [vendor, cmd|0x8000, status, state...]
+  function gaia(cmd, payload = []) {
+    const pkt = [VX_VENDOR >> 8, VX_VENDOR & 0xff, cmd >> 8, cmd & 0xff, ...payload];
+    const l = link;
+    writing = writing.catch(() => {}).then(() => l && l.send(pkt));   // writes must not overlap
+    return writing;
+  }
+  function onResponse(ev) { handlePacket(new Uint8Array(ev.target.value.buffer)); }
+  let infoWaiter = null;   // resolves when the GET_INFO reply (or its refusal) arrives
+  function handlePacket(v) {
+    if (v.length < 5 || ((v[0] << 8) | v[1]) !== VX_VENDOR) return;
+    const cmd = ((v[2] << 8) | v[3]) & 0x7fff;
+    if (cmd === CMD_GET_INFO) {
+      // older firmware answers "not supported": treat it as a Lento (model 4)
+      if (v[4] === 0 && v.length >= 13) {
+        const p = v.slice(5);
+        info.model = (p[1] << 8) | p[2]; info.fw = p[3] + '.' + p[4]; info.features = (p[5] << 8) | p[6];
+        state.proto = p[0]; state.role = p[7];
+      } else { info.model = 4; info.fw = 'cũ (trước 2.1)'; info.features = MODELS[4].features; }
+      if (infoWaiter) { infoWaiter(); infoWaiter = null; }
+      return;
+    }
+    if (v[4] !== 0) { log('Loa trả lỗi ' + v[4]); return; }
+    if (v.length < 13) return;
+    const p = v.slice(5);
+    state.proto = p[0]; state.placement = p[1]; state.role = p[5]; state.peer = !!p[6];
+    if (p.length >= 9) {
+      state.roomOn = !!(p[8] & 1); state.measuring = !!(p[8] & 2); state.roomStored = !!(p[8] & 4);
+      state.phone = !!(p[8] & 8); state.slaveOfMain = !!(p[8] & 16);   // fw 2.3: which speaker holds the phone
+    }
+    const angle = (p[2] << 8) | p[3], distance = p[4];
+    if ((angle !== state.angle || distance !== state.distance) && !dragging && !pendingSend && !sendTimer && !inFlight) {
+      sentKey = angle + "/" + distance;
+      state.angle = angle; state.distance = distance; animateTo(); renderModes();
+    }
+    renderStatus(); renderPlacement();
+    if (p.length >= 9) checkMain();
+  }
+
+  // =====================================================================
+  // status on every page
+  // =====================================================================
+  function renderHome() {
+    const m = currentMode();
+    const g = beosonic(state.angle, state.distance);
+    $('tSound').textContent = m ? m.name : `Bass ${fmtDb(g.bass)} · Treble ${fmtDb(g.treble)}`;
+    $('tPlace').textContent = PLACES[state.placement];
+  }
+  function renderStatus() {
+    $('app').classList.toggle('offline', !state.connected && !DEMO);   // controls greyed out until a speaker is connected (not on the test page)
+    const via = link ? (link.kind === 'usb' ? 'USB' : 'Bluetooth') : '';
+    const side = state.role === 1 ? 'Loa trái' : state.role === 2 ? 'Loa phải' : 'Loa';
+    const chip = $('chip'), pair = !$('tilePeer').hidden;
+    chip.classList.toggle('on', state.connected);
+    $('chipTxt').textContent = state.connected ? `${side} · ${via}` : DEMO ? 'Bản thử · chưa nối loa' : 'Chưa kết nối · chạm để nối';
+    // firmware of the speaker the app talks to (GET_INFO), e.g. "Loa trái · 2.3"
+    $('fwNow').textContent = state.connected && info.fw ? `${side} · ${info.fw}` : 'Kết nối để xem';
+    $('tPeer').textContent = !state.connected ? 'Chưa nối' : state.peer ? 'Stereo · đồng bộ' : 'Một loa';
+    $('rowConnTxt').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
+    $('setConn').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
+    $('setConn').classList.toggle('primary', !state.connected);
+    // one speaker in use (no peer): show only that speaker, not the pair
+    const solo = pair && state.connected && !state.peer;
+    $('heroPair').querySelectorAll('.side').forEach(el => {
+      el.hidden = solo && +el.dataset.r !== (state.role || 1);
+      el.classList.toggle('solo', solo);
+    });
+    if (!$('twsBox').hidden) renderTws();
+    // highlight the speaker we talk to; the other one is lit too when the pair is synced
+    if (sheetOpen) renderHomeList();
+    const hp = $('heroPair');
+    hp.classList.toggle('dim', state.connected && !state.peer);
+    hp.querySelectorAll('.side').forEach(s => {
+      const me = +s.dataset.r === state.role, lit = state.connected && (me || state.peer || !state.role);
+      s.classList.toggle('lit', lit);
+
+    });
+    const n = $('homeNote'), sn = $('syncNote');
+    if (!state.connected) { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = 'Kết nối với loa để chỉnh âm.'; }
+    else if (!state.peer) { n.className = 'note warn'; n.textContent = pair ? 'Loa kia chưa nối: chỉnh sửa chỉ áp cho loa này.' : ''; sn.className = 'note warn'; sn.textContent = pair ? 'Chỉ áp cho loa này cho tới khi 2 loa nối lại.' : ''; }
+    else { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = 'Áp cho cả 2 loa và được lưu lại.'; }
+    roomRender();
+  }
+
+  // =====================================================================
+  // connection: one "Find speaker" button, USB as an extra, silent reconnect
+  // =====================================================================
+  const cMsg = (t, warn) => { const m = $('cMsg'); m.className = 'msg' + (warn ? ' warn' : ''); m.innerHTML = t; };
+  const timeout = (ms, what) => new Promise((_, rej) => setTimeout(() => rej(new Error(what)), ms));
+
+  // after any link opens: ask who it is, remember it, show it
+  async function startLink(l, btId) {
+    link = l; l.btId = btId; state.connected = true; sentKey = ""; inFlight = false; mainChecked = false;
+    if (askKind === 'connect') askClose();
+    info.model = 0; info.features = 0; info.fw = '';
+    const got = new Promise(res => { infoWaiter = res; });
+    await gaia(CMD_GET_INFO);
+    await Promise.race([got, new Promise(res => setTimeout(res, 1500))]);
+    if (!info.model) { info.model = 4; info.features = MODELS[4].features; }
+    const key = 'm' + info.model;
+    let p = products.find(x => x.key === key);
+    if (!p) { p = { key, model: info.model }; products.push(p); }
+    p.kind = l.kind; p.last = Date.now();
+    if (btId) { p.btId = btId; p.btIds = [btId].concat((p.btIds || []).filter(x => x !== btId)).slice(0, 4); }   // both speakers of the pair
+    saveProducts();
+    currentKey = key;
+    await gaia(CMD_GET_STATE);
+    clearInterval(pollTimer);
+    pollTimer = setInterval(() => { if (link && !dragging) gaia(CMD_GET_STATE).catch(() => {}); }, 3000);
+    cMsg(''); closeSheet();
+    if (splashDone) openProduct(key);
+  }
+  async function disconnectLink() {
+    const l = link; link = null; if (l) { try { await l.close(); } catch {} } onDisconnect();
+  }
+  function onDisconnect() { state.connected = false; cmdChar = null; clearInterval(pollTimer); renderStatus(); if (sheetOpen) renderHomeList(); }
+
+  // open GATT on a chosen / remembered device
+  async function openBluetooth(device, quiet) {   // quiet: automatic reconnect, errors only in the log
+    let step = 'kết nối';
+    const t0 = Date.now();
+    device.addEventListener('gattserverdisconnected', () => {
+      if (!(link && link.kind === 'bt')) return;
+      link = null; onDisconnect(); log('Mất kết nối Bluetooth.');
+      if (Date.now() - t0 < 15000) {
+        openSheet();
+        cMsg('Loa ngắt ngay sau khi nối. Nếu loa vừa được nạp lại firmware: vào <b>Cài đặt → Bluetooth</b> trên điện thoại, chọn loa → <b>Quên thiết bị này</b>, rồi bấm Tìm loa lại.', true);
+      }
+    });
+    try {
+      if (!quiet) cMsg(`<span class="spin"></span>Đang kết nối ${device.name || 'loa'}…`);
+      log('Đang kết nối ' + (device.name || device.id) + '…');
+      const server = await Promise.race([device.gatt.connect(), timeout(12000, 'loa không trả lời (ngoài tầm hoặc đang tắt)')]);
+      step = 'mở kênh điều khiển';
+      const svc = await server.getPrimaryService(GAIA_SERVICE);
+      cmdChar = await svc.getCharacteristic(GAIA_COMMAND);
+      const resp = await svc.getCharacteristic(GAIA_RESPONSE);
+      step = 'ghép nối';
+      await resp.startNotifications(); resp.addEventListener('characteristicvaluechanged', onResponse);
+      const ch = cmdChar;
+      await startLink({ kind: 'bt', send: b => ch.writeValue(new Uint8Array(b)), close: () => device.gatt.disconnect() }, device.id);
+      log('Đã kết nối qua Bluetooth.');
+      return true;
+    } catch (e) {
+      link = null; onDisconnect();
+      const msg = errText(e);
+      log(`Không kết nối được (bước: ${step}): ${msg}`);
+      if (quiet) return false;
+      if (step === 'ghép nối' || /security|auth|encrypt|insufficient|pair/i.test(msg))
+        cMsg(`Không ghép được với loa. Vào <b>Cài đặt → Bluetooth</b>, nếu thấy loa VX thì chọn <b>Quên thiết bị này</b>, rồi bấm Tìm loa lại.<br><small>${msg}</small>`, true);
+      else if (step === 'mở kênh điều khiển') cMsg(`Thiết bị này không phải loa VX.<br><small>${msg}</small>`, true);
+      else cMsg(`Không kết nối được: ${msg}`, true);
+      return false;
+    }
+  }
+  // "Find speaker": the chooser only lists speakers advertising the VX control service
+  async function findBluetooth(all) {
+    if (link) await disconnectLink();
+    let device;
+    try {
+      device = await navigator.bluetooth.requestDevice(all
+        ? { acceptAllDevices: true, optionalServices: [GAIA_SERVICE] }
+        : { filters: [{ services: [GAIA_SERVICE] }, { namePrefix: 'VX' }, { namePrefix: 'V&X' }], optionalServices: [GAIA_SERVICE] });
+    } catch (e) {
+      const msg = errText(e);
+      if (/cancel/i.test(msg)) { cMsg(''); return; }
+      cMsg(/adapter|unavailable|not available/i.test(msg) ? (IOS ? 'Bluetooth chưa sẵn sàng. Bật Bluetooth, và kiểm tra <b>Cài đặt → Bluefy → Bluetooth</b> đã bật.' : 'Máy này không có Bluetooth hoặc Bluetooth đang tắt.' + (navigator.hid ? ' Có thể nối loa bằng cáp USB.' : '')) : 'Không mở được Bluetooth: ' + msg, true);
+      return;
+    }
+    await openBluetooth(device);
+  }
+  // tap on a remembered speaker: reuse the permission if the browser keeps it, else ask again
+  async function reconnect(key) {
+    const p = products.find(x => x.key === key);
+    if (link && currentKey === key) { openProduct(key); return; }
+    if (p && p.kind === 'usb' && navigator.hid) {
+      const d = (await navigator.hid.getDevices()).find(x => x.collections.some(c => c.usagePage === 0xff00));
+      if (d) { await openUsb(d); return; }
+    }
+    if (p && p.btId && navigator.bluetooth && navigator.bluetooth.getDevices) {
+      try {
+        const d = (await navigator.bluetooth.getDevices()).find(x => x.id === p.btId);
+        if (d && await openBluetooth(d)) return;
+      } catch {}
+    }
+    if (navigator.bluetooth) await findBluetooth(false);
+    else if (navigator.hid) await connectUsb();
+    else cMsg('Trình duyệt này không có Bluetooth. iPhone: mở bằng Bluefy. Android / máy tính: Chrome.', true);
+  }
+  // on start: USB that was allowed before connects by itself; Bluetooth if the browser remembers it
+  // Returns TRUE once connected. Tries every remembered speaker of the pair,
+  // the one used last first (the firmware then points to the main one).
+  async function autoReconnect() {
+    if (link) return true;
+    if (!products.length) return false;
+    const last = products.slice().sort((a, b) => b.last - a.last)[0];
+    const ids = last.btIds || (last.btId ? [last.btId] : []);
+    if (ids.length && navigator.bluetooth && navigator.bluetooth.getDevices) {
+      try {
+        const known = await navigator.bluetooth.getDevices();
+        for (const id of ids) {
+          const d = known.find(x => x.id === id);
+          if (d && await openBluetooth(d, true)) return true;
+          if (link) return true;
+        }
+      } catch {}
+    }
+    await wait(400);                     // a USB speaker allowed before connects by itself
+    return !!link;
+  }
+
+  // ---------- small question at the bottom: connect? / switch to the main speaker? ----------
+  let askKind = '', mainChecked = false;
+  function askClose() { $('ask').hidden = true; $('askYes').onclick = $('askNo').onclick = null; askKind = ''; }
+  // onYes runs inside the tap, so it may open the Bluetooth chooser (needs a user gesture)
+  function ask(kind, text, yes, no, onYes) {
+    askKind = kind;
+    $('askText').textContent = text; $('askYes').textContent = yes; $('askNo').textContent = no;
+    $('askYes').onclick = () => { askClose(); onYes(); };
+    $('askNo').onclick = askClose;
+    $('ask').hidden = false;
+  }
+  function askConnect() {
+    const last = products.slice().sort((a, b) => b.last - a.last)[0];
+    if (!last || link || (!navigator.bluetooth && !navigator.hid)) return;
+    ask('connect', `Kết nối với ${'VX ' + modelOf(last.model).name}?`, 'Kết nối', 'Để sau', () => reconnect(last.key));
+  }
+  // The app should talk to the speaker that holds the phone link (main speaker).
+  // fw 2.3 tells: state.slaveOfMain = this one is the other speaker of the pair.
+  async function checkMain() {
+    if (mainChecked || !link || link.kind !== 'bt') return;
+    mainChecked = true;
+    if (!state.slaveOfMain) return;
+    const p = products.find(x => x.key === currentKey);
+    const others = ((p && p.btIds) || []).filter(id => id !== link.btId);
+    if (others.length && navigator.bluetooth && navigator.bluetooth.getDevices) {
+      try {   // the main speaker is already known to this browser: switch silently
+        const d = (await navigator.bluetooth.getDevices()).find(x => others.includes(x.id));
+        if (d) { log('Chuyển sang loa chính…'); await disconnectLink(); if (await openBluetooth(d, true)) return; }
+      } catch {}
+    }
+    if (!link) return;
+    const side = state.role === 1 ? 'loa trái' : state.role === 2 ? 'loa phải' : 'loa phụ';
+    ask('main', `Đang nối với ${side}, loa phụ của cặp. Chuyển sang loa chính (loa đang nối với điện thoại) cho ổn định hơn?`,
+        'Chuyển', 'Giữ loa này', switchToMain);
+  }
+  // chooser first (inside the tap), then drop the current link; the other
+  // speaker keeps BLE quiet, so the chooser lists the main speaker only
+  function switchToMain() {
+    if (!navigator.bluetooth) return;
+    navigator.bluetooth.requestDevice({ filters: [{ services: [GAIA_SERVICE] }, { namePrefix: 'VX' }, { namePrefix: 'V&X' }], optionalServices: [GAIA_SERVICE] })
+      .then(async d => { if (link) await disconnectLink(); await openBluetooth(d); })
+      .catch(e => { if (!/cancel/i.test(errText(e))) log('Không mở được Bluetooth: ' + errText(e)); });
+  }
+  // Bluefy and some browsers reject with strings or plain objects, not Error
+  function errText(e) {
+    if (e == null) return 'không rõ lỗi';
+    if (typeof e === 'string') return e;
+    const parts = [e.name, e.message, e.code !== undefined ? 'code ' + e.code : ''].filter(Boolean);
+    if (parts.length) return parts.join(': ');
+    try { return JSON.stringify(e); } catch { return String(e); }
+  }
+
+  // USB: the speaker's vendor HID "datalink" interface (usage page 0xFF00, usage 1)
+  const IOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const HID_FILTER = [{ usagePage: 0xff00, usage: 0x01 }];
+  async function openUsb(hid) {
+    if (!hid.opened) await hid.open();
+    hid.addEventListener('inputreport', ev => {
+      if (ev.reportId !== 2) return;
+      const d = new Uint8Array(ev.data.buffer, ev.data.byteOffset, ev.data.byteLength);
+      handlePacket(d.slice(1, 1 + d[0]));
+    });
+    log('Đã kết nối qua USB: ' + (hid.productName || 'loa'));
+    await startLink({
+      kind: 'usb',
+      send: b => { const r = new Uint8Array(65); r[0] = b.length; r.set(b, 1); return hid.sendReport(1, r); },
+      close: () => hid.close()
+    });
+  }
+  async function connectUsb() {
+    if (link) await disconnectLink();
+    try {
+      const list = await navigator.hid.requestDevice({ filters: HID_FILTER });
+      if (!list.length) return;
+      cMsg('<span class="spin"></span>Đang kết nối qua USB…');
+      await openUsb(list[0]);
+    } catch (e) { log('USB lỗi: ' + errText(e)); cMsg('USB lỗi: ' + errText(e), true); link = null; onDisconnect(); }
+  }
+
+  $('findBtn').onclick = () => navigator.bluetooth ? findBluetooth(false) : (navigator.hid ? connectUsb() : cMsg('Trình duyệt này không có Bluetooth. iPhone: mở bằng Bluefy. Android / máy tính: Chrome.', true));
+  $('btAllBtn').onclick = () => { if (navigator.bluetooth) findBluetooth(true); };
+  $('usbBtn').onclick = connectUsb;
+  $('usbBtn').hidden = !navigator.hid;
+  $('btAllBtn').hidden = !navigator.bluetooth;
+  if (navigator.hid) {
+    navigator.hid.addEventListener('disconnect', () => { if (link && link.kind === 'usb') { link = null; onDisconnect(); log('Đã rút USB.'); } });
+    navigator.hid.getDevices().then(ds => { const d = ds.find(x => x.collections.some(c => c.usagePage === 0xff00)); if (d && !link) openUsb(d).catch(() => {}); });
+  }
+
+  // =====================================================================
+  // room compensation (after B&O Active Room Compensation, Geoff Martin):
+  //  - both speakers play the SAME sweep in phase (bass is mostly centred,
+  //    so modes are judged as the pair excites them, not one speaker alone)
+  //  - the iPhone mic records it at 4 places around the seat; the power
+  //    average makes the filters right for that area, not one point
+  //  - up to 3 minimum-phase peaking CUTS, 30-300 Hz, no boosts; the same
+  //    filters go to both speakers (firmware PEQ bands 8-10)
+  //  - firmware measurement mode flattens wheel / loudness / placement /
+  //    old room EQ and freezes the closed-box bass extension
+  // =====================================================================
+  const CMD_SET_ROOM_EQ = 0x0006, CMD_ROOM_MEASURE = 0x0007, CMD_ROOM_EQ_ENABLE = 0x0008;
+  const ROOM = {
+    f1: 15, f2: 2000, T: 4.0, level: 0.25,      // exponential sweep, -12 dBFS
+    pre: 0.4, tail: 1.8,                        // s of room noise before, room decay after
+    fmin: 20, fmax: 1000, ppo: 48,              // analysis grid
+    cutLo: 30, cutHi: 300, maxBands: 3, minExcess: 2.0, maxCut: 12
+  };
+  const GRID = (() => { const g = []; for (let f = ROOM.fmin; f <= ROOM.fmax * 1.0001; f *= Math.pow(2, 1 / ROOM.ppo)) g.push(f); return g; })();
+
+  // ---- signal processing (also used by the self-test in the console: window.vxRoomTest) ----
+  function fft(re, im, inv) {
+    const n = re.length;
+    for (let i = 1, j = 0; i < n; i++) {
+      let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit;
+      if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+    }
+    for (let len = 2; len <= n; len <<= 1) {
+      const ang = (inv ? 2 : -2) * Math.PI / len, wr = Math.cos(ang), wi = Math.sin(ang), h = len >> 1;
+      for (let i = 0; i < n; i += len) {
+        let cr = 1, ci = 0;
+        for (let k = 0; k < h; k++) {
+          const a = i + k, b = a + h;
+          const xr = re[b] * cr - im[b] * ci, xi = re[b] * ci + im[b] * cr;
+          re[b] = re[a] - xr; im[b] = im[a] - xi; re[a] += xr; im[a] += xi;
+          const t = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = t;
+        }
+      }
+    }
+    if (inv) for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
+  }
+  function makeSweep(fs) {
+    const n = Math.round(ROOM.T * fs), L = ROOM.T / Math.log(ROOM.f2 / ROOM.f1), K = 2 * Math.PI * ROOM.f1 * L;
+    const s = new Float32Array(n), fade = Math.round(0.03 * fs);
+    for (let i = 0; i < n; i++) {
+      let v = Math.sin(K * (Math.exp(i / fs / L) - 1));
+      if (i < fade) v *= 0.5 - 0.5 * Math.cos(Math.PI * i / fade);
+      if (i > n - fade) v *= 0.5 - 0.5 * Math.cos(Math.PI * (n - i) / fade);
+      s[i] = v * ROOM.level;
+    }
+    return s;
+  }
+  // regularised spectral division: impulse response from recording and sweep
+  function impulseResponse(rec, sweep) {
+    let n = 1; while (n < rec.length + sweep.length) n <<= 1;
+    const rr = new Float64Array(n), ri = new Float64Array(n), sr = new Float64Array(n), si = new Float64Array(n);
+    rr.set(rec); sr.set(sweep);
+    fft(rr, ri, false); fft(sr, si, false);
+    let maxP = 0;
+    for (let k = 0; k < n; k++) { const p = sr[k] * sr[k] + si[k] * si[k]; if (p > maxP) maxP = p; }
+    const eps = maxP * 1e-4;
+    for (let k = 0; k < n; k++) {
+      const p = sr[k] * sr[k] + si[k] * si[k] + eps, a = rr[k], b = ri[k];
+      rr[k] = (a * sr[k] + b * si[k]) / p; ri[k] = (b * sr[k] - a * si[k]) / p;
+    }
+    fft(rr, ri, true);
+    return rr;
+  }
+  // in-room response: IR from 5 ms before the direct sound, 350 ms long (room modes included)
+  function responseFromIr(ir, fs) {
+    let pk = 0, pv = 0;
+    for (let i = 0; i < ir.length >> 1; i++) { const v = Math.abs(ir[i]); if (v > pv) { pv = v; pk = i; } }
+    const pre = Math.round(0.005 * fs), len = Math.round(0.35 * fs), fadeLen = Math.round(0.1 * fs);
+    let m = 1; while (m < len * 2) m <<= 1;
+    const re = new Float64Array(m), im = new Float64Array(m);
+    for (let i = 0; i < len; i++) {
+      const j = pk - pre + i; if (j < 0) continue;
+      let w = 1;
+      if (i < pre) w = 0.5 - 0.5 * Math.cos(Math.PI * i / pre);
+      else if (i > len - fadeLen) w = 0.5 + 0.5 * Math.cos(Math.PI * (i - (len - fadeLen)) / fadeLen);
+      re[i] = ir[j] * w;
+    }
+    fft(re, im, false);
+    const power = new Float64Array(m >> 1);
+    for (let k = 0; k < power.length; k++) power[k] = re[k] * re[k] + im[k] * im[k];
+    return { power, df: fs / m, delay: pk / fs };
+  }
+  // power averaged over +-1/(2 frac) octave around each grid frequency
+  function smoothOnGrid(power, df, frac) {
+    const h = Math.pow(2, 1 / (2 * frac));
+    return GRID.map(f => {
+      const lo = Math.max(1, Math.floor(f / h / df)), hi = Math.max(lo, Math.ceil(f * h / df));
+      let s = 0; for (let k = lo; k <= hi; k++) s += power[k];
+      return s / (hi - lo + 1);
+    });
+  }
+  const toDb = p => 10 * Math.log10(p + 1e-30);
+  const meanDb = (db, lo, hi) => { let s = 0, n = 0; GRID.forEach((f, i) => { if (f >= lo && f <= hi) { s += db[i]; n++; } }); return n ? s / n : 0; };
+  // RBJ peaking filter magnitude in dB at fs 48 kHz (the speaker's PEQ rate)
+  function peakDb(f, f0, g, q) {
+    const fs = 48000, A = Math.pow(10, g / 40), w0 = 2 * Math.PI * f0 / fs, al = Math.sin(w0) / (2 * q), c = Math.cos(w0);
+    const b0 = 1 + al * A, b1 = -2 * c, b2 = 1 - al * A, a0 = 1 + al / A, a1 = -2 * c, a2 = 1 - al / A;
+    const w = 2 * Math.PI * f / fs, cw = Math.cos(w), sw = Math.sin(w), c2 = Math.cos(2 * w), s2 = Math.sin(2 * w);
+    const nr = b0 + b1 * cw + b2 * c2, ni = -(b1 * sw + b2 * s2), dr = a0 + a1 * cw + a2 * c2, di = -(a1 * sw + a2 * s2);
+    return 10 * Math.log10((nr * nr + ni * ni) / (dr * dr + di * di));
+  }
+  const eqDb = (bands, f) => bands.reduce((s, b) => s + peakDb(f, b.f, b.g, b.q), 0);
+  // target: flat at the 200 Hz-1 kHz level, rising gently to +2 dB at 40 Hz (in-room bass tilt)
+  const targetDb = (ref, f) => ref + 2 * Math.min(1, Math.max(0, Math.log2(200 / f) / Math.log2(200 / 40)));
+  function designRoomEq(db) {
+    const mid = GRID.map((f, i) => f >= 200 && f <= 1000 ? db[i] : null).filter(v => v !== null).sort((a, b) => a - b);
+    const ref = mid[mid.length >> 1];
+    const R = GRID.map((f, i) => f >= ROOM.cutLo && f <= ROOM.cutHi ? i : -1).filter(i => i >= 0);
+    const tgt = GRID.map(f => targetDb(ref, f));
+    const err = bands => R.map(i => db[i] + eqDb(bands, GRID[i]) - tgt[i]);
+    // cuts below the target (new dips) cost twice as much as peaks left over
+    const cost = bands => err(bands).reduce((s, e) => s + (e > 0 ? e * e : 2 * e * e), 0);
+    const clamp = b => ({ f: Math.min(400, Math.max(25, b.f)), g: Math.min(0, Math.max(-ROOM.maxCut, b.g)), q: Math.min(8, Math.max(0.7, b.q)) });
+    const refine = (bands, which, iters) => {
+      let best = bands.map(b => ({ ...b })), bc = cost(best), st = { f: Math.pow(2, 1 / 12), g: 1, q: 1.25 };
+      for (let it = 0; it < iters; it++) {
+        let better = false;
+        for (const i of which) for (const p of ['f', 'g', 'q']) for (const dir of [1, -1]) {
+          const c = best.map(b => ({ ...b }));
+          c[i][p] = p === 'g' ? c[i].g + dir * st.g : c[i][p] * Math.pow(st[p], dir);
+          c[i] = clamp(c[i]);
+          const cc = cost(c);
+          if (cc < bc - 1e-9) { best = c; bc = cc; better = true; }
+        }
+        if (!better) { st = { f: Math.sqrt(st.f), g: st.g / 2, q: Math.sqrt(st.q) }; if (st.g < 0.05) break; }
+      }
+      return best;
+    };
+    let bands = [];
+    for (let k = 0; k < ROOM.maxBands; k++) {
+      const e = err(bands);
+      let m = 0; for (let j = 1; j < e.length; j++) if (e[j] > e[m]) m = j;
+      if (e[m] < ROOM.minExcess) break;
+      let lo = m, hi = m;
+      while (lo > 0 && e[lo] > e[m] / 2) lo--;
+      while (hi < e.length - 1 && e[hi] > e[m] / 2) hi++;
+      const r = Math.pow(2, Math.max(1 / 12, Math.log2(GRID[R[hi]] / GRID[R[lo]])));
+      bands.push(clamp({ f: GRID[R[m]], g: -e[m], q: Math.sqrt(r) / (r - 1) }));
+      bands = refine(bands, [bands.length - 1], 40);
+    }
+    if (bands.length) bands = refine(bands, bands.map((_, i) => i), 60);
+    // to the firmware's resolution: 1 Hz, 0.1 dB, Q 0.1
+    bands = bands.filter(b => b.g <= -1)
+                 .map(b => ({ f: Math.round(b.f), g: Math.round(b.g * 10) / 10, q: Math.max(0.7, Math.round(b.q * 10) / 10) }))
+                 .sort((a, b) => a.f - b.f);
+    return { ref, tgt, bands, after: db.map((d, i) => d + eqDb(bands, GRID[i])) };
+  }
+  // one recording -> smoothed power on the grid, with sanity checks
+  function roomAnalyse(rec, sweep, fs) {
+    const rms = (a, b) => { let s = 0; for (let i = a; i < b; i++) s += rec[i] * rec[i]; return Math.sqrt(s / Math.max(1, b - a)); };
+    let peak = 0; for (let i = 0; i < rec.length; i++) peak = Math.max(peak, Math.abs(rec[i]));
+    const noise = rms(0, Math.round(ROOM.pre * fs * 0.9));
+    const sig = rms(Math.round(ROOM.pre * fs), Math.min(rec.length, Math.round((ROOM.pre + ROOM.T) * fs)));
+    const snr = 20 * Math.log10(sig / Math.max(noise, 1e-9));
+    if (peak > 0.98) throw new Error('Quá to, micro bị quá tải. Giảm âm lượng một chút rồi đo lại chỗ này.');
+    if (snr < 10) throw new Error(`Tiếng quét quá nhỏ so với tiếng ồn trong phòng (${snr.toFixed(0)} dB). Tăng âm lượng hoặc giữ phòng yên tĩnh rồi đo lại.`);
+    const r = responseFromIr(impulseResponse(rec, sweep), fs);
+    const pw = smoothOnGrid(r.power, r.df, 12), db = pw.map(toDb);
+    const bassVsMid = meanDb(db, 40, 120) - meanDb(db, 300, 1000);
+    if (bassVsMid < -20)
+      throw new Error('Gần như không thu được bass: tiếng có vẻ phát ra loa iPhone chứ không qua loa VX. Kiểm tra iPhone đang phát qua Bluetooth tới VX (Trung tâm điều khiển → AirPlay) rồi đo lại.');
+    return { pw, snr, delay: r.delay - ROOM.pre, bassVsMid };
+  }
+
+  // ---- microphone and sweep ----
+  const room = { ctx: null, stream: null, pos: [], busy: false, result: store.get('vx.room', null) };
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  async function roomOpenMic() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia)
+      throw new Error('Trình duyệt này không cho dùng micro. Trên iPhone: vào Cài đặt → Bluefy → bật Micro, rồi mở lại app.');
+    if (!room.ctx) room.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    await room.ctx.resume();
+    if (room.stream && room.stream.active) return;
+    const opts = { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 };
+    room.stream = await navigator.mediaDevices.getUserMedia({ audio: opts });
+    // never the speaker's own "headset" input (HFP): use the iPhone microphone
+    const bad = /v&x|bluetooth|hands-?free|headset|hfp/i, track = room.stream.getAudioTracks()[0];
+    if (track && bad.test(track.label)) {
+      const good = (await navigator.mediaDevices.enumerateDevices()).find(d => d.kind === 'audioinput' && !bad.test(d.label));
+      if (good) {
+        room.stream.getTracks().forEach(t => t.stop());
+        room.stream = await navigator.mediaDevices.getUserMedia({ audio: Object.assign({ deviceId: { exact: good.deviceId } }, opts) });
+      }
+    }
+    log('Micro: ' + ((room.stream.getAudioTracks()[0] || {}).label || 'mặc định') + ', ' + room.ctx.sampleRate + ' Hz');
+  }
+  function roomStopMic() {
+    if (room.stream) room.stream.getTracks().forEach(t => t.stop());
+    room.stream = null;
+    if (room.ctx) { room.ctx.close().catch(() => {}); room.ctx = null; }
+  }
+  // records pre + sweep + tail; the sweep starts once the noise sample is in
+  function roomRecordSweep() {
+    const ctx = room.ctx, fs = ctx.sampleRate, sweep = makeSweep(fs);
+    const total = Math.round((ROOM.pre + ROOM.T + ROOM.tail) * fs), rec = new Float32Array(total);
+    const src = ctx.createMediaStreamSource(room.stream), proc = ctx.createScriptProcessor(4096, 1, 1), mute = ctx.createGain();
+    mute.gain.value = 0;
+    return new Promise((resolve, reject) => {
+      let got = 0, player = null, done = false;
+      const finish = err => {
+        if (done) return; done = true; room.stopRec = null;
+        try { proc.disconnect(); src.disconnect(); mute.disconnect(); if (player) player.stop(); } catch {}
+        err ? reject(err) : resolve({ rec, sweep, fs });
+      };
+      proc.onaudioprocess = ev => {
+        const d = ev.inputBuffer.getChannelData(0), n = Math.min(d.length, total - got);
+        rec.set(d.subarray(0, n), got); got += n;
+        if (!player && got >= ROOM.pre * fs) {
+          // same signal in L and R: the pair plays it in phase
+          const buf = ctx.createBuffer(2, sweep.length, fs);
+          buf.copyToChannel(sweep, 0); buf.copyToChannel(sweep, 1);
+          player = ctx.createBufferSource(); player.buffer = buf; player.connect(ctx.destination); player.start();
+        }
+        if (got >= total) finish();
+      };
+      room.stopRec = () => finish(new Error('cancel'));   // the Cancel button
+      src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
+      setTimeout(() => finish(new Error('Micro không gửi dữ liệu. Thử lại, hoặc kiểm tra quyền Micro của Bluefy.')),
+                 (ROOM.pre + ROOM.T + ROOM.tail + 5) * 1000);
+    });
+  }
+
+  // ---- flow: one button, 4 sweeps in a row while the phone moves slowly
+  //      around the listener's head, then design and apply automatically
+  //      (one-step calibration like B&O; the speaker has no mic of its own) ----
+  const ROOM_SWEEPS = 4;
+  let roomAbort = false;
+  const roomMsg = (t, warn) => { const m = $('roomMsg'); m.className = 'note' + (warn ? ' warn' : ''); m.innerHTML = t; };
+  const roomView = v => ['roomIdle', 'roomRun', 'roomDoneBox'].forEach(id => $(id).hidden = id !== v);
+  function roomProgress(frac, count, text) {
+    const ring = $('roomRing'), c = 2 * Math.PI * 52;
+    ring.style.strokeDasharray = c; ring.style.strokeDashoffset = c * (1 - frac);
+    $('roomCount').textContent = count; $('roomStep').textContent = text;
+  }
+  function roomSend(bands) {
+    const pl = [3, bands.length];                  // 3 = both speakers, same filters
+    bands.forEach(b => { const g = Math.round(b.g * 10); pl.push(b.f >> 8, b.f & 255, g & 255, Math.round(b.q * 10)); });
+    return gaia(CMD_SET_ROOM_EQ, pl);
+  }
+  async function roomCalibrate() {
+    if (room.busy) return;
+    if (!link) { if (DEMO) roomSimulate(); else roomMsg('Kết nối với loa trước.', true); return; }
+    room.busy = true; roomAbort = false; room.pos = [];
+    roomMsg(''); roomView('roomRun'); roomRender();
+    let measuring = false;
+    try {
+      roomProgress(0, '', 'Đang mở micro…');
+      await roomOpenMic();                          // in the tap: iOS needs a gesture for mic + audio
+      for (let s = 3; s > 0; s--) {
+        roomProgress(0, s, 'Ngồi vào chỗ nghe, cầm iPhone ngang tai. Giữ phòng yên lặng.');
+        await wait(1000);
+        if (roomAbort) throw new Error('cancel');
+      }
+      await gaia(CMD_ROOM_MEASURE, [1]); measuring = true;
+      await wait(900);                              // both speakers' EQ settles
+      for (let k = 0; k < ROOM_SWEEPS; k++) {
+        roomProgress(k / ROOM_SWEEPS, `${k + 1}/${ROOM_SWEEPS}`, 'Từ từ đưa iPhone vòng quanh đầu, cách đầu khoảng một gang tay.');
+        if (k) await gaia(CMD_ROOM_MEASURE, [1]);   // keeps the speakers' 2 min timeout fresh
+        const r = await roomRecordSweep();
+        if (roomAbort) throw new Error('cancel');
+        const m = roomAnalyse(r.rec, r.sweep, r.fs);
+        room.pos.push(m);
+        log(`Đo phòng ${k + 1}: SNR ${m.snr.toFixed(0)} dB, trễ ${(m.delay * 1000).toFixed(0)} ms, bass/mid ${m.bassVsMid.toFixed(1)} dB`);
+      }
+      roomProgress(1, '✓', 'Đang tính…'); await wait(30);
+      const n = room.pos.length;
+      const db = GRID.map((_, i) => toDb(room.pos.reduce((s, p) => s + p.pw[i], 0) / n));
+      const d = designRoomEq(db);
+      await gaia(CMD_ROOM_MEASURE, [0]); measuring = false;
+      if (d.bands.length) {
+        await roomSend(d.bands);
+        room.result = { db, ref: d.ref, tgt: d.tgt, after: d.after, bands: d.bands, n, date: Date.now() };
+        store.set('vx.room', room.result);
+        state.roomOn = state.roomStored = true;
+        log('Room EQ: ' + d.bands.map(b => `${b.f} Hz ${b.g} dB Q${b.q}`).join(', '));
+      } else {
+        roomMsg('Xong. Phòng của bạn không có nốt bass nào bị ù đáng kể, không cần hiệu chỉnh.');
+      }
+    } catch (e) {
+      if (roomAbort) roomMsg('Đã huỷ.');
+      else { log('Đo phòng: ' + errText(e)); roomMsg(errText(e).replace(/^Error: /, ''), true); }
+    } finally {
+      if (measuring && link) gaia(CMD_ROOM_MEASURE, [0]).catch(() => {});
+      roomStopMic(); room.busy = false; roomRender(); renderPlacement();
+    }
+  }
+  // test page without a speaker: the same steps on screen, a simulated room, nothing sent
+  async function roomSimulate() {
+    if (room.busy) return;
+    room.busy = true; roomAbort = false;
+    roomMsg(''); roomView('roomRun'); roomRender();
+    try {
+      for (let s = 3; s > 0; s--) {
+        roomProgress(0, s, 'Ngồi vào chỗ nghe, cầm iPhone ngang tai. Giữ phòng yên lặng.');
+        await wait(700); if (roomAbort) throw new Error('cancel');
+      }
+      for (let k = 0; k < ROOM_SWEEPS; k++) {
+        roomProgress(k / ROOM_SWEEPS, `${k + 1}/${ROOM_SWEEPS}`, 'Từ từ đưa iPhone vòng quanh đầu, cách đầu khoảng một gang tay.');
+        await wait(1200); if (roomAbort) throw new Error('cancel');
+      }
+      roomProgress(1, '✓', 'Đang tính…'); await wait(300);
+      window.vxRoomTest(true);
+      roomMsg('Bản thử: kết quả đo giả lập, không có gì được gửi tới loa.');
+    } catch (e) { roomMsg('Đã huỷ.'); }
+    finally { room.busy = false; roomRender(); renderPlacement(); }
+  }
+  async function roomToggle() {
+    const on = !state.roomOn;
+    try { await gaia(CMD_ROOM_EQ_ENABLE, [3, on ? 1 : 0]); state.roomOn = on; roomMsg(''); }
+    catch (e) { roomMsg('Không gửi được: ' + errText(e), true); }
+    roomRender(); renderPlacement();
+  }
+  async function roomDelete() {
+    if (!confirm(tr('Xoá hiệu chỉnh phòng trên cả 2 loa? Muốn dùng lại thì phải đo lại.'))) return;
+    try {
+      await gaia(CMD_SET_ROOM_EQ, [3, 0]);
+      state.roomOn = state.roomStored = false; room.result = null; store.set('vx.room', null);
+      roomMsg('Đã xoá hiệu chỉnh phòng.');
+    } catch (e) { roomMsg('Không gửi được: ' + errText(e), true); }
+    roomRender(); renderPlacement();
+  }
+  function roomDraw() {
+    const svg = $('roomGraph'), r = room.result, L = 30, R = 312, T = 8, B = 150, lo = -15, hi = 15;
+    if (!r) { svg.innerHTML = ''; return; }
+    const lines = [{ cls: 'rg-tgt', db: r.tgt }, { cls: 'rg-meas', db: r.db }, { cls: 'rg-after', db: r.after }];
+    const x = f => L + (R - L) * Math.log(f / ROOM.fmin) / Math.log(ROOM.fmax / ROOM.fmin);
+    const y = d => T + (B - T) * (hi - Math.max(lo, Math.min(hi, d - r.ref))) / (hi - lo);
+    let s = '';
+    [20, 50, 100, 200, 500, 1000].forEach(f => s += `<line class="rg-grid" x1="${x(f)}" y1="${T}" x2="${x(f)}" y2="${B}"/><text class="rg-lbl" x="${x(f)}" y="${B + 13}" text-anchor="middle">${f >= 1000 ? '1k' : f}</text>`);
+    [-10, 0, 10].forEach(d => s += `<line class="rg-grid" x1="${L}" y1="${y(d + r.ref)}" x2="${R}" y2="${y(d + r.ref)}"/><text class="rg-lbl" x="${L - 4}" y="${y(d + r.ref) + 3}" text-anchor="end">${d > 0 ? '+' : ''}${d}</text>`);
+    s += `<text class="rg-lbl" x="${R}" y="${B + 24}" text-anchor="end">Hz · dB</text>`;
+    lines.forEach(l => s += `<path class="${l.cls}" d="${GRID.map((f, i) => (i ? 'L' : 'M') + x(f).toFixed(1) + ' ' + y(l.db[i]).toFixed(1)).join('')}"/>`);
+    svg.innerHTML = s;
+  }
+  function roomRender() {
+    const ok = !!(info.features & F_ROOM), r = room.result;
+    $('tileRoom').hidden = !ok && !state.roomStored;
+    $('tRoom').textContent = room.busy || state.measuring ? 'Đang đo' : state.roomOn ? 'Bật' : state.roomStored ? 'Tắt' : 'Chưa đo';
+    if ($('secRoom').hidden) return;
+    if (room.busy) { roomView('roomRun'); return; }
+    roomView(state.roomStored ? 'roomDoneBox' : 'roomIdle');
+    const live = state.connected || DEMO;
+    $('roomStart').disabled = !live || !ok;
+    const sw = $('roomSwitch');
+    sw.classList.toggle('on', state.roomOn); sw.setAttribute('aria-checked', state.roomOn ? 'true' : 'false');
+    sw.disabled = !live;
+    $('roomRedo').disabled = $('roomDelete').disabled = !live;
+    $('roomSwState').textContent = state.roomOn ? 'Đang bật' : 'Đang tắt';
+    $('roomSummary').textContent = r && r.bands
+      ? `Đã hạ ${r.bands.length} nốt bass bị ù (${r.bands.map(b => b.f).join(', ')} Hz) · đo ngày ${new Date(r.date).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-GB')}`
+      : 'Đã đo và lưu trong loa.';
+    $('roomDet').hidden = !r;
+    $('roomBands').textContent = r ? r.bands.map(b => `−${Math.abs(b.g).toFixed(1)} dB ở ${b.f} Hz (Q ${b.q})`).join(' · ') : '';
+    roomDraw();
+    if (!ok && state.connected) roomMsg('Loa cần firmware 2.2 trở lên để hiệu chỉnh phòng.', true);
+  }
+  $('tileRoom').onclick = () => { const b = $('secRoom'); b.hidden = !b.hidden; $('tileRoom').classList.toggle('open', !b.hidden); roomRender(); };
+  $('roomStart').onclick = roomCalibrate;
+  $('roomRedo').onclick = roomCalibrate;
+  $('roomCancel').onclick = () => { roomAbort = true; if (room.stopRec) room.stopRec(); };
+  $('roomSwitch').onclick = roomToggle;
+  $('roomDelete').onclick = roomDelete;
+  // console preview of the two questions (no Bluetooth): vxAskDemo('connect' | 'main')
+  window.vxAskDemo = kind => kind === 'main'
+    ? ask('main', 'Đang nối với loa phải, loa phụ của cặp. Chuyển sang loa chính (loa đang nối với điện thoại) cho ổn định hơn?', 'Chuyển', 'Giữ loa này', () => {})
+    : ask('connect', 'Kết nối với VX Lento?', 'Kết nối', 'Để sau', () => {});
+  // console self-test with a simulated room (no sound): vxRoomTest()
+  window.vxRoomTest = show => {
+    const fs = 48000, sweep = makeSweep(fs), modes = [[48, 9, 6], [95, 7, 10], [160, -5, 8]];
+    const total = Math.round((ROOM.pre + ROOM.T + ROOM.tail) * fs), rec = new Float32Array(total), d0 = Math.round((ROOM.pre + 0.18) * fs);
+    // room = flat speaker + three resonances (biquads), 180 ms Bluetooth delay, a little noise
+    const bq = modes.map(([f0, g, q]) => { const A = Math.pow(10, g / 40), w0 = 2 * Math.PI * f0 / fs, al = Math.sin(w0) / (2 * q), c = Math.cos(w0), a0 = 1 + al / A;
+      return { b: [(1 + al * A) / a0, -2 * c / a0, (1 - al * A) / a0], a: [-2 * c / a0, (1 - al / A) / a0], z: [0, 0] }; });
+    for (let i = 0; i < sweep.length && d0 + i < total; i++) {
+      let v = sweep[i];
+      for (const f of bq) { const y = f.b[0] * v + f.z[0]; f.z[0] = f.b[1] * v - f.a[0] * y + f.z[1]; f.z[1] = f.b[2] * v - f.a[1] * y; v = y; }
+      rec[d0 + i] = 0.5 * v;
+    }
+    for (let i = 0; i < total; i++) rec[i] += (Math.random() - 0.5) * 2e-4;
+    const t0 = performance.now(), m = roomAnalyse(rec, sweep, fs), d = designRoomEq(m.pw.map(toDb));
+    if (show) {   // preview only: draw the simulated result in the room box
+      room.result = { db: m.pw.map(toDb), ref: d.ref, tgt: d.tgt, after: d.after, bands: d.bands, n: 1, date: Date.now() };
+      state.roomStored = state.roomOn = show !== 'idle'; if (!DEMO) state.connected = true; info.features |= F_ROOM;
+      $('roomMsg').textContent = '';
+      $('secRoom').hidden = false; roomRender(); $('tileRoom').hidden = false;
+      if (show === 'run') { roomView('roomRun'); roomProgress(0.5, '2/4', 'Từ từ đưa iPhone vòng quanh đầu, cách đầu khoảng một gang tay.'); }
+    }
+    return { ms: Math.round(performance.now() - t0), snr: +m.snr.toFixed(1), delayMs: Math.round(m.delay * 1000), simulated: modes, bands: d.bands,
+             worstBefore: +Math.max(...GRID.map((f, i) => f >= 30 && f <= 300 ? m.pw.map(toDb)[i] - d.tgt[i] : -99)).toFixed(1),
+             worstAfter: +Math.max(...GRID.map((f, i) => f >= 30 && f <= 300 ? d.after[i] - d.tgt[i] : -99)).toFixed(1) };
+  };
+
+  // =====================================================================
+  // language: the app is written in Vietnamese; English is applied at run
+  // time to every text node and to aria-label / placeholder / title, also
+  // to text the app writes later (MutationObserver). data-noi18n = leave as is.
+  // =====================================================================
+  const EN = {
+    // tabs, rows, settings
+    'Âm thanh': 'Sound', 'Cặp loa': 'Pair', 'Vị trí đặt loa': 'Placement', 'Hiệu chỉnh phòng': 'Room compensation',
+    'Kết nối': 'Connect', 'Ngắt kết nối': 'Disconnect', 'Cài đặt': 'Settings', 'Giới thiệu': 'About',
+    'Nút bấm & đèn báo': 'Buttons & lights', 'Nhật ký kết nối': 'Connection log', 'Ngôn ngữ': 'Language',
+    'Xoá loa khỏi app': 'Remove speaker from app', 'Chế tác tại Atelier VX · 2026': 'Handmade at Atelier VX · 2026',
+    'Quay lại': 'Back', 'Loa của tôi': 'My speakers', 'Thêm loa': 'Add speaker', 'Thông tin sản phẩm': 'Product information',
+    'Loại sản phẩm': 'Product', 'Mã sản phẩm': 'Model', 'Phần mềm': 'Firmware', 'Vai trò': 'Role', 'Kết nối để xem': 'Connect to see',
+    'cũ (trước 2.1)': 'old (before 2.1)', 'mặc định': 'default',
+    // status
+    'Chưa kết nối': 'Not connected', 'Chưa kết nối · chạm để nối': 'Not connected · tap to connect', 'Chạm để kết nối': 'Tap to connect',
+    'Đã kết nối': 'Connected', 'Chưa nối': 'Not paired', 'Một loa': 'One speaker', 'Stereo · đồng bộ': 'Stereo · in sync',
+    'Loa trái': 'Left speaker', 'Loa phải': 'Right speaker', 'Loa': 'Speaker', 'Trái': 'Left', 'Phải': 'Right',
+    'Kết nối với loa để chỉnh âm.': 'Connect to a speaker to adjust the sound.',
+    'Loa kia chưa nối: chỉnh sửa chỉ áp cho loa này.': 'The other speaker is not connected: changes apply to this one only.',
+    'Chỉ áp cho loa này cho tới khi 2 loa nối lại.': 'Applies to this speaker only until the two are paired again.',
+    'Áp cho cả 2 loa và được lưu lại.': 'Applies to both speakers and is saved.',
+    // pairing
+    'Ghép với loa kia': 'Pair with the other speaker', 'Tách 2 loa': 'Split the pair',
+    'Hai loa đang chơi stereo (trái / phải). Tách ra nếu muốn dùng từng loa riêng.': 'The two speakers play in stereo (left / right). Split them to use each on its own.',
+    'Đang dùng một loa. Bật loa kia, để gần, rồi bấm Ghép. Thường mất 10–30 giây.': 'Using one speaker. Turn the other on, keep it close, then tap Pair. It usually takes 10–30 seconds.',
+    'Đang tìm loa kia… Đèn nháy đôi là đang tìm.': 'Looking for the other speaker… A double blink means it is searching.',
+    'Đã tách: mỗi loa giờ chơi riêng.': 'Split: each speaker now plays on its own.',
+    'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
+    // sound
+    'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
+    'Chế độ nghe': 'Listening modes', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
+    'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
+    'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
+    // placement
+    'Xa tường': 'Away from walls', 'Sát tường': 'Against a wall', 'Trong góc': 'In a corner',
+    'Loa cách tường trên 50 cm. Âm chuẩn, không bù.': 'More than 50 cm from the wall. Reference sound, no compensation.',
+    'Loa sát tường sau: giảm 4 dB quanh 100 Hz cho bass gọn lại.': 'Against the back wall: 4 dB less around 100 Hz for tighter bass.',
+    'Loa trong góc phòng: giảm 7 dB quanh 90 Hz, bù nhẹ 250 Hz.': 'In a corner: 7 dB less around 90 Hz, a slight lift at 250 Hz.',
+    'Đang dùng hiệu chỉnh phòng (đã đo cả tường và góc), nên Free/Wall/Corner tạm không có tác dụng.': 'Room compensation is on (it measured the walls and corners too), so Free/Wall/Corner has no effect for now.',
+    // room compensation
+    'Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.':
+      'Both speakers play a bass sweep, the iPhone listens where you sit and then lowers the bass notes the room makes boomy. Set the volume to about 60–70%; it takes about 30 seconds.',
+    'Hiệu chỉnh': 'Calibrate', 'Đo lại': 'Re-measure', 'Xoá': 'Delete', 'Chi tiết': 'Details',
+    'Đang bật': 'On', 'Đang tắt': 'Off', 'Bật': 'On', 'Tắt': 'Off', 'Chưa đo': 'Not measured', 'Đang đo': 'Measuring',
+    'Đo được': 'Measured', 'Sau hiệu chỉnh': 'Corrected', 'Mục tiêu': 'Target',
+    'Bật hiệu chỉnh phòng': 'Room compensation on', 'Đáp tuyến bass trước và sau hiệu chỉnh': 'Bass response before and after correction',
+    'Đang mở micro…': 'Opening the microphone…', 'Đang tính…': 'Calculating…', 'Đã huỷ.': 'Cancelled.',
+    'Ngồi vào chỗ nghe, cầm iPhone ngang tai. Giữ phòng yên lặng.': 'Sit in your listening seat, hold the iPhone at ear height. Keep the room quiet.',
+    'Từ từ đưa iPhone vòng quanh đầu, cách đầu khoảng một gang tay.': 'Slowly move the iPhone around your head, about a hand-span away.',
+    'Xong. Phòng của bạn không có nốt bass nào bị ù đáng kể, không cần hiệu chỉnh.': 'Done. Your room has no clearly boomy bass notes; no correction needed.',
+    'Đã đo và lưu trong loa.': 'Measured and saved in the speakers.', 'Đã xoá hiệu chỉnh phòng.': 'Room compensation deleted.',
+    'Kết nối với loa trước.': 'Connect to a speaker first.', 'Loa cần firmware 2.2 trở lên để hiệu chỉnh phòng.': 'Room compensation needs speaker firmware 2.2 or later.',
+    'Xoá hiệu chỉnh phòng trên cả 2 loa? Muốn dùng lại thì phải đo lại.': 'Delete room compensation on both speakers? To use it again you will have to measure again.',
+    'Quá to, micro bị quá tải. Giảm âm lượng một chút rồi đo lại chỗ này.': 'Too loud, the microphone overloaded. Turn the volume down a little and measure again.',
+    'Micro không gửi dữ liệu. Thử lại, hoặc kiểm tra quyền Micro của Bluefy.': 'The microphone sends no data. Try again, or check Bluefy’s microphone permission.',
+    'Trình duyệt này không cho dùng micro. Trên iPhone: vào Cài đặt → Bluefy → bật Micro, rồi mở lại app.': 'This browser cannot use the microphone. On iPhone: Settings → Bluefy → turn on Microphone, then reopen the app.',
+    'Gần như không thu được bass: tiếng có vẻ phát ra loa iPhone chứ không qua loa VX. Kiểm tra iPhone đang phát qua Bluetooth tới VX (Trung tâm điều khiển → AirPlay) rồi đo lại.':
+      'Almost no bass was picked up: the sound seems to come from the iPhone speaker, not the VX speakers. Check that the iPhone plays over Bluetooth to VX (Control Centre → AirPlay), then measure again.',
+    // connect sheet
+    'Bật loa lên rồi bấm': 'Turn the speaker on, then tap', 'Tìm loa': 'Find speaker', '. Không cần giữ nút nào trên loa.': '. No need to hold any button on the speaker.',
+    'Nối bằng cáp USB': 'Connect with a USB cable', 'Không thấy loa?': 'Speaker not listed?',
+    'Bluetooth chưa sẵn sàng. Bật Bluetooth, và kiểm tra': 'Bluetooth is not ready. Turn Bluetooth on and check that', 'Cài đặt → Bluefy → Bluetooth': 'Settings → Bluefy → Bluetooth', 'đã bật.': 'is on.',
+    'Không ghép được với loa. Vào': 'Could not pair with the speaker. Go to', 'Cài đặt → Bluetooth': 'Settings → Bluetooth',
+    ', nếu thấy loa VX thì chọn': ', and if the VX speaker is listed choose', 'Quên thiết bị này': 'Forget This Device', ', rồi bấm Tìm loa lại.': ', then tap Find speaker again.',
+    'Loa ngắt ngay sau khi nối. Nếu loa vừa được nạp lại firmware: vào': 'The speaker disconnected right after connecting. If its firmware was just updated: go to',
+    'trên điện thoại, chọn loa →': 'on the phone, choose the speaker →',
+    'Thiết bị này không phải loa VX.': 'This device is not a VX speaker.', 'Đang kết nối qua USB…': 'Connecting over USB…',
+    'Máy này không có Bluetooth hoặc Bluetooth đang tắt.': 'This device has no Bluetooth or Bluetooth is off.', 'Có thể nối loa bằng cáp USB.': 'You can connect the speaker with a USB cable.',
+    'Trình duyệt này không có Bluetooth. iPhone: mở bằng Bluefy. Android / máy tính: Chrome.': 'This browser has no Bluetooth. iPhone: open in Bluefy. Android / computer: Chrome.',
+    'Xoá loa này khỏi app? Loa vẫn giữ nguyên thiết lập; muốn dùng lại chỉ cần Tìm loa.': 'Remove this speaker from the app? The speaker keeps its settings; to use it again just tap Find speaker.',
+    'Mất kết nối Bluetooth.': 'Bluetooth connection lost.', 'Đã kết nối qua Bluetooth.': 'Connected over Bluetooth.', 'Đã rút USB.': 'USB unplugged.',
+    'loa không trả lời (ngoài tầm hoặc đang tắt)': 'the speaker does not answer (out of range or off)', 'không rõ lỗi': 'unknown error',
+    // buttons & lights
+    'Nút bấm': 'Buttons', 'Đèn báo': 'Light', 'Phát / dừng · giữ: ghép điện thoại': 'Play / pause · hold: pair a phone',
+    'Bài trước / sau · giữ: âm lượng': 'Previous / next track · hold: volume', 'Đổi vị trí Free → Wall → Corner': 'Placement Free → Wall → Corner',
+    'Rew + Play (giữ)': 'Rew + Play (hold)', 'Rew + Next (giữ)': 'Rew + Next (hold)', 'Ghép 2 loa với nhau': 'Pair the two speakers',
+    'Nháy chậm': 'Slow blink', 'Chờ ghép điện thoại': 'Waiting to pair a phone', 'Nháy đôi': 'Double blink', 'Đang tìm loa kia': 'Looking for the other speaker',
+    'Sáng 2.5 giây': 'On for 2.5 seconds', 'Đang phát nhạc': 'Playing music',
+    // product page
+    'Cặp loa không dây chủ động hai đường tiếng': 'A pair of active two-way wireless speakers',
+    'Cặp loa bookshelf không dây, chế tác thủ công tại Atelier VX để mang tiếng nhạc tự nhiên, cân bằng vào căn phòng nhỏ.': 'Wireless bookshelf speakers, handmade at Atelier VX to bring natural, balanced music into a small room.',
+    'Âm thanh liền mạch': 'Seamless sound', 'Phân tần chủ động 3 kHz, treble và bass được chỉnh cho cùng pha.': 'Active 3 kHz crossover; tweeter and woofer tuned to be in phase.',
+    'Stereo không dây': 'Wireless stereo', 'Hai loa tự tìm nhau, chỉnh một loa là cả cặp đổi theo.': 'The two speakers find each other; adjust one and the pair follows.',
+    'Hợp mọi chỗ đặt': 'At home anywhere', 'Free, Wall, Corner: bass gọn dù loa đứng giữa phòng hay sát góc.': 'Free, Wall, Corner: tight bass in the middle of the room or in a corner.',
+    'Loa bass': 'Woofer', 'Loa treble': 'Tweeter', 'Phân tần': 'Crossover', 'Thùng': 'Cabinet', 'Kín': 'Sealed', 'Điều khiển': 'Control'
+  };
+  Object.assign(EN, { 'Bản thử · chưa nối loa': 'Test page · no speaker connected',
+    'Bản thử: kết quả đo giả lập, không có gì được gửi tới loa.': 'Test page: simulated measurement, nothing was sent to the speakers.' });
+  Object.assign(EN, { 'Để sau': 'Not now', 'Chuyển': 'Switch', 'Giữ loa này': 'Keep this one', 'Chuyển sang loa chính…': 'Switching to the main speaker…' });
+  const EN_RX = [
+    [/^Kết nối với (.*)\?$/, (m, n) => `Connect to ${n}?`],
+    [/^Đang nối với (loa trái|loa phải|loa phụ), loa phụ của cặp\..*$/, (m, s) =>
+      `Connected to the ${{ 'loa trái': 'left speaker', 'loa phải': 'right speaker', 'loa phụ': 'second speaker' }[s]}, the secondary one of the pair. Switch to the main speaker (the one connected to the phone) for a steadier link?`],
+    [/^Đã hạ (\d+) nốt bass bị ù \((.*) Hz\) · đo ngày (.*)$/, (m, n, f, d) => `Lowered ${n} boomy bass note${n === '1' ? '' : 's'} (${f} Hz) · measured ${d}`],
+    [/^Tiếng quét quá nhỏ so với tiếng ồn trong phòng \((-?\d+) dB\)\..*$/, (m, s) => `The sweep is too quiet against the room noise (${s} dB). Turn the volume up or keep the room quiet, then measure again.`],
+    [/^Đang kết nối (.*)…$/, (m, d) => `Connecting to ${d}…`],
+    [/^(Loa trái|Loa phải|Loa) · (.*)$/, (m, s, v) => `${EN[s]} · ${v}`],
+    [/^Đã kết nối · (.*)$/, (m, v) => `Connected · ${v}`],
+    [/^Chế độ (\d+)$/, (m, n) => `Mode ${n}`],
+    [/^Đã lưu chế độ "(.*)"\.$/, (m, n) => `Saved mode "${n}".`],
+    [/^(.*) này đã được lưu trong app trên máy này\.$/, (m, n) => `${n} is saved in the app on this device.`],
+    [/^Không kết nối được \(bước: (.*)\): (.*)$/, (m, s, e) => `Could not connect (step: ${tr(s)}): ${e}`],
+    [/^Không kết nối được: (.*)$/, (m, e) => `Could not connect: ${tr(e)}`],
+    [/^Không mở được Bluetooth: (.*)$/, (m, e) => `Could not open Bluetooth: ${e}`],
+    [/^Không gửi được: (.*)$/, (m, e) => `Could not send: ${e}`],
+    [/^(Lỗi gửi|Lỗi|USB lỗi|Đo phòng): (.*)$/, (m, k, e) => `${{ 'Lỗi gửi': 'Send error', 'Lỗi': 'Error', 'USB lỗi': 'USB error', 'Đo phòng': 'Room measurement' }[k]}: ${tr(e)}`],
+    [/^Loa trả lỗi (.*)$/, (m, e) => `Speaker returned error ${e}`],
+    [/^Đã kết nối qua USB: (.*)$/, (m, d) => `Connected over USB: ${d}`],
+    [/^Đo phòng (\d+): SNR (.*) dB, trễ (.*) ms, (.*)$/, (m, k, s, d, r) => `Room measurement ${k}: SNR ${s} dB, delay ${d} ms, ${r}`],
+    [/^Micro: (.*)$/, (m, d) => `Microphone: ${d.replace('mặc định', 'default')}`],
+    [/^−([\d.]+) dB ở /, null]   // band lists: handled below
+  ];
+  const STEPS = { 'kết nối': 'connect', 'mở kênh điều khiển': 'open the control channel', 'ghép nối': 'pairing' };
+  let lang = store.get('vx.lang', /^vi/i.test(navigator.language || 'vi') ? 'vi' : 'en');
+  function tr(s) {   // Vietnamese source -> current language
+    if (lang === 'vi' || !s) return s;
+    const lead = s.match(/^\s*/)[0], trail = s.match(/\s*$/)[0], core = s.trim();
+    if (!core) return s;
+    let out = EN[core] !== undefined ? EN[core] : STEPS[core];
+    if (out === undefined) for (const [rx, f] of EN_RX) if (f && rx.test(core)) { out = core.replace(rx, f); break; }
+    if (out === undefined) out = core.replace(/ dB ở /g, ' dB at ');
+    return lead + out + trail;
+  }
+  const enOf = s => { const l = lang; lang = 'en'; const r = tr(s); lang = l; return r; };   // English whatever the current language
+  const ORIG = new WeakMap(), ATTRS = ['aria-label', 'placeholder', 'title'];
+  function trNode(n) {
+    const p = n.parentElement;
+    if (!p || p.closest('[data-noi18n],script,style')) return;
+    const cur = n.nodeValue, o = ORIG.get(n);
+    if (o && cur === (lang === 'vi' ? o.vi : o.en)) return;      // already in the right language
+    const vi = o && cur === o.en ? o.vi : cur;                    // the Vietnamese source
+    const en = p.id === 'log' ? vi.split('\n').map(l => { const m = l.match(/^(\S+ )(.*)$/); return m ? m[1] + enOf(m[2]) : enOf(l); }).join('\n') : enOf(vi);
+    ORIG.set(n, { vi, en });
+    const want = lang === 'vi' ? vi : en;
+    if (want !== cur) n.nodeValue = want;
+  }
+  function trEl(el) {
+    if (el.closest && el.closest('[data-noi18n]')) return;
+    ATTRS.forEach(a => {
+      if (!el.hasAttribute(a)) return;
+      const key = 'data-vi-' + a, cur = el.getAttribute(a);
+      let vi = el.getAttribute(key);
+      if (vi === null || (cur !== vi && cur !== enOf(vi))) { vi = cur; el.setAttribute(key, vi); }
+      const want = lang === 'vi' ? vi : enOf(vi);
+      if (cur !== want) el.setAttribute(a, want);
+    });
+  }
+  function trTree(root) {
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    let n; while ((n = w.nextNode())) trNode(n);
+    if (root.querySelectorAll) [root].concat([...root.querySelectorAll('[aria-label],[placeholder],[title]')]).forEach(e => e.hasAttribute && trEl(e));
+  }
+  new MutationObserver(ms => ms.forEach(m => {
+    if (m.type === 'characterData') trNode(m.target);
+    else if (m.type === 'attributes') trEl(m.target);
+    else m.addedNodes.forEach(n => n.nodeType === 3 ? trNode(n) : n.nodeType === 1 && trTree(n));
+  })).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  function setLang(l) {
+    lang = l === 'en' ? 'en' : 'vi';
+    store.set('vx.lang', lang);
+    document.documentElement.lang = lang;
+    $('langNow').textContent = lang === 'en' ? 'English' : 'Tiếng Việt';
+    document.querySelectorAll('.langrow').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
+    trTree(document.body);
+    renderStatus(); renderPlacement(); renderModes();       // text written by code follows too
+  }
+  document.querySelectorAll('.langrow').forEach(b => b.onclick = () => setLang(b.dataset.lang));
+
+  renderModes(); renderPlacement(); renderStatus(); render();
+  setLang(lang);
+})();
+</script>
+</body>
+</html>
