@@ -468,6 +468,42 @@
   .plusbtn { background: none; border: 1px solid var(--hair); color: var(--text); }
   .product, .sheetpanel .product { border-radius: 3px; }
   .product.live { box-shadow: none; border: 1px solid var(--hair); }
+
+  /* ================= one type scale =================
+     Serif only where it is big (page titles, the two dB numbers); every
+     other word is the system sans in four sizes:
+       30 serif  page title (same on all three tabs)
+       16        rows, buttons, mode names, body text
+       14        values on the right of a row, notes, explanations
+       11        section labels: caps, wide tracking */
+  :root { --t-title: 30px; --t-body: 16px; --t-small: 14px; --t-label: 11px; }
+  .view .title, .bigtitle, .ptitle { font-family: var(--serif); font-weight: 500; font-size: var(--t-title); line-height: 1.1; letter-spacing: .02em; }
+  #v-sound .title, #v-info .bigtitle { margin: max(44px, calc(env(safe-area-inset-top) + 24px)) 0 6px; }
+  #v-info .bigtitle { margin-bottom: 0; }
+  #v-sound .title + .sub { margin-bottom: 0; }
+  .ptitle { margin: 14px 0 10px; }
+  .subhead b { font-family: var(--serif); font-size: 22px; font-weight: 500; }
+  .eyebrow, section > .eyebrow, .subh, .homeh, .side .eyebrow, .readout .eyebrow {
+    font-family: inherit; font-variant-caps: normal; text-transform: uppercase;
+    font-size: var(--t-label); font-weight: 600; letter-spacing: .16em; color: var(--muted); }
+  .homeh, section > .eyebrow, .subh { margin: 34px 0 0; padding-bottom: 10px; }
+  .homeh + .rows, section > .eyebrow + .rows, section > .eyebrow + .modes, .subh + .setrows { margin-top: 0; }
+  #v-speaker .chipwrap + .homeh { margin-top: 26px; }
+  #v-speaker .homeh + .rows { margin-top: 0; }
+  .row, #v-speaker .row, .srow { font: var(--t-body)/1.3 inherit; padding: 17px 2px; }
+  .row em, .srow em { font-size: var(--t-small); }
+  .row .chev, .srow i { font-size: 18px; line-height: 1; }
+  .view .sub, .note, .sublead, .twsbox p, .placebox p, .askcard p, .roomstep { font-size: var(--t-small); line-height: 1.5; }
+  .foot { font-size: 12px; }
+  .chip { font-size: 13px; }
+  .btn { font-family: inherit; font-variant-caps: normal; font-size: 15px; font-weight: 600; letter-spacing: .03em; padding: 14px 18px; }
+  .seg button { font-family: inherit; font-size: 15px; font-weight: 600; }
+  .seg button small { font-size: 12px; font-weight: 400; }
+  .modes button { font-family: inherit; font: 500 var(--t-body)/1.2 inherit; letter-spacing: 0; }
+  .lbl, .lbl.sub { font-family: inherit; font-variant-caps: normal; text-transform: uppercase; font-size: 10px !important; font-weight: 600; letter-spacing: .16em !important; }
+  .lbl.sub { font-weight: 500; }
+  .num { font-family: var(--serif); font-size: 30px; font-weight: 500; line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+  .num small { font-family: inherit; font-size: 12px; margin-left: 3px; }
 </style>
 </head>
 <body>
@@ -520,6 +556,7 @@
       <h1 class="ptitle" id="pTitle">VX Lento</h1>
       <div class="chipwrap"><button class="chip" id="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
 
+      <div class="eyebrow homeh">Loa</div>
       <div class="rows" id="homeRows">
         <button class="row btnrow" id="tilePeer"><span>Cặp loa</span><span><em id="tPeer">Chưa nối</em><i class="chev">›</i></span></button>
       <div class="twsbox" id="twsBox" hidden>
@@ -531,13 +568,19 @@
         <button class="row btnrow" id="rowConn"><span id="rowConnTxt">Kết nối</span><span><i class="chev">›</i></span></button>
       </div>
       <p class="note" id="homeNote"></p>
+
+      <div class="eyebrow homeh">Đang nghe</div>
+      <div class="rows" id="nowRows">
+        <button class="row btnrow" data-go="sound"><span>Âm sắc</span><span><em id="tSound">Optimal</em><i class="chev">›</i></span></button>
+        <button class="row btnrow" data-go="sound" data-anchor="secRoomGroup" id="nowPlace"><span>Vị trí đặt loa</span><span><em id="tPlace2">Free</em><i class="chev">›</i></span></button>
+        <button class="row btnrow" data-go="sound" data-anchor="secRoomGroup" id="nowRoom" hidden><span>Hiệu chỉnh phòng</span><span><em id="tRoom2">Tắt</em><i class="chev">›</i></span></button>
+      </div>
     </div>
   </div>
 
   <!-- 3b. sound -->
   <div class="view" id="v-sound" hidden>
     <div class="wrap">
-      <button class="backlink" data-back><span>‹</span><span class="backname">VX Lento</span></button>
       <h1 class="title">Âm thanh</h1>
       <p class="sub">Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.</p>
       <div id="wheelBlock">
@@ -631,14 +674,17 @@
     <div class="wrap">
       <!-- settings -->
       <div id="setMain">
-        <button class="backlink" data-back><span>‹</span><span class="backname">VX Lento</span></button>
         <h1 class="bigtitle">Cài đặt</h1>
+        <div class="eyebrow subh">Loa</div>
         <div class="setrows">
           <button class="srow" data-sub="setAbout"><span>Giới thiệu</span><i>›</i></button>
           <button class="srow" data-sub="setGuide" id="guide"><span>Nút bấm &amp; đèn báo</span><i>›</i></button>
-          <button class="srow" data-sub="setLog"><span>Nhật ký kết nối</span><i>›</i></button>
-          <button class="srow" data-sub="setLang"><span>Ngôn ngữ</span><span><em id="langNow" data-noi18n>Tiếng Việt</em><i>›</i></span></button>
           <div class="srow info"><span>Phần mềm</span><em id="fwNow">Kết nối để xem</em></div>
+        </div>
+        <div class="eyebrow subh">Ứng dụng</div>
+        <div class="setrows">
+          <button class="srow" data-sub="setLang"><span>Ngôn ngữ</span><span><em id="langNow" data-noi18n>Tiếng Việt</em><i>›</i></span></button>
+          <button class="srow" data-sub="setLog"><span>Nhật ký kết nối</span><i>›</i></button>
         </div>
         <div class="setbtns">
           <button class="btn primary" id="setConn">Kết nối</button>
@@ -1162,7 +1208,8 @@
     const m = currentMode();
     const g = beosonic(state.angle, state.distance);
     if ($('tSound')) $('tSound').textContent = m ? m.name : `Bass ${fmtDb(g.bass)} · Treble ${fmtDb(g.treble)}`;
-    $('tPlace').textContent = PLACES[state.placement];
+    $('tPlace').textContent = $('tPlace2').textContent = PLACES[state.placement];
+    $('nowPlace').hidden = $('tilePlace').hidden;
   }
   function renderStatus() {
     $('app').classList.toggle('offline', !state.connected && !DEMO);   // controls greyed out until a speaker is connected (not on the test page)
@@ -1775,7 +1822,8 @@
   function roomRender() {
     const ok = !!(info.features & F_ROOM), r = room.result;
     $('tileRoom').hidden = !ok && !state.roomStored;
-    $('tRoom').textContent = room.busy || state.measuring ? 'Đang đo' : state.roomOn ? 'Bật' : state.roomStored ? 'Tắt' : 'Chưa đo';
+    $('nowRoom').hidden = $('tileRoom').hidden;
+    $('tRoom').textContent = $('tRoom2').textContent = room.busy || state.measuring ? 'Đang đo' : state.roomOn ? 'Bật' : state.roomStored ? 'Tắt' : 'Chưa đo';
     if ($('secRoom').hidden) return;
     if (room.busy) { roomView('roomRun'); return; }
     roomView(state.roomStored ? 'roomDoneBox' : 'roomIdle');
@@ -1861,7 +1909,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Ứng dụng': 'App', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
