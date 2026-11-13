@@ -680,6 +680,35 @@
   /* the speaker the phone is connected to: a brass dot before its label */
   .s3d .side.me .eyebrow { color: var(--text); }
   .s3d .side.me .eyebrow::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; }
+  /* ================= one rhythm, calmer controls =================
+     Spacing: 32 px before every section label, 10 px from a label to what
+     it names, 12 px rows. Header: picture, 8, name, 10, status. Buttons are
+     a size smaller (38 px, 14 px text). Knobs scroll with the page until
+     held (see the knob code). */
+  #v-speaker .ptitle { margin: 8px 0 10px; }
+  #v-speaker .chipwrap { margin-bottom: 0; }
+  .homeh, section > .eyebrow, .subh, #wheelBlock > .homeh, #v-speaker .wrap > .homeh, #secRoomGroup > .eyebrow, #v-radio section > .eyebrow { margin: 32px 0 0 !important; padding: 0 0 10px !important; }
+  #v-speaker section, #v-radio section, #secRoomGroup { margin: 0; padding: 0; }
+  #v-speaker .chipwrap + #wheelBlock > .homeh { margin-top: 28px !important; }
+  #knobs { margin: 4px 0 0; }
+  #v-speaker #syncNote { margin: 10px 0 0; }
+  #v-speaker #syncNote:empty, #homeNote:empty { display: none; }
+  #homeNote { margin: 10px 0 0; }
+  .row, #v-speaker .row, .srow { padding: 12px 2px; }
+  .tknob .dial { touch-action: pan-y; }
+  .tknob.held .dial { transform: scale(1.04); transition: transform .12s; }
+  .tknob.held .cap { box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 0 0 4px var(--accent), 0 8px 18px rgba(0,0,0,.35); }
+  /* buttons a size smaller */
+  .btn { padding: 10px 16px; font-size: 14px; min-height: 38px; letter-spacing: .02em; }
+  #setConn, #removeProduct { padding: 10px 22px; }
+  .setbtns { gap: 10px; margin-top: 28px; }
+  .twsbox { gap: 8px; }
+  .twsbox .btn, .roombtns .btn { min-height: 38px; }
+  .chip { padding: 7px 14px; font-size: 13px; }
+  .rn-play { width: 40px; height: 40px; }
+  .rn-play svg { width: 18px; height: 18px; }
+  .small { padding: 8px 12px; font-size: 13px; }
+  #findBtn { min-height: 44px; }
 </style>
 </head>
 <body>
@@ -733,7 +762,7 @@
       <div class="chipwrap"><button class="chip" id="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
 
       <div id="wheelBlock">
-      <div class="eyebrow homeh">Âm sắc <span class="hint">Chạm đúp núm để về 0</span></div>
+      <div class="eyebrow homeh">Âm sắc <span class="hint">Giữ núm rồi xoay · chạm đúp về 0</span></div>
       <!-- two tone knobs, like the front of a hi-fi amplifier -->
       <div class="knobs" id="knobs">
         <div class="tknob" data-k="bass" role="slider" aria-label="Bass" tabindex="0">
@@ -1501,22 +1530,37 @@
   }
   knobs.forEach(k => {
     const key = k.dataset.k, dial = k.querySelector('.dial');
-    // Turning: a finger near the rim turns the knob round with it, like a
-    // real knob; near the middle, up/down turns it. A tap on the scale jumps
-    // there. Double tap = 0. (rotation in degrees, 0 = up, clockwise = more)
-    let drag = null, lastTap = 0;
+    // Turning: touch and hold ~0.2 s to grab the knob (a short buzz, the knob
+    // lifts), then a finger near the rim turns it round with it, near the
+    // middle up/down turns it. A finger that moves at once scrolls the page,
+    // so passing over the knobs never changes the sound. Mouse: grabs at
+    // once. Double tap = 0. (rotation in degrees, 0 = up, clockwise = more)
+    let drag = null, lastTap = 0, pend = null;
     const geo = e => {
       const r = dial.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
       return { ang: Math.atan2(dx, -dy) * 180 / Math.PI, dist: Math.hypot(dx, dy) / (r.width / 2) };
     };
     const apply = (final) => setTone(key, drag.rot / SWEEP * TMAX[key], final);
-    dial.addEventListener('pointerdown', e => {
+    const grab = e => {
       const g = toneFromKnob ? tone : beosonic(state.angle, state.distance), p = geo(e);
       drag = { rot: g[key] / TMAX[key] * SWEEP, ang: p.ang, y: e.clientY, moved: 0 }; dragging = true;
-      try { dial.setPointerCapture(e.pointerId); } catch (_) {} k.classList.add('held');
-      if (p.dist > 0.6 && Math.abs(p.ang) <= SWEEP + 10) { drag.rot = Math.max(-SWEEP, Math.min(SWEEP, p.ang)); apply(false); drag.jumped = true; }
+      try { dial.setPointerCapture(e.pointerId); } catch (_) {}
+      k.classList.add('held');
+    };
+    dial.addEventListener('pointerdown', e => {
+      if (e.pointerType === 'mouse') { grab(e); return; }
+      const ev = { pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY };
+      clearTimeout(pend && pend.t);
+      pend = { x: e.clientX, y: e.clientY, ev, t: setTimeout(() => { grab(pend.ev); pend.grabbed = true; if (navigator.vibrate) navigator.vibrate(10); }, 200) };
     });
+    // once grabbed, the page must not scroll under the finger
+    dial.addEventListener('touchmove', e => { if (drag) e.preventDefault(); }, { passive: false });
     dial.addEventListener('pointermove', e => {
+      if (pend && !drag) {   // moved before the hold: it is a scroll, let it go
+        if (Math.hypot(e.clientX - pend.x, e.clientY - pend.y) > 8) { clearTimeout(pend.t); pend = null; }
+        else pend.ev = { pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY };
+        return;
+      }
       if (!drag) return;
       const p = geo(e);
       if (p.dist > 0.32) { let d = p.ang - drag.ang; if (d > 180) d -= 360; if (d < -180) d += 360; drag.rot += d; drag.moved += Math.abs(d); }
@@ -1526,14 +1570,26 @@
       apply(false);
     });
     const up = () => {
+      const wasPending = pend && !pend.grabbed;
+      if (pend) { clearTimeout(pend.t); pend = null; }
+      if (wasPending) {   // a quick tap (no hold): only counts for the double tap
+        const now = Date.now();
+        if (now - lastTap < 350) { lastTap = 0; setTone(key, 0, true); } else lastTap = now;
+        return;
+      }
       if (!drag) return;
-      const tap = drag.moved < 4 && !drag.jumped, now = Date.now(), rot = drag.rot;
+      const tap = drag.moved < 4, now = Date.now(), rot = drag.rot;
       drag = null; dragging = false; k.classList.remove('held');
       if (tap && now - lastTap < 350) { lastTap = 0; setTone(key, 0, true); return; }   // double tap
       if (tap) { lastTap = now; return; }
       setTone(key, rot / SWEEP * TMAX[key], true);
     };
-    dial.addEventListener('pointerup', up); dial.addEventListener('pointercancel', up);
+    dial.addEventListener('pointerup', up);
+    // the browser took the touch for scrolling: no tap, no change
+    dial.addEventListener('pointercancel', () => {
+      if (pend) { clearTimeout(pend.t); pend = null; }
+      if (drag) { const rot = drag.rot; drag = null; dragging = false; k.classList.remove('held'); setTone(key, rot / SWEEP * TMAX[key], true); }
+    });
     k.addEventListener('keydown', e => {
       const g = toneFromKnob ? tone : beosonic(state.angle, state.distance), step = { ArrowUp: .5, ArrowRight: .5, ArrowDown: -.5, ArrowLeft: -.5 }[e.key];
       if (step) { e.preventDefault(); setTone(key, g[key] + step, true); }
@@ -2495,7 +2551,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Chạm đúp núm để về 0': 'Double-tap a knob for 0', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
