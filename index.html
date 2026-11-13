@@ -709,6 +709,18 @@
   .rn-play svg { width: 18px; height: 18px; }
   .small { padding: 8px 12px; font-size: 13px; }
   #findBtn { min-height: 44px; }
+  /* room: one of the two, chosen with a two-way switch; the old rows with
+     arrows are gone, the chosen panel shows directly under the switch */
+  .seg.two { grid-template-columns: 1fr 1fr; margin: 0 0 4px; }
+  .seg.two .slider { width: calc((100% - 6px) / 2); }
+  .seg.two button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 9px 4px 8px; font-size: 14px; }
+  .seg.two button small { font-size: 11.5px; font-weight: 400; color: var(--muted); }
+  .seg.two button.active { color: var(--text); }
+  .roomrows { border-top: 0 !important; }
+  .roomrows > .btnrow { display: none !important; }
+  .roomrows > .placebox { border-bottom: 0; padding-top: 12px; }
+  #roomPending:empty { display: none; }
+  #roomPending { margin-top: 0; }
 </style>
 </head>
 <body>
@@ -804,7 +816,14 @@
 
       <section id="secRoomGroup">
         <div class="eyebrow homeh">Phòng nghe</div>
-      <div class="rows">
+      <!-- one or the other: the speaker uses the room measurement in place of
+           the Free / Wall / Corner bands (same filters, firmware sink_loudness.c) -->
+      <div class="seg two" id="roomMode" role="radiogroup" aria-label="Cách bù phòng">
+        <i class="slider" id="rmSlider"></i>
+        <button data-m="place" role="radio">Theo vị trí<small>Chọn nhanh</small></button>
+        <button data-m="room" role="radio">Đo phòng<small>Bằng điện thoại</small></button>
+      </div>
+      <div class="rows roomrows">
         <button class="row btnrow" id="tilePlace"><span>Vị trí đặt loa</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
       <div class="placebox" id="secPlace" hidden>
         <div class="seg" id="placement">
@@ -826,6 +845,7 @@
         <button class="row btnrow" id="tileRoom" hidden><span>Hiệu chỉnh phòng</span><span><em id="tRoom">Tắt</em><i class="chev">›</i></span></button>
       <div class="placebox roombox" id="secRoom" hidden>
         <div id="roomIdle">
+          <p class="note muted" id="roomPending"></p>
           <p class="note" id="roomIntro">Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.</p>
           <div class="roombtns"><button class="btn primary" id="roomStart">Hiệu chỉnh</button></div>
         </div>
@@ -836,8 +856,8 @@
         </div>
         <div id="roomDoneBox" hidden>
           <div class="roomsw">
-            <div><b id="roomSwState">Đang bật</b><small id="roomSummary"></small></div>
-            <button class="switch" id="roomSwitch" role="switch" aria-checked="true" aria-label="Bật hiệu chỉnh phòng"><i></i></button>
+            <div><b id="roomSwState">Đang dùng</b><small id="roomSummary"></small></div>
+            <button class="switch" id="roomSwitch" role="switch" aria-checked="true" aria-label="Bật hiệu chỉnh phòng" hidden><i></i></button>
           </div>
           <details class="roomdet" id="roomDet">
             <summary>Chi tiết</summary>
@@ -1652,8 +1672,9 @@
     $('figSpk').style.transform = `translate(${pos[0]}px, ${pos[1]}px)`;
     $('wallSide').style.opacity = state.placement === 2 ? 1 : .25;
     $('wallBack').style.opacity = state.placement === 0 ? .25 : 1;
-    $('placeNote').textContent = state.roomOn ? 'Đang dùng hiệu chỉnh phòng (đã đo cả tường và góc), nên Free/Wall/Corner tạm không có tác dụng.' : PLACE_NOTES[state.placement];
+    $('placeNote').textContent = PLACE_NOTES[state.placement];
     renderHome();
+    if (typeof roomPick !== 'undefined') renderRoomMode();
   }
 
   // ---------- sending (throttled while dragging, final value always sent) ----------
@@ -2314,12 +2335,39 @@
     } catch (e) { roomMsg('Đã huỷ.'); }
     finally { room.busy = false; roomRender(); renderPlacement(); }
   }
-  async function roomToggle() {
-    const on = !state.roomOn;
-    try { await gaia(CMD_ROOM_EQ_ENABLE, [3, on ? 1 : 0]); state.roomOn = on; roomMsg(''); }
+  async function roomToggle(want) {
+    const on = typeof want === 'boolean' ? want : !state.roomOn;
+    if (on === state.roomOn) return;
+    try {
+      if (link) await gaia(CMD_ROOM_EQ_ENABLE, [3, on ? 1 : 0]);
+      else if (!DEMO) throw new Error('chưa kết nối');
+      state.roomOn = on; roomMsg('');
+    }
     catch (e) { roomMsg('Không gửi được: ' + errText(e), true); }
-    roomRender(); renderPlacement();
+    roomRender(); renderPlacement(); renderRoomMode();
   }
+  // ---------- room: one of the two (Theo vị trí | Đo phòng) ----------
+  // 'room' while the measurement is in use, or chosen and not measured yet
+  // (the speaker keeps the placement bands until a measurement exists).
+  var roomPick = store.get('vx.roomPick', 'place');   // var: renderPlacement() may run first
+  const roomModeNow = () => state.roomOn ? 'room' : roomPick;
+  function renderRoomMode() {
+    const m = roomModeNow(), hasRoom = !(state.connected && !(info.features & F_ROOM) && !state.roomStored);
+    $('roomMode').hidden = !hasRoom;
+    document.querySelectorAll('#roomMode button').forEach(b => { const on = b.dataset.m === m; b.classList.toggle('active', on); b.setAttribute('aria-checked', on); });
+    $('rmSlider').style.transform = `translateX(${m === 'room' ? 100 : 0}%)`;
+    const place = m === 'place' || !hasRoom;
+    $('secPlace').hidden = !place; $('secRoom').hidden = place;
+    $('tilePlace').classList.toggle('open', place); $('tileRoom').classList.toggle('open', !place);
+    if (!place) roomRender();
+  }
+  document.querySelectorAll('#roomMode button').forEach(b => b.onclick = async () => {
+    roomPick = b.dataset.m; store.set('vx.roomPick', roomPick);
+    if (roomPick === 'place' && state.roomOn) await roomToggle(false);
+    else if (roomPick === 'room' && state.roomStored && !state.roomOn) await roomToggle(true);
+    renderRoomMode();
+  });
+  renderRoomMode();
   async function roomDelete() {
     if (!confirm(tr('Xoá hiệu chỉnh phòng trên cả 2 loa? Muốn dùng lại thì phải đo lại.'))) return;
     try {
@@ -2350,6 +2398,7 @@
     $('roomIntro').textContent = state.peer
       ? 'Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.'
       : 'Loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.';
+    $('roomPending').textContent = state.roomStored ? '' : `Chưa đo: loa vẫn bù theo vị trí đặt (${PLACES[state.placement]}) cho tới khi đo xong.`;
     $('tRoom').textContent = room.busy || state.measuring ? 'Đang đo' : state.roomOn ? 'Bật' : state.roomStored ? 'Tắt' : 'Chưa đo';
     if ($('secRoom').hidden) return;
     if (room.busy) { roomView('roomRun'); return; }
@@ -2360,7 +2409,7 @@
     sw.classList.toggle('on', state.roomOn); sw.setAttribute('aria-checked', state.roomOn ? 'true' : 'false');
     sw.disabled = !live;
     $('roomRedo').disabled = $('roomDelete').disabled = !live;
-    $('roomSwState').textContent = state.roomOn ? 'Đang bật' : 'Đang tắt';
+    $('roomSwState').textContent = state.roomOn ? 'Đang dùng kết quả đo' : 'Kết quả đo đã lưu';
     $('roomSummary').textContent = r && r.bands
       ? `Đã hạ ${r.bands.length} nốt bass bị ù (${r.bands.map(b => b.f).join(', ')} Hz) · đo ngày ${new Date(r.date).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-GB')}`
       : 'Đã đo và lưu trong loa.';
@@ -2551,7 +2600,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
