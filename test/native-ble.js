@@ -21,7 +21,11 @@
   const KNOWN = 'vx.nativeBleIds';
   const known = () => { try { return JSON.parse(localStorage.getItem(KNOWN) || '[]'); } catch { return []; } };
   const remember = id => { const k = known(); if (!k.includes(id)) { k.push(id); try { localStorage.setItem(KNOWN, JSON.stringify(k)); } catch {} } };
-  const hex = dv => Array.from(new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength)).map(b => b.toString(16).padStart(2, '0')).join(' ');
+  // plugin 7.x: values cross the bridge as hex strings without spaces ("0a1b2c")
+  const hex = dv => Array.from(new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength)).map(b => b.toString(16).padStart(2, '0')).join('');
+  // one GATT operation at a time, like the plugin's own BleClient queue
+  let chain = Promise.resolve();
+  const queue = fn => { const p = chain.then(fn, fn); chain = p.catch(() => {}); return p; };
   const fromHex = s => { const b = new Uint8Array((s || '').replace(/\s/g, '').match(/.{2}/g)?.map(h => parseInt(h, 16)) || []); return new DataView(b.buffer); };
   const toDV = v => v instanceof DataView ? v : ArrayBuffer.isView(v) ? new DataView(v.buffer, v.byteOffset, v.byteLength) : new DataView(v);
   let ready = null;
@@ -35,12 +39,12 @@
   }
   class Characteristic extends Emitter {
     constructor(dev, service, uuid) { super(); this.dev = dev; this.service = service; this.uuid = uuid; this.value = null; }
-    writeValue(v) { return Ble.write({ deviceId: this.dev.id, service: this.service, characteristic: this.uuid, value: hex(toDV(v)) }); }
+    writeValue(v) { const value = hex(toDV(v)); return queue(() => Ble.write({ deviceId: this.dev.id, service: this.service, characteristic: this.uuid, value })); }
     writeValueWithResponse(v) { return this.writeValue(v); }
     async startNotifications() {
       const key = `notification|${this.dev.id}|${this.service}|${this.uuid}`;
       this._sub = await Ble.addListener(key, ev => { this.value = typeof ev.value === 'string' ? fromHex(ev.value) : toDV(ev.value); this._emit('characteristicvaluechanged', { target: this }); });
-      await Ble.startNotifications({ deviceId: this.dev.id, service: this.service, characteristic: this.uuid });
+      await queue(() => Ble.startNotifications({ deviceId: this.dev.id, service: this.service, characteristic: this.uuid }));
       return this;
     }
   }
@@ -53,7 +57,7 @@
     async connect() {
       await init();
       this._sub = await Ble.addListener(`disconnected|${this.dev.id}`, () => { this.connected = false; this.dev._emit('gattserverdisconnected', { target: this.dev }); });
-      await Ble.connect({ deviceId: this.dev.id, timeout: 12000 });
+      await queue(() => Ble.connect({ deviceId: this.dev.id, timeout: 12000 }));
       this.connected = true; remember(this.dev.id);
       return this;
     }
@@ -75,7 +79,7 @@
         // one name prefix for the native chooser; the page checks the speaker anyway
         if (f.namePrefix && (opt.filters || []).length === 1) q.namePrefix = f.namePrefix;
       }
-      const d = await Ble.requestDevice(q);
+      const d = await queue(() => Ble.requestDevice(q));
       return new Device(d);
     },
     async getDevices() {
