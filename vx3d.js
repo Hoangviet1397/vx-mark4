@@ -299,5 +299,16 @@
     return { grille: pack(S.slat), gback: pack(S.back), gring: pack(S.ring) };
   }
 
-  window.VX3D = { load, View, grille };
+  // a flat disc facing the front (+z), e.g. a driver plate behind a baffle hole
+  function disc(cx, cy, r, z, seg = 48) {
+    const P = [], N = [];
+    for (let i = 0; i < seg; i++) {
+      const a = 2 * Math.PI * i / seg, b = 2 * Math.PI * (i + 1) / seg;
+      P.push(cx, cy, z, cx + r * Math.cos(a), cy + r * Math.sin(a), z, cx + r * Math.cos(b), cy + r * Math.sin(b), z);
+      N.push(0, 0, 1, 0, 0, 1, 0, 0, 1);
+    }
+    return { P: new Float32Array(P), N: new Float32Array(N), n: P.length / 3 };
+  }
+
+  window.VX3D = { load, View, grille, disc };
 })();
