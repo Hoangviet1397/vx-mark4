@@ -478,9 +478,9 @@
        11        section labels: caps, wide tracking */
   :root { --t-title: 30px; --t-body: 16px; --t-small: 14px; --t-label: 11px; }
   .view .title, .bigtitle, .ptitle { font-family: var(--serif); font-weight: 500; font-size: var(--t-title); line-height: 1.1; letter-spacing: .02em; }
-  #v-sound .title, #v-info .bigtitle { margin: max(44px, calc(env(safe-area-inset-top) + 24px)) 0 6px; }
+  #v-radio .title, #v-info .bigtitle { margin: max(44px, calc(env(safe-area-inset-top) + 24px)) 0 6px; }
   #v-info .bigtitle { margin-bottom: 0; }
-  #v-sound .title + .sub { margin-bottom: 0; }
+  #v-radio .title + .sub { margin-bottom: 0; }
   .ptitle { margin: 14px 0 10px; }
   .subhead b { font-family: var(--serif); font-size: 22px; font-weight: 500; }
   .eyebrow, section > .eyebrow, .subh, .homeh, .side .eyebrow, .readout .eyebrow {
@@ -606,7 +606,7 @@
   #v-speaker .chipwrap + .homeh { margin-top: 16px; }
   .homeh, section > .eyebrow, .subh { margin-top: 18px; padding-bottom: 7px; }
   .row, #v-speaker .row, .srow { padding: 12px 2px; }
-  #v-sound .title, #v-info .bigtitle { margin-top: max(22px, calc(env(safe-area-inset-top) + 12px)); }
+  #v-radio .title, #v-info .bigtitle { margin-top: max(22px, calc(env(safe-area-inset-top) + 12px)); }
   .wheel { max-width: min(100%, 36vh, 280px); margin-left: auto; margin-right: auto; }
   .readout { padding-top: 12px; }
   .note { margin-top: 10px; }
@@ -638,6 +638,45 @@
   .tknob .eyebrow { margin-top: 6px; }
   .tknob .num { font-size: 24px; }
   #app.offline #wheelBlock .knobs { opacity: .45; pointer-events: none; }
+  /* ================= one page for the speaker, a Radio tab =================
+     The Sound tab is folded into the speaker page (tone knobs, modes,
+     room), so nothing is listed twice; the middle tab is Radio. */
+  .homeh .hint { float: right; font-weight: 400; letter-spacing: .04em; text-transform: none; color: var(--muted); opacity: .8; }
+  #v-speaker #wheelBlock > .homeh { margin-top: 20px; }
+  #v-speaker #syncNote { text-align: center; margin-top: 4px; }
+  .tknob .dial { width: min(40vw, 165px, 24vh); }
+  /* radio */
+  #v-radio .title { margin: max(22px, calc(env(safe-area-inset-top) + 12px)) 0 4px; }
+  .rnow { display: flex; align-items: center; gap: 14px; margin: 14px 0 4px; padding: 14px 14px 14px 16px; border: 1px solid var(--hair); border-radius: 4px; background: var(--chip); }
+  .rn-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); flex: none; }
+  .rnow.playing .rn-dot { background: #c8452f; box-shadow: 0 0 0 4px rgba(200,69,47,.15); animation: rnpulse 1.6s ease-in-out infinite; }
+  @keyframes rnpulse { 50% { box-shadow: 0 0 0 7px rgba(200,69,47,.05); } }
+  .rn-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .rn-txt b { font-family: var(--serif); font-size: 22px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rn-txt small { color: var(--muted); font-size: 13px; }
+  .rn-play { appearance: none; border: 0; width: 48px; height: 48px; border-radius: 50%; background: var(--text); color: var(--bg); cursor: pointer; display: grid; place-items: center; flex: none; }
+  .rn-play svg { width: 22px; height: 22px; fill: currentColor; }
+  .rn-play .i-stop { display: none; } .rnow.playing .rn-play .i-play { display: none; } .rnow.playing .rn-play .i-stop { display: inline; }
+  .rnow.loading .rn-play { opacity: .5; }
+  .row.station { display: flex; padding: 0; cursor: default; }
+  .station .st-main { appearance: none; flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 12px 2px; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+  .station .st-main span { display: flex; flex-direction: column; align-items: flex-start; text-align: left; min-width: 0; }
+  .station .st-main span b { font-weight: 500; font-size: var(--t-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .station .st-main span small { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .station.on .st-main span b { color: var(--accent); }
+  .station .eq { display: inline-flex; align-items: flex-end; gap: 2px; width: 14px; height: 14px; flex: none; opacity: .25; }
+  .station .eq b { width: 3px; height: 30%; background: currentColor; border-radius: 1px; }
+  .station.on .eq { opacity: 1; color: var(--accent); }
+  .station.playing .eq b { animation: eqb .9s ease-in-out infinite; } .station.playing .eq b:nth-child(2) { animation-delay: -.3s; } .station.playing .eq b:nth-child(3) { animation-delay: -.6s; }
+  @keyframes eqb { 0%, 100% { height: 25%; } 50% { height: 100%; } }
+  .station .st-fav { appearance: none; background: none; border: 0; padding: 10px 4px 10px 12px; cursor: pointer; color: var(--muted); }
+  .station .st-fav svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+  .station .st-fav.faved { color: var(--accent); } .station .st-fav.faved svg { fill: currentColor; }
+  .rsearch { display: flex; gap: 8px; margin-bottom: 4px; }
+  .rsearch input { flex: 1; min-width: 0; padding: 11px 12px; border: 1px solid var(--hair); border-radius: 3px; background: transparent; color: var(--text); font: 16px/1.2 inherit; }
+  #v-radio section > .eyebrow { margin-top: 20px; }
+  /* radio playing: a red dot on the Radio tab */
+  body.radio-on nav.tabs button[data-tab="radio"]::after { content: ""; position: absolute; top: 9px; left: calc(50% + 10px); width: 7px; height: 7px; border-radius: 50%; background: #c8452f; }
 </style>
 </head>
 <body>
@@ -683,41 +722,15 @@
 <!-- ============ the app (one speaker at a time) ============ -->
 <div id="app" class="screen" hidden>
 
-  <!-- speaker -->
+  <!-- speaker: picture, tone, room, the speaker itself -->
   <div class="view" id="v-speaker">
     <div class="wrap">
       <div class="hero"><canvas class="gl3d" id="heroGL" aria-hidden="true"></canvas><div class="pair s3d" id="heroPair"></div></div>
       <h1 class="ptitle" id="pTitle">VX Lento</h1>
       <div class="chipwrap"><button class="chip" id="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
 
-      <div class="eyebrow homeh">Loa</div>
-      <div class="rows" id="homeRows">
-        <button class="row btnrow" id="tilePeer"><span>Cặp loa</span><span><em id="tPeer">Chưa nối</em><i class="chev">›</i></span></button>
-      <div class="twsbox" id="twsBox" hidden>
-        <p id="twsText"></p>
-        <button class="btn soft" id="swapLR" hidden>Đổi trái ↔ phải</button>
-        <button class="btn primary" id="twsPair">Ghép với loa kia</button>
-        <button class="btn" id="twsEnd">Tách 2 loa</button>
-      </div>
-        <button class="row btnrow" id="rowConn"><span id="rowConnTxt">Kết nối</span><span><i class="chev">›</i></span></button>
-      </div>
-      <p class="note" id="homeNote"></p>
-
-      <div class="eyebrow homeh">Đang nghe</div>
-      <div class="rows" id="nowRows">
-        <button class="row btnrow" data-go="sound"><span>Âm sắc</span><span><em id="tSound">Optimal</em><i class="chev">›</i></span></button>
-        <button class="row btnrow" data-go="sound" data-anchor="secRoomGroup" id="nowPlace"><span>Vị trí đặt loa</span><span><em id="tPlace2">Free</em><i class="chev">›</i></span></button>
-        <button class="row btnrow" data-go="sound" data-anchor="secRoomGroup" id="nowRoom" hidden><span>Hiệu chỉnh phòng</span><span><em id="tRoom2">Tắt</em><i class="chev">›</i></span></button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 3b. sound -->
-  <div class="view" id="v-sound" hidden>
-    <div class="wrap">
-      <h1 class="title">Âm thanh</h1>
-      <p class="sub">Xoay núm Bass và Treble. Chạm đúp để về 0.</p>
       <div id="wheelBlock">
+      <div class="eyebrow homeh">Âm sắc <span class="hint">Chạm đúp núm để về 0</span></div>
       <!-- two tone knobs, like the front of a hi-fi amplifier -->
       <div class="knobs" id="knobs">
         <div class="tknob" data-k="bass" role="slider" aria-label="Bass" tabindex="0">
@@ -758,7 +771,7 @@
       </div>
 
       <section id="secRoomGroup">
-        <div class="eyebrow">Phòng nghe</div>
+        <div class="eyebrow homeh">Phòng nghe</div>
       <div class="rows">
         <button class="row btnrow" id="tilePlace"><span>Vị trí đặt loa</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
       <div class="placebox" id="secPlace" hidden>
@@ -807,6 +820,39 @@
       </div>
       </section>
 
+      <div class="eyebrow homeh">Loa</div>
+      <div class="rows" id="homeRows">
+        <button class="row btnrow" id="tilePeer"><span>Cặp loa</span><span><em id="tPeer">Chưa nối</em><i class="chev">›</i></span></button>
+      <div class="twsbox" id="twsBox" hidden>
+        <p id="twsText"></p>
+        <button class="btn soft" id="swapLR" hidden>Đổi trái ↔ phải</button>
+        <button class="btn primary" id="twsPair">Ghép với loa kia</button>
+        <button class="btn" id="twsEnd">Tách 2 loa</button>
+      </div>
+        <button class="row btnrow" id="rowConn"><span id="rowConnTxt">Kết nối</span><span><i class="chev">›</i></span></button>
+      </div>
+      <p class="note" id="homeNote"></p>
+    </div>
+  </div>
+
+  <!-- radio: plays on the phone, which sends it to the speaker over Bluetooth -->
+  <div class="view" id="v-radio" hidden>
+    <div class="wrap">
+      <h1 class="title">Radio</h1>
+      <p class="sub">Phát từ điện thoại ra loa qua Bluetooth.</p>
+      <div class="rnow" id="radioNow" hidden>
+        <div class="rn-dot" id="rnDot"></div>
+        <div class="rn-txt"><b id="rnName"></b><small id="rnSub"></small></div>
+        <button class="rn-play" id="rnPlay" aria-label="Phát / dừng"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-play" d="M8 5.5v13l10.5-6.5z"/><path class="i-stop" d="M7 6h3.5v12H7zM13.5 6H17v12h-3.5z"/></svg></button>
+      </div>
+      <p class="note" id="radioMsg"></p>
+      <section id="radioFavSec" hidden><div class="eyebrow">Yêu thích</div><div class="rows" id="radioFav"></div></section>
+      <section><div class="eyebrow">Việt Nam</div><div class="rows" id="radioVN"></div></section>
+      <section><div class="eyebrow">Thế giới</div><div class="rows" id="radioWorld"></div></section>
+      <section><div class="eyebrow">Tìm đài</div>
+        <form class="rsearch" id="radioForm"><input id="radioQ" type="search" placeholder="Tên đài, ví dụ: jazz, bolero, lofi" autocomplete="off"><button type="submit" class="small">Tìm</button></form>
+        <div class="rows" id="radioFound"></div>
+      </section>
     </div>
   </div>
 
@@ -893,7 +939,7 @@
 
   <nav class="tabs"><div class="wrap">
     <button data-tab="speaker" id="navSpeaker"><span class="navthumb" id="navThumb"></span><svg class="caret" viewBox="0 0 24 24" id="navCaret" aria-label="Loa của tôi"><path d="M6 15l6-6 6 6"/></svg></button>
-    <button data-tab="sound" aria-label="Âm thanh"><svg viewBox="0 0 24 24"><path d="M6 4v16M12 4v16M18 4v16"/><path d="M4 14h4M10 8h4M16 16h4"/></svg></button>
+    <button data-tab="radio" aria-label="Radio"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2.5"/><path d="M7 8 16.5 3.5"/><circle cx="15.5" cy="14" r="3"/><path d="M6.5 12.5h3M6.5 15.5h3"/></svg></button>
     <button data-tab="info" aria-label="Cài đặt"><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
   </div></nav>
 </div>
@@ -1050,7 +1096,7 @@
   function showTab(name, anchor) {
     tab = name;
     if (name === 'info' && $('setMain')) ['setMain', 'setAbout', 'setGuide', 'setLog', 'setLang', 'setColor'].forEach(x => $(x).hidden = x !== 'setMain');
-    ['speaker', 'sound', 'info'].forEach(t => $('v-' + t).hidden = t !== name);
+    ['speaker', 'radio', 'info'].forEach(t => $('v-' + t).hidden = t !== name);
     document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
     if (anchor) requestAnimationFrame(() => $(anchor).scrollIntoView({ behavior: 'smooth', block: 'start' }));
     else window.scrollTo(0, 0);
@@ -1221,7 +1267,7 @@
     closeSheet();
     showScreen('app');
     const h = location.hash.slice(1);
-    showTab(['speaker', 'sound', 'info'].includes(h) ? h : 'speaker');
+    showTab(['speaker', 'radio', 'info'].includes(h) ? h : 'speaker');
   }
   // "My speakers" bottom sheet: the speaker thumbnail + caret in the tab bar opens it
   let sheetOpen = false;
@@ -1445,20 +1491,39 @@
   }
   knobs.forEach(k => {
     const key = k.dataset.k, dial = k.querySelector('.dial');
-    let drag = null;
+    // Turning: a finger near the rim turns the knob round with it, like a
+    // real knob; near the middle, up/down turns it. A tap on the scale jumps
+    // there. Double tap = 0. (rotation in degrees, 0 = up, clockwise = more)
+    let drag = null, lastTap = 0;
+    const geo = e => {
+      const r = dial.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2);
+      return { ang: Math.atan2(dx, -dy) * 180 / Math.PI, dist: Math.hypot(dx, dy) / (r.width / 2) };
+    };
+    const apply = (final) => setTone(key, drag.rot / SWEEP * TMAX[key], final);
     dial.addEventListener('pointerdown', e => {
-      const g = toneFromKnob ? tone : beosonic(state.angle, state.distance);
-      drag = { x: e.clientX, y: e.clientY, v: g[key], id: e.pointerId }; dragging = true;
-      try { dial.setPointerCapture(e.pointerId); } catch (_) {} k.classList.add("held");
+      const g = toneFromKnob ? tone : beosonic(state.angle, state.distance), p = geo(e);
+      drag = { rot: g[key] / TMAX[key] * SWEEP, ang: p.ang, y: e.clientY, moved: 0 }; dragging = true;
+      try { dial.setPointerCapture(e.pointerId); } catch (_) {} k.classList.add('held');
+      if (p.dist > 0.6 && Math.abs(p.ang) <= SWEEP + 10) { drag.rot = Math.max(-SWEEP, Math.min(SWEEP, p.ang)); apply(false); drag.jumped = true; }
     });
     dial.addEventListener('pointermove', e => {
       if (!drag) return;
-      const px = (drag.y - e.clientY) + (e.clientX - drag.x);            // up or right = more
-      setTone(key, drag.v + px * TMAX[key] / 120, false);
+      const p = geo(e);
+      if (p.dist > 0.32) { let d = p.ang - drag.ang; if (d > 180) d -= 360; if (d < -180) d += 360; drag.rot += d; drag.moved += Math.abs(d); }
+      else { const d = (drag.y - e.clientY) * 1.4; drag.rot += d; drag.moved += Math.abs(d); }
+      drag.ang = p.ang; drag.y = e.clientY;
+      drag.rot = Math.max(-SWEEP, Math.min(SWEEP, drag.rot));
+      apply(false);
     });
-    const up = () => { if (!drag) return; drag = null; dragging = false; k.classList.remove('held'); setTone(key, tone[key], true); };
+    const up = () => {
+      if (!drag) return;
+      const tap = drag.moved < 4 && !drag.jumped, now = Date.now(), rot = drag.rot;
+      drag = null; dragging = false; k.classList.remove('held');
+      if (tap && now - lastTap < 350) { lastTap = 0; setTone(key, 0, true); return; }   // double tap
+      if (tap) { lastTap = now; return; }
+      setTone(key, rot / SWEEP * TMAX[key], true);
+    };
     dial.addEventListener('pointerup', up); dial.addEventListener('pointercancel', up);
-    dial.addEventListener('dblclick', () => setTone(key, 0, true));
     k.addEventListener('keydown', e => {
       const g = toneFromKnob ? tone : beosonic(state.angle, state.distance), step = { ArrowUp: .5, ArrowRight: .5, ArrowDown: -.5, ArrowLeft: -.5 }[e.key];
       if (step) { e.preventDefault(); setTone(key, g[key] + step, true); }
@@ -1598,8 +1663,7 @@
     const m = currentMode();
     const g = beosonic(state.angle, state.distance);
     if ($('tSound')) $('tSound').textContent = m ? m.name : `Bass ${fmtDb(g.bass)} · Treble ${fmtDb(g.treble)}`;
-    $('tPlace').textContent = $('tPlace2').textContent = PLACES[state.placement];
-    $('nowPlace').hidden = $('tilePlace').hidden;
+    $('tPlace').textContent = PLACES[state.placement];
   }
   function renderStatus() {
     $('app').classList.toggle('offline', !state.connected && !DEMO);   // controls greyed out until a speaker is connected (not on the test page)
@@ -2218,8 +2282,7 @@
     $('roomIntro').textContent = state.peer
       ? 'Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.'
       : 'Loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.';
-    $('nowRoom').hidden = $('tileRoom').hidden;
-    $('tRoom').textContent = $('tRoom2').textContent = room.busy || state.measuring ? 'Đang đo' : state.roomOn ? 'Bật' : state.roomStored ? 'Tắt' : 'Chưa đo';
+    $('tRoom').textContent = room.busy || state.measuring ? 'Đang đo' : state.roomOn ? 'Bật' : state.roomStored ? 'Tắt' : 'Chưa đo';
     if ($('secRoom').hidden) return;
     if (room.busy) { roomView('roomRun'); return; }
     roomView(state.roomStored ? 'roomDoneBox' : 'roomIdle');
@@ -2244,6 +2307,121 @@
   $('roomCancel').onclick = () => { roomAbort = true; if (room.stopRec) room.stopRec(); };
   $('roomSwitch').onclick = roomToggle;
   $('roomDelete').onclick = roomDelete;
+  // =====================================================================
+  // Radio: the phone plays the stream and sends it to the speaker over
+  // Bluetooth (A2DP), like any other app. Stations checked 2026-11-13:
+  // HTTPS only (the page is HTTPS), HLS for VOV (Safari plays it; other
+  // browsers get hls.js from cdnjs on first use). Search: radio-browser.info.
+  // =====================================================================
+  const RADIO = {
+    vn: [
+      { id: 'vov1', name: 'VOV1', tag: 'Thời sự', url: 'https://audio-lss.vov.vn/live/vov1.m3u8', hls: 1 },
+      { id: 'vov2', name: 'VOV2', tag: 'Văn hoá, đời sống', url: 'https://audio-lss.vov.vn/live/vov2.m3u8', hls: 1 },
+      { id: 'vov3', name: 'VOV3', tag: 'Âm nhạc', url: 'https://audio-lss.vov.vn/live/vov3.m3u8', hls: 1 },
+      { id: 'vovgthn', name: 'VOV Giao thông', tag: 'Hà Nội · FM 91', url: 'https://play.vovgiaothong.vn/live/gthn/playlist.m3u8', hls: 1 },
+      { id: 'vovgthcm', name: 'VOV Giao thông', tag: 'TP.HCM · FM 91', url: 'https://play.vovgiaothong.vn/live/gthcm/playlist.m3u8', hls: 1 },
+      { id: 'hncr', name: 'Hà Nội Community Radio', tag: 'Nhạc chọn lọc', url: 'https://ha-noi-community-radio.radiocult.fm/stream' },
+      { id: 'rfivn', name: 'RFI Tiếng Việt', tag: 'Tin tức', url: 'https://rfienvietnamien64k.ice.infomaniak.ch/rfienvietnamien-64.mp3' }
+    ],
+    world: [
+      { id: 'rp', name: 'Radio Paradise', tag: 'Main mix · 320k', url: 'https://stream.radioparadise.com/aac-320' },
+      { id: 'rpmellow', name: 'Radio Paradise', tag: 'Mellow · 320k', url: 'https://stream.radioparadise.com/mellow-320' },
+      { id: 'fip', name: 'FIP', tag: 'Paris · eclectic', url: 'https://icecast.radiofrance.fr/fip-hifi.aac' },
+      { id: 'fipjazz', name: 'FIP Jazz', tag: 'Paris · jazz', url: 'https://icecast.radiofrance.fr/fipjazz-hifi.aac' },
+      { id: 'fipgroove', name: 'FIP Groove', tag: 'Paris · soul, funk', url: 'https://icecast.radiofrance.fr/fipgroove-hifi.aac' },
+      { id: 'kexp', name: 'KEXP', tag: 'Seattle · indie', url: 'https://kexp.streamguys1.com/kexp160.aac' }
+    ]
+  };
+  const radioAudio = new Audio(); radioAudio.preload = 'none';
+  let radioNow = null, radioHls = null, radioFound = [];
+  let radioFavs = store.get('vx.radioFavs', []);           // [{id,name,tag,url,hls}]
+  const nativeHls = () => !!radioAudio.canPlayType('application/vnd.apple.mpegurl');
+  let hlsLib = null;
+  const loadHls = () => hlsLib || (hlsLib = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js';
+    s.onload = () => res(window.Hls); s.onerror = () => { hlsLib = null; rej(new Error('hls.js')); };
+    document.head.appendChild(s);
+  }));
+  const rMsg = (t, warn) => { const m = $('radioMsg'); m.className = 'note' + (warn ? ' warn' : ''); m.textContent = t ? tr(t) : ''; };
+  function radioStop() {
+    radioAudio.pause();
+    if (radioHls) { radioHls.destroy(); radioHls = null; }
+    radioAudio.removeAttribute('src'); radioAudio.load();
+  }
+  async function radioPlay(st) {
+    rMsg('');
+    if (radioNow && radioNow.id === st.id && !radioAudio.paused) { radioStop(); radioRender(); return; }
+    radioStop(); radioNow = st; radioRender('loading');
+    try {
+      if (st.hls && !nativeHls()) {
+        const Hls = await loadHls();
+        if (!Hls.isSupported()) throw new Error('hls');
+        radioHls = new Hls({ lowLatencyMode: false });
+        radioHls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) { rMsg('Đài này đang không phát được. Thử đài khác nhé.', true); radioStop(); radioRender(); } });
+        radioHls.loadSource(st.url); radioHls.attachMedia(radioAudio);
+      } else radioAudio.src = st.url;
+      await radioAudio.play();
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({ title: st.name, artist: st.tag || 'Radio', album: 'VX Lento' });
+        navigator.mediaSession.setActionHandler('play', () => radioAudio.play());
+        navigator.mediaSession.setActionHandler('pause', () => radioAudio.pause());
+        navigator.mediaSession.setActionHandler('stop', () => { radioStop(); radioRender(); });
+      }
+    } catch (e) {
+      if (e && e.name === 'NotAllowedError') rMsg('Chạm lại vào đài để phát.', true);
+      else rMsg('Đài này đang không phát được. Thử đài khác nhé.', true);
+      radioStop();
+    }
+    radioRender();
+  }
+  ['playing', 'pause', 'waiting', 'ended'].forEach(ev => radioAudio.addEventListener(ev, () => radioRender(ev === 'waiting' ? 'loading' : '')));
+  radioAudio.addEventListener('error', () => { if (radioNow && radioAudio.getAttribute('src')) { rMsg('Đài này đang không phát được. Thử đài khác nhé.', true); radioStop(); radioRender(); } });
+  const isFav = st => radioFavs.some(f => f.id === st.id);
+  function stationRow(st) {
+    const b = document.createElement('div');
+    const on = radioNow && radioNow.id === st.id, playing = on && !radioAudio.paused;
+    b.className = 'row station' + (on ? ' on' : '') + (playing ? ' playing' : '');
+    b.innerHTML = `<button class="st-main"><i class="eq" aria-hidden="true"><b></b><b></b><b></b></i><span><b></b><small></small></span></button>`
+      + `<button class="st-fav${isFav(st) ? ' faved' : ''}" aria-label="Yêu thích"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg></button>`;
+    const t = b.querySelector('.st-main span'); t.firstChild.textContent = st.name; t.lastChild.textContent = st.tag || '';
+    b.querySelector('.st-main').onclick = () => radioPlay(st);
+    b.querySelector('.st-fav').onclick = () => {
+      radioFavs = isFav(st) ? radioFavs.filter(f => f.id !== st.id) : [...radioFavs, { id: st.id, name: st.name, tag: st.tag, url: st.url, hls: st.hls }];
+      store.set('vx.radioFavs', radioFavs); radioRender();
+    };
+    return b;
+  }
+  function radioRender(phase) {
+    const fill = (id, list) => { const el = $(id); el.innerHTML = ''; list.forEach(st => el.appendChild(stationRow(st))); };
+    $('radioFavSec').hidden = !radioFavs.length;
+    fill('radioFav', radioFavs); fill('radioVN', RADIO.vn); fill('radioWorld', RADIO.world); fill('radioFound', radioFound);
+    const now = $('radioNow'), playing = radioNow && !radioAudio.paused;
+    now.hidden = !radioNow;
+    if (radioNow) {
+      $('rnName').textContent = radioNow.name;
+      $('rnSub').textContent = phase === 'loading' ? tr('Đang kết nối…') : playing ? (radioNow.tag || tr('Đang phát')) : tr('Đã dừng');
+      now.classList.toggle('playing', !!playing); now.classList.toggle('loading', phase === 'loading');
+    }
+    document.body.classList.toggle('radio-on', !!playing);
+  }
+  $('rnPlay').onclick = () => { if (!radioNow) return; if (radioAudio.paused) radioPlay(radioNow); else { radioStop(); radioRender(); } };
+  $('radioForm').onsubmit = async e => {
+    e.preventDefault();
+    const q = $('radioQ').value.trim(); if (!q) return;
+    rMsg('Đang tìm…');
+    try {
+      const r = await fetch('https://de1.api.radio-browser.info/json/stations/search?' + new URLSearchParams({ name: q, hidebroken: 'true', order: 'votes', reverse: 'true', limit: '40' }));
+      const list = await r.json();
+      radioFound = list.filter(s => /^https:/.test(s.url_resolved))
+        .slice(0, 15)
+        .map(s => ({ id: 'rb-' + s.stationuuid, name: s.name.trim().slice(0, 40), tag: [s.country, (s.tags || '').split(',')[0]].filter(Boolean).join(' · '), url: s.url_resolved, hls: s.hls ? 1 : 0 }));
+      rMsg(radioFound.length ? '' : 'Không thấy đài nào hợp. Thử tên khác.');
+    } catch (_) { rMsg('Không tìm được lúc này. Kiểm tra mạng rồi thử lại.', true); }
+    radioRender();
+  };
+  setTimeout(radioRender, 0);   // after the rest of the script (tr() needs lang)
+
   // console preview of the two questions (no Bluetooth): vxAskDemo('connect' | 'main')
   window.vxAskDemo = kind => kind === 'main'
     ? ask('main', 'Đang nối với loa phải, loa phụ của cặp. Chuyển sang loa chính (loa đang nối với điện thoại) cho ổn định hơn?', 'Chuyển', 'Giữ loa này', () => {})
@@ -2305,7 +2483,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Chạm đúp núm để về 0': 'Double-tap a knob for 0', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
