@@ -1095,7 +1095,7 @@
     $('chipTxt').textContent = state.connected ? `${side} · ${via}` : DEMO ? 'Bản thử · chưa nối loa' : 'Chưa kết nối · chạm để nối';
     // firmware of the speaker the app talks to (GET_INFO), e.g. "Loa trái · 2.3"
     $('fwNow').textContent = state.connected && info.fw ? `${side} · ${info.fw}` : 'Kết nối để xem';
-    $('tPeer').textContent = !state.connected ? 'Chưa nối' : state.peer ? 'Stereo · đồng bộ' : 'Một loa';
+    $('tPeer').textContent = !(state.connected || DEMO) ? 'Chưa nối' : state.peer ? 'Stereo · đồng bộ' : 'Một loa';
     $('rowConnTxt').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
     $('setConn').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
     $('setConn').classList.toggle('primary', !state.connected);
