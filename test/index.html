@@ -381,6 +381,93 @@
   .ptitle { font-family: var(--serif); font-weight: 500; font-size: 32px; letter-spacing: .04em; }
   .backname { font-family: var(--serif); font-size: 17px; }
   .langrow .tick { opacity: 0; color: var(--text); font-size: 18px; } .langrow.on .tick { opacity: 1; }
+
+  /* ================= Atelier style =================
+     A maker's workshop rather than a showroom: paper and ink, walnut at
+     night, a brass accent, book serif for titles and labels, hairline lists
+     instead of filled tiles, square-ish corners. */
+  :root {
+    --bg: #12100d; --surface: #1b1814; --raise: #221e19; --text: #efe8dc; --muted: #9b917f; --faint: #4a443b;
+    --hair: rgba(239, 232, 220, .15); --chip: rgba(239, 232, 220, .05);
+    --accent: #c9a46c; --sel: rgba(201, 164, 108, .13); --ok: #9cc59a;
+    --stage: none;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f4efe5; --surface: #fbf8f1; --raise: #f8f4ec; --text: #1e1b16; --muted: #847a6b; --faint: #d3cabb;
+      --hair: rgba(30, 27, 22, .16); --chip: rgba(30, 27, 22, .045);
+      --accent: #9a7442; --sel: rgba(154, 116, 66, .11); --ok: #4f7d4c;
+      --stage: none;
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #f4efe5; --surface: #fbf8f1; --raise: #f8f4ec; --text: #1e1b16; --muted: #847a6b; --faint: #d3cabb;
+    --hair: rgba(30, 27, 22, .16); --chip: rgba(30, 27, 22, .045);
+    --accent: #9a7442; --sel: rgba(154, 116, 66, .11); --ok: #4f7d4c; --stage: none;
+  }
+  :root[data-theme="dark"] {
+    --bg: #12100d; --surface: #1b1814; --raise: #221e19; --text: #efe8dc; --muted: #9b917f; --faint: #4a443b;
+    --hair: rgba(239, 232, 220, .15); --chip: rgba(239, 232, 220, .05);
+    --accent: #c9a46c; --sel: rgba(201, 164, 108, .13); --ok: #9cc59a; --stage: none;
+  }
+
+  /* titles and labels: book serif */
+  .view .title, .bigtitle, .ptitle, .sheettop b, .subhead b, .about-name, .sheet-head b { font-family: var(--serif); font-weight: 500; letter-spacing: .02em; }
+  .view .title, .bigtitle { font-size: 38px; margin-bottom: 6px; }
+  .ptitle { font-size: 34px; margin: 16px 0 12px; }
+  .ptitle::after { content: ""; display: block; width: 28px; height: 1px; background: var(--accent); margin: 12px auto 0; }
+  .eyebrow, section > .eyebrow, .subh { font-family: var(--serif); font-size: 15px; letter-spacing: .14em; text-transform: none; font-variant-caps: all-small-caps; color: var(--muted); }
+  .lbl, .lbl.sub { font-family: var(--serif); font-variant-caps: all-small-caps; text-transform: none; font-size: 15px !important; letter-spacing: .16em !important; }
+  .lbl.sub { font-size: 13px !important; color: var(--muted); }
+  .num { font-family: var(--serif); font-weight: 400; font-size: 38px; }
+  .modes button { font-family: var(--serif); font-size: 21px; font-weight: 500; }
+  .modes button::after { background: var(--accent); }
+
+  /* lists: hairlines, no filled tiles */
+  .rows, #v-speaker .rows { display: block; margin-top: 22px; border-top: 1px solid var(--hair); }
+  .row, #v-speaker .row { appearance: none; width: 100%; background: none; border: 0; border-bottom: 1px solid var(--hair); border-radius: 0;
+         padding: 19px 2px; color: var(--text); font: 16px/1.25 inherit; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+  .row em { font-style: normal; color: var(--muted); margin-right: 10px; }
+  .row .chev { font-style: normal; color: var(--muted); font-size: 20px; display: inline-block; transition: transform .25s, color .25s; }
+  .row.open, #v-speaker .row.open { background: none; }
+  .row.open .chev { transform: rotate(90deg); color: var(--accent); }
+  .placebox, .twsbox { background: none; border-radius: 0; margin: 0; padding: 6px 2px 20px; border-bottom: 1px solid var(--hair); }
+  #secRoomGroup .rows { margin-top: 0; }
+  #secRoomGroup:not(:has(.row:not([hidden]))) { display: none; }
+  .setrows { gap: 0; border-top: 1px solid var(--hair); }
+  .srow { background: none; border-radius: 0; border-bottom: 1px solid var(--hair); padding: 19px 2px; }
+  .srow i { font-size: 20px; }
+  .hl { background: none; border-radius: 0; border-bottom: 1px solid var(--hair); padding: 16px 2px; }
+  .highlights { gap: 0; border-top: 1px solid var(--hair); }
+  .specgrid { border-radius: 0; }
+
+  /* controls: outlined, small radius */
+  .btn { border-radius: 3px; font-family: var(--serif); font-size: 17px; font-weight: 600; letter-spacing: .14em; text-transform: none; font-variant-caps: all-small-caps; padding: 13px 18px; }
+  .btn.soft { background: none; border-color: var(--hair); }
+  .small { border-radius: 3px; }
+  .chip { background: none; border: 1px solid var(--hair); border-radius: 3px; padding: 9px 16px; font-size: 14px; }
+  .chip.on svg { stroke: var(--accent); }
+  .seg { background: none; border: 1px solid var(--hair); border-radius: 3px; padding: 3px; }
+  .seg .slider { top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 3); border-radius: 2px; background: var(--sel); box-shadow: none; }
+  .seg button { font-family: var(--serif); font-size: 17px; font-weight: 600; }
+  .switch.on { background: var(--accent); }
+  .knob { box-shadow: 0 0 0 1px var(--bg), 0 2px 8px rgba(0,0,0,.3); }
+  .ring { border-color: var(--hair); }
+  #roomGraph .rg-after { stroke: var(--text); } #roomGraph .rg-tgt { stroke: var(--accent); }
+  .roomprog .rp-fg { stroke: var(--accent); }
+
+  /* tab bar: hairline on top, a brass line marks the open tab */
+  nav.tabs { border-top: 1px solid var(--hair); background: color-mix(in srgb, var(--bg) 94%, transparent); }
+  nav.tabs button { margin: 0; border-radius: 0; padding: 14px 0 12px; position: relative; }
+  nav.tabs button.on { background: none; color: var(--text); }
+  nav.tabs button.on::before { content: ""; position: absolute; top: -1px; left: 30%; right: 30%; height: 2px; background: var(--accent); }
+
+  /* sheets and dialogs */
+  .sheetpanel { border-radius: 8px 8px 0 0; }
+  .askcard { border-radius: 6px; }
+  .plusbtn { background: none; border: 1px solid var(--hair); color: var(--text); }
+  .product, .sheetpanel .product { border-radius: 3px; }
+  .product.live { box-shadow: none; border: 1px solid var(--hair); }
 </style>
 </head>
 <body>
@@ -433,60 +520,13 @@
       <h1 class="ptitle" id="pTitle">VX Lento</h1>
       <div class="chipwrap"><button class="chip" id="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
 
-      <div class="facts" id="facts">
-        <button class="tile" data-go="sound"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="15" cy="9.5" r="2"/></svg><span><b>Âm thanh</b><em id="tSound">Optimal</em></span></button>
-        <button class="tile" id="tilePeer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="7" height="14" rx="1.5"/><rect x="14" y="5" width="7" height="14" rx="1.5"/></svg><span><b>Cặp loa</b><em id="tPeer">Chưa nối</em></span></button>
-      </div>
+      <div class="rows" id="homeRows">
+        <button class="row btnrow" id="tilePeer"><span>Cặp loa</span><span><em id="tPeer">Chưa nối</em><i class="chev">›</i></span></button>
       <div class="twsbox" id="twsBox" hidden>
         <p id="twsText"></p>
         <button class="btn soft" id="swapLR" hidden>Đổi trái ↔ phải</button>
         <button class="btn primary" id="twsPair">Ghép với loa kia</button>
         <button class="btn" id="twsEnd">Tách 2 loa</button>
-      </div>
-      <div class="rows">
-        <button class="row btnrow" id="tilePlace"><span>Vị trí đặt loa</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
-      <div class="placebox" id="secPlace" hidden>
-        <div class="seg" id="placement">
-          <i class="slider" id="segSlider"></i>
-          <button data-p="0">Free<small>Xa tường</small></button>
-          <button data-p="1">Wall<small>Sát tường</small></button>
-          <button data-p="2">Corner<small>Trong góc</small></button>
-        </div>
-        <div class="place-fig">
-          <svg viewBox="0 0 300 120" aria-hidden="true">
-            <path class="wall" id="wallBack" d="M20 18 H280"/>
-            <path class="wall" id="wallSide" d="M20 18 V108"/>
-            <g id="figSpk"><rect class="spk" x="-9" y="-14" width="18" height="28" rx="3"/>
-              <path class="wave" d="M-16 22 Q0 34 16 22"/><path class="wave" d="M-24 30 Q0 48 24 30"/></g>
-          </svg>
-        </div>
-        <p class="note" id="placeNote"></p>
-      </div>
-        <button class="row btnrow" id="tileRoom" hidden><span>Hiệu chỉnh phòng</span><span><em id="tRoom">Tắt</em><i class="chev">›</i></span></button>
-      <div class="placebox roombox" id="secRoom" hidden>
-        <div id="roomIdle">
-          <p class="note">Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.</p>
-          <div class="roombtns"><button class="btn primary" id="roomStart">Hiệu chỉnh</button></div>
-        </div>
-        <div id="roomRun" hidden>
-          <div class="roomprog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="rp-bg" cx="60" cy="60" r="52"/><circle class="rp-fg" id="roomRing" cx="60" cy="60" r="52"/></svg><b id="roomCount"></b></div>
-          <p class="roomstep" id="roomStep"></p>
-          <div class="roombtns"><button class="btn soft" id="roomCancel">Huỷ</button></div>
-        </div>
-        <div id="roomDoneBox" hidden>
-          <div class="roomsw">
-            <div><b id="roomSwState">Đang bật</b><small id="roomSummary"></small></div>
-            <button class="switch" id="roomSwitch" role="switch" aria-checked="true" aria-label="Bật hiệu chỉnh phòng"><i></i></button>
-          </div>
-          <details class="roomdet" id="roomDet">
-            <summary>Chi tiết</summary>
-            <svg id="roomGraph" viewBox="0 0 320 176" role="img" aria-label="Đáp tuyến bass trước và sau hiệu chỉnh"></svg>
-            <div class="roomlegend"><span><i class="lg meas"></i>Đo được</span><span><i class="lg after"></i>Sau hiệu chỉnh</span><span><i class="lg tgt"></i>Mục tiêu</span></div>
-            <p class="note" id="roomBands"></p>
-          </details>
-          <div class="roombtns two"><button class="btn soft" id="roomRedo">Đo lại</button><button class="btn soft" id="roomDelete">Xoá</button></div>
-        </div>
-        <p class="note" id="roomMsg"></p>
       </div>
         <button class="row btnrow" id="rowConn"><span id="rowConnTxt">Kết nối</span><span><i class="chev">›</i></span></button>
       </div>
@@ -532,6 +572,56 @@
       </section>
 
       </div>
+
+      <section id="secRoomGroup">
+        <div class="eyebrow">Phòng nghe</div>
+      <div class="rows">
+        <button class="row btnrow" id="tilePlace"><span>Vị trí đặt loa</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
+      <div class="placebox" id="secPlace" hidden>
+        <div class="seg" id="placement">
+          <i class="slider" id="segSlider"></i>
+          <button data-p="0">Free<small>Xa tường</small></button>
+          <button data-p="1">Wall<small>Sát tường</small></button>
+          <button data-p="2">Corner<small>Trong góc</small></button>
+        </div>
+        <div class="place-fig">
+          <svg viewBox="0 0 300 120" aria-hidden="true">
+            <path class="wall" id="wallBack" d="M20 18 H280"/>
+            <path class="wall" id="wallSide" d="M20 18 V108"/>
+            <g id="figSpk"><rect class="spk" x="-9" y="-14" width="18" height="28" rx="3"/>
+              <path class="wave" d="M-16 22 Q0 34 16 22"/><path class="wave" d="M-24 30 Q0 48 24 30"/></g>
+          </svg>
+        </div>
+        <p class="note" id="placeNote"></p>
+      </div>
+        <button class="row btnrow" id="tileRoom" hidden><span>Hiệu chỉnh phòng</span><span><em id="tRoom">Tắt</em><i class="chev">›</i></span></button>
+      <div class="placebox roombox" id="secRoom" hidden>
+        <div id="roomIdle">
+          <p class="note">Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.</p>
+          <div class="roombtns"><button class="btn primary" id="roomStart">Hiệu chỉnh</button></div>
+        </div>
+        <div id="roomRun" hidden>
+          <div class="roomprog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="rp-bg" cx="60" cy="60" r="52"/><circle class="rp-fg" id="roomRing" cx="60" cy="60" r="52"/></svg><b id="roomCount"></b></div>
+          <p class="roomstep" id="roomStep"></p>
+          <div class="roombtns"><button class="btn soft" id="roomCancel">Huỷ</button></div>
+        </div>
+        <div id="roomDoneBox" hidden>
+          <div class="roomsw">
+            <div><b id="roomSwState">Đang bật</b><small id="roomSummary"></small></div>
+            <button class="switch" id="roomSwitch" role="switch" aria-checked="true" aria-label="Bật hiệu chỉnh phòng"><i></i></button>
+          </div>
+          <details class="roomdet" id="roomDet">
+            <summary>Chi tiết</summary>
+            <svg id="roomGraph" viewBox="0 0 320 176" role="img" aria-label="Đáp tuyến bass trước và sau hiệu chỉnh"></svg>
+            <div class="roomlegend"><span><i class="lg meas"></i>Đo được</span><span><i class="lg after"></i>Sau hiệu chỉnh</span><span><i class="lg tgt"></i>Mục tiêu</span></div>
+            <p class="note" id="roomBands"></p>
+          </details>
+          <div class="roombtns two"><button class="btn soft" id="roomRedo">Đo lại</button><button class="btn soft" id="roomDelete">Xoá</button></div>
+        </div>
+        <p class="note" id="roomMsg"></p>
+      </div>
+      </div>
+      </section>
 
     </div>
   </div>
@@ -1071,7 +1161,7 @@
   function renderHome() {
     const m = currentMode();
     const g = beosonic(state.angle, state.distance);
-    $('tSound').textContent = m ? m.name : `Bass ${fmtDb(g.bass)} · Treble ${fmtDb(g.treble)}`;
+    if ($('tSound')) $('tSound').textContent = m ? m.name : `Bass ${fmtDb(g.bass)} · Treble ${fmtDb(g.treble)}`;
     $('tPlace').textContent = PLACES[state.placement];
   }
   function renderStatus() {
@@ -1771,7 +1861,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
