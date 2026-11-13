@@ -39,12 +39,12 @@
 <div class="wrap">
   <div class="brand"><small>Atelier</small><b>VX</b></div>
   <h1>Âm báo cho VX Lento</h1>
-  <p class="lead">Chọn một âm sắc, rồi chạm từng dòng để nghe. Nên nghe bằng loa hoặc tai nghe, âm lượng vừa phải.</p>
+  <p class="lead">Âm thanh của rừng: gỗ, tre, nước. Chọn một bộ, rồi chạm từng dòng để nghe. Nên nghe bằng loa hoặc tai nghe, âm lượng vừa phải.</p>
 
   <div class="tabs" id="tabs">
-    <button data-t="warm" class="on">Ấm<small>tròn, trầm</small></button>
-    <button data-t="bubble">Bong bóng<small>"bụp" nhẹ</small></button>
-    <button data-t="lowwood">Gỗ trầm<small>gõ gỗ nhỏ</small></button>
+    <button data-t="forest" class="on">Rừng<small>gỗ và nước</small></button>
+    <button data-t="stream">Suối<small>giọt nước</small></button>
+    <button data-t="bamboo">Tre<small>ống tre</small></button>
   </div>
 
   <div class="list" id="list"></div>
@@ -54,16 +54,19 @@
 <script>
 (() => {
   const EVENTS = [
-    ['power_on', 'Bật nguồn', '2 nốt đi lên'],
-    ['power_off', 'Tắt nguồn', '2 nốt đi xuống'],
-    ['connected', 'Đã kết nối / ghép đôi xong', '3 nốt rải đi lên'],
-    ['disconnected', 'Mất kết nối', '2 nốt đi xuống, thấp'],
-    ['identify', 'Nhận diện loa', 'một tiếng ngân'],
-    ['place1', 'Vị trí: Free', '1 tiếng'],
-    ['place2', 'Vị trí: Wall', '2 tiếng'],
-    ['place3', 'Vị trí: Corner', '3 tiếng']
+    ['power_on', 'Bật nguồn'], ['power_off', 'Tắt nguồn'], ['connected', 'Đã kết nối / ghép đôi xong'],
+    ['disconnected', 'Mất kết nối'], ['identify', 'Nhận diện loa'],
+    ['place1', 'Vị trí: Free'], ['place2', 'Vị trí: Wall'], ['place3', 'Vị trí: Corner']
   ];
-  let timbre = 'warm', current = null;
+  const DESC = {
+    forest: { power_on: 'gõ thân cây, rồi một giọt nước', power_off: 'giọt nước, rồi gõ thân cây', connected: '3 giọt nước rơi đi lên',
+              disconnected: 'gõ cành, rồi gõ thân cây trầm', identify: '"cốc" thân cây', place1: '1 tiếng gõ cành nhỏ', place2: '2 tiếng gõ cành nhỏ', place3: '3 tiếng gõ cành nhỏ' },
+    stream: { power_on: '2 giọt nước đi lên', power_off: '2 giọt nước đi xuống', connected: 'suối róc rách ngắn',
+              disconnected: '1 giọt nước trầm', identify: '1 giọt nước', place1: '1 giọt nhỏ', place2: '2 giọt nhỏ', place3: '3 giọt nhỏ' },
+    bamboo: { power_on: '2 tiếng tre đi lên', power_off: '2 tiếng tre đi xuống', connected: '3 tiếng tre rải lên',
+              disconnected: '2 tiếng tre trầm đi xuống', identify: '1 tiếng tre', place1: '1 tiếng tre nhỏ', place2: '2 tiếng tre nhỏ', place3: '3 tiếng tre nhỏ' }
+  };
+  let timbre = 'forest', current = null;
   const list = document.getElementById('list');
   const play = (ev, row) => new Promise(res => {
     if (current) { current.pause(); document.querySelectorAll('.row').forEach(r => r.classList.remove('playing')); }
@@ -75,10 +78,10 @@
   });
   function render() {
     list.innerHTML = '';
-    EVENTS.forEach(([ev, name, desc]) => {
+    EVENTS.forEach(([ev, name]) => {
       const b = document.createElement('button');
       b.className = 'row';
-      b.innerHTML = `<span>${name}<em>${desc}</em></span><i>▶</i>`;
+      b.innerHTML = `<span>${name}<em>${DESC[timbre][ev]}</em></span><i>▶</i>`;
       b.onclick = () => play(ev, b);
       list.appendChild(b);
     });
