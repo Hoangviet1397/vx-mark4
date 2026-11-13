@@ -504,6 +504,31 @@
   .lbl.sub { font-weight: 500; }
   .num { font-family: var(--serif); font-size: 30px; font-weight: 500; line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
   .num small { font-family: inherit; font-size: 12px; margin-left: 3px; }
+
+  /* ================= hero in 3D (Cover Flow feel) =================
+     The pair stands toed-in toward the listener, on a glossy floor that
+     reflects it. Drag sideways (or tilt the phone) and both swing round
+     together, then spring back; a light sweep follows the angle.
+     --ry / --rx are set every frame by heroMotion(). */
+  #heroPair { perspective: 900px; perspective-origin: 50% 40%; touch-action: pan-y; cursor: grab; --ry: 0; --rx: 0; }
+  #heroPair.held { cursor: grabbing; }
+  #heroPair .side { --toe: 0; transform-style: preserve-3d; }
+  #heroPair .side[data-r="1"] { --toe: 16; }
+  #heroPair .side[data-r="2"] { --toe: -16; }
+  #heroPair .side.solo { --toe: 0; }
+  #heroPair .spk {
+    transform: rotateX(calc(var(--rx) * 1deg)) rotateY(calc((var(--toe) + var(--ry)) * 1deg));
+    transform-origin: 50% 60%;
+    will-change: transform;
+    filter: drop-shadow(0 10px 14px rgba(0,0,0,.28));
+    -webkit-box-reflect: below 3px linear-gradient(transparent 78%, rgba(255,255,255,.26));
+  }
+  /* light sweep across the front, moving with the angle */
+  #heroPair .spk::after { content: ""; position: absolute; inset: 0; border-radius: 7% / 4.5%; pointer-events: none;
+    background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.16) 48%, transparent 60%);
+    background-size: 260% 100%; background-position: calc(50% + (var(--toe) + var(--ry)) * 1.6%) 0; mix-blend-mode: screen; }
+  #heroPair .side .eyebrow { margin-top: 58px; }
+  @supports not (-webkit-box-reflect: below) { #heroPair .side .eyebrow { margin-top: 14px; } }
 </style>
 </head>
 <body>
@@ -868,6 +893,58 @@
     if (products.length) openProduct(products[0].key); else openAdd();
   };
   document.querySelectorAll('[data-back]').forEach(el => el.onclick = () => showTab('speaker'));
+
+  // hero in 3D: drag / phone tilt / slow idle sway, all through one spring so
+  // every movement eases in and out (no jumps). Runs only while the speaker
+  // page is on screen.
+  const heroMotion = (() => {
+    const hp = $('heroPair');
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    let ry = 0, vy = 0, rx = 0, vx = 0;        // current angle and speed
+    let drag = null, dragY = 0, tiltY = 0, tiltX = 0, last = 0, raf = 0;
+    hp.addEventListener('pointerdown', e => {
+      drag = { x: e.clientX, y: e.clientY, base: dragY, id: e.pointerId, moved: false };
+      hp.classList.add('held');
+    });
+    hp.addEventListener('pointermove', e => {
+      if (!drag) return;
+      const dx = e.clientX - drag.x;
+      if (!drag.moved && Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(e.clientY - drag.y)) { drag.moved = true; try { hp.setPointerCapture(drag.id); } catch (_) {} }
+      if (drag.moved) dragY = clamp(drag.base + dx * 0.32, -48, 48);
+    });
+    const up = () => { if (!drag) return; drag = null; dragY = 0; hp.classList.remove('held'); };
+    addEventListener('pointerup', up); addEventListener('pointercancel', up); hp.addEventListener('lostpointercapture', up);
+    // phone tilt (Android at once; iOS asks once, on the first touch of the picture)
+    const onTilt = e => { if (e.gamma == null) return; tiltY = clamp(e.gamma * 0.55, -14, 14); tiltX = clamp((e.beta - 45) * -0.18, -6, 6); };
+    if (!still && 'DeviceOrientationEvent' in window) {
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        hp.addEventListener('pointerup', function ask() {
+          hp.removeEventListener('pointerup', ask);
+          DeviceOrientationEvent.requestPermission().then(r => { if (r === 'granted') addEventListener('deviceorientation', onTilt); }).catch(() => {});
+        });
+      } else addEventListener('deviceorientation', onTilt);
+    }
+    function frame(t) {
+      raf = 0;
+      if ($('v-speaker').hidden || document.hidden) return;
+      const dt = Math.min(0.05, last ? (t - last) / 1000 : 0.016); last = t;
+      const idle = still || drag ? 0 : Math.sin(t / 2600) * 3.5;
+      const idleX = still || drag ? 0 : Math.sin(t / 3700) * 1.2;
+      const ty = drag ? dragY : tiltY + idle, tx = drag ? 0 : tiltX + idleX;
+      const k = drag ? 260 : 70, d = drag ? 30 : 11;   // stiff while held, soft spring when let go
+      vy += ((ty - ry) * k - vy * d) * dt; ry += vy * dt;
+      vx += ((tx - rx) * 60 - vx * 12) * dt; rx += vx * dt;
+      hp.style.setProperty('--ry', ry.toFixed(2));
+      hp.style.setProperty('--rx', rx.toFixed(2));
+      raf = requestAnimationFrame(frame);
+    }
+    const start = () => { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } };
+    document.addEventListener('visibilitychange', start);
+    // swing in from the side, like a cover sliding into place
+    return { start, enter() { if (!still) { ry = 38; vy = 0; } start(); } };
+  })();
+  { const show = showTab; showTab = (name, anchor) => { show(name, anchor); if (name === 'speaker') heroMotion.enter(); }; }
   $('tilePlace').onclick = () => { const b = $('secPlace'); b.hidden = !b.hidden; $('tilePlace').classList.toggle('open', !b.hidden); };
   document.querySelectorAll('[data-go]').forEach(el => el.onclick = () => showTab(el.dataset.go, el.dataset.anchor));
 
