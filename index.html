@@ -506,54 +506,74 @@
   .num small { font-family: inherit; font-size: 12px; margin-left: 3px; }
 
   /* ================= hero in 3D =================
-     Each speaker is a real box: the front picture, two side panels, a top and
-     a soft shadow on the floor, seen a little from above. The pair stands
-     toed-in toward the listener; drag sideways (or tilt the phone) and both
-     turn together, then spring back. The panels are lit from the front left,
-     so a side gets brighter as it turns toward the light.
-     --ry / --rx are set every frame by heroMotion(); --w / --d (px) by its
-     resize observer; --lf / --ll / --lr (face brightness) per speaker. */
-  #heroPair { perspective: 820px; perspective-origin: 50% 20%; touch-action: pan-y; cursor: grab;
-              --ry: 0; --rx: 0; --pitch: -11; --w: 120px; --d: 140px; }
+     The speaker as built (photos): a white printed cabinet ~1.3x deeper than
+     wide with rounded vertical edges, a slatted grille standing proud of the
+     baffle, controls on the top (port, < > play, toggle) behind a seam near
+     the front. Lit like a studio product shot: soft key from the upper left,
+     a pale backdrop spot, a soft contact shadow. Colours: --grille, --body.
+     --ry / --rx every frame (heroMotion); --w / --d (px) from the drawn width;
+     --lf / --ll / --lr = face brightness. */
+  :root { --grille: #d8352c; --grille-gap: #4b1310; --ring: rgba(0,0,0,.3); --body: #f1efe9; --body-edge: #bcbab5; }
+  .f-body { fill: var(--body); } .f-grille { fill: var(--grille); } .f-gap { fill: var(--grille-gap); } .f-ring { stroke: var(--ring); }
+  .fsvg, .spk svg.fsvg { position: relative; inset: auto; display: block; width: 100%; height: auto; }
+  .navthumb .fsvg { width: auto; height: 30px; }
+  .pimg .fsvg { width: 100%; }
+  .s3d { perspective: 820px; perspective-origin: 50% 18%; --ry: 0; --rx: 0; --pitch: -12; --w: 120px; --d: 156px; }
+  #heroPair { touch-action: pan-y; cursor: grab; }
   #heroPair.held { cursor: grabbing; }
-  /* one eye for the pair (perspective on #heroPair), so each box shows its
-     inner side the way two real speakers on a shelf do; the toe-in turns
-     them a little toward the listener */
-  #heroPair .side { --toe: 0; --dim: 1; transform-style: preserve-3d; }
-  #heroPair .spk.box { filter: none; opacity: 1 !important; transition: none; }
-  #heroPair.dim .side:not(.lit) { --dim: .5; }
-  #heroPair .side[data-r="1"] { --toe: 9; }
-  #heroPair .side[data-r="2"] { --toe: -9; }
-  #heroPair .side.solo { --toe: 0; }
-  #heroPair:has(.side:not(.solo):not([hidden]) + .side:not([hidden])) { gap: 17%; }
-  #heroPair .side:not(.solo) { width: 33%; }
-  #heroPair .box { position: relative; transform-style: preserve-3d; will-change: transform;
+  .hero { background: radial-gradient(ellipse 70% 62% at 50% 46%, rgba(255,255,255,.75), transparent 72%); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .hero { background: radial-gradient(ellipse 70% 62% at 50% 46%, rgba(255,240,215,.07), transparent 72%); } }
+  :root[data-theme="dark"] .hero { background: radial-gradient(ellipse 70% 62% at 50% 46%, rgba(255,240,215,.07), transparent 72%); }
+  .s3d .side { --toe: 0; --dim: 1; transform-style: preserve-3d; }
+  .s3d .spk.box { filter: none; opacity: 1 !important; transition: none; }
+  .s3d.dim .side:not(.lit) { --dim: .5; }
+  .s3d .side[data-r="1"] { --toe: 9; }
+  .s3d .side[data-r="2"] { --toe: -9; }
+  .s3d .side.solo { --toe: 0; }
+  #heroPair:has(.side:not(.solo):not([hidden]) + .side:not([hidden])) { gap: 19%; }
+  #heroPair .side:not(.solo) { width: 31%; }
+  #heroPair .side.solo { width: 42%; }
+  .s3d .box { position: relative; transform-style: preserve-3d; will-change: transform;
     transform: rotateX(calc((var(--pitch) + var(--rx)) * 1deg)) rotateY(calc((var(--toe) + var(--ry)) * 1deg)); --lf: 1; --ll: .7; --lr: .7; }
-  #heroPair .box .front { position: relative; transform: translateZ(calc(var(--d) / 2)); filter: brightness(calc(var(--lf) * var(--dim))); }
-  #heroPair .box .front svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  #heroPair .box .front img { position: relative; width: 100%; height: auto; display: block; user-select: none; -webkit-user-select: none; }
-  /* light sweep across the grille, following the angle */
-  #heroPair .box .front::after { content: ""; position: absolute; inset: 1.5%; border-radius: 6% / 4%; pointer-events: none;
-    background: linear-gradient(100deg, transparent 38%, rgba(255,255,255,.10) 50%, transparent 62%);
+  .s3d .box .front { position: relative; transform: translateZ(calc(var(--d) / 2)); filter: brightness(calc(var(--lf) * var(--dim))); }
+  /* soft sheen across the front, moving with the angle */
+  .s3d .box .front::after { content: ""; position: absolute; inset: 0; border-radius: 6% / 4%; pointer-events: none;
+    background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.13) 48%, transparent 64%);
     background-size: 300% 100%; background-position: calc(50% - (var(--toe) + var(--ry)) * 1.8%) 0; }
-  #heroPair .face { position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
-  /* cabinet: the same light grey as the front frame, a darker seam at the front edge */
-  #heroPair .face.sl, #heroPair .face.sr { top: 2.2%; height: 95.6%; width: var(--d); }
-  #heroPair .face.sl { left: calc(var(--d) / -2); transform: rotateY(-90deg) translateZ(-1px); filter: brightness(calc(var(--ll) * var(--dim)));
-    background: linear-gradient(to left, #9d9d9b 0, #d9d8d4 2.5%, #cfcec9 60%, #c3c2bd 100%); border-radius: 3px; }
-  #heroPair .face.sr { left: calc(100% - var(--d) / 2); transform: rotateY(90deg) translateZ(-1px); filter: brightness(calc(var(--lr) * var(--dim)));
-    background: linear-gradient(to right, #9d9d9b 0, #d9d8d4 2.5%, #cfcec9 60%, #c3c2bd 100%); border-radius: 3px; }
-  #heroPair .face.tp { left: 2.5%; width: 95%; height: var(--d); top: calc(var(--d) / -2); transform: rotateX(90deg) translateZ(-1px);
-    background: linear-gradient(to top, #a3a3a0 0, #e6e5e1 3%, #dcdbd6 100%); border-radius: 3px; filter: brightness(calc(1.02 * var(--dim))); box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
-  /* contact shadow on the floor, turns with the box */
-  #heroPair .face.fl { left: -22%; width: 144%; height: calc(var(--d) * 1.5); top: calc(100% - var(--d) * .75);
-    transform: rotateX(90deg) translateZ(-2px); backface-visibility: visible; -webkit-backface-visibility: visible;
-    background: radial-gradient(closest-side, rgba(0,0,0,.38), rgba(0,0,0,.16) 60%, transparent); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #heroPair .face.fl { background: radial-gradient(closest-side, rgba(0,0,0,.75), rgba(0,0,0,.3) 60%, transparent); } }
-  :root[data-theme="dark"] #heroPair .face.fl { background: radial-gradient(closest-side, rgba(0,0,0,.75), rgba(0,0,0,.3) 60%, transparent); }
-  #heroPair .side .eyebrow { margin-top: 46px; }
-  #heroPair .side { transition: opacity .35s; }
-  #heroPair .side[hidden] { display: none; }
+  .s3d .face { position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  /* sides: cabinet colour, print layer lines, the rounded front edge as a
+     highlight then a soft turn into shade */
+  .s3d .face.sl, .s3d .face.sr { top: 0; height: 100%; width: var(--d); background-color: var(--body); border-radius: 5px; }
+  .s3d .face.sl { left: calc(var(--d) / -2); transform: rotateY(-90deg) translateZ(-1.5px); filter: brightness(calc(var(--ll) * var(--dim)));
+    background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.035) 0 1px, transparent 1px 3px),
+      linear-gradient(to left, rgba(0,0,0,.16) 0, rgba(255,255,255,.35) 2.5%, rgba(255,255,255,.08) 7%, transparent 14%, rgba(0,0,0,.06) 100%); }
+  .s3d .face.sr { left: calc(100% - var(--d) / 2); transform: rotateY(90deg) translateZ(-1.5px); filter: brightness(calc(var(--lr) * var(--dim)));
+    background-image: repeating-linear-gradient(0deg, rgba(0,0,0,.035) 0 1px, transparent 1px 3px),
+      linear-gradient(to right, rgba(0,0,0,.16) 0, rgba(255,255,255,.35) 2.5%, rgba(255,255,255,.08) 7%, transparent 14%, rgba(0,0,0,.06) 100%); }
+  /* top: seam ~16% back from the front, controls drawn in tsvg */
+  .s3d .face.tp { left: 0; width: 100%; height: var(--d); top: calc(var(--d) / -2); transform: rotateX(90deg) translateZ(-1.5px);
+    background-color: var(--body); border-radius: 5px; filter: brightness(calc(1.05 * var(--dim)));
+    background-image: linear-gradient(to bottom, rgba(0,0,0,.12) 0, transparent 3%, transparent 15.6%, rgba(0,0,0,.18) 15.6%, rgba(0,0,0,.18) 16.2%, rgba(255,255,255,.4) 16.2%, transparent 17.5%),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.025) 0 1px, transparent 1px 3px); }
+  .s3d .face.tp .tsvg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  /* soft contact shadow on the floor */
+  .s3d .face.fl { left: -26%; width: 152%; height: calc(var(--d) * 1.45); top: calc(100% - var(--d) * .725);
+    transform: rotateX(90deg) translateZ(-1px); backface-visibility: visible; -webkit-backface-visibility: visible;
+    background: radial-gradient(closest-side, rgba(40,30,20,.42), rgba(40,30,20,.16) 55%, transparent); filter: blur(2px); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .s3d .face.fl { background: radial-gradient(closest-side, rgba(0,0,0,.8), rgba(0,0,0,.3) 55%, transparent); } }
+  :root[data-theme="dark"] .s3d .face.fl { background: radial-gradient(closest-side, rgba(0,0,0,.8), rgba(0,0,0,.3) 55%, transparent); }
+  .s3d .side .eyebrow { margin-top: 52px; }
+  .s3d .side { transition: opacity .35s; }
+  .s3d .side[hidden] { display: none; }
+  /* Settings > Colour */
+  .colorhero { margin-top: 4px; padding: 26px 20px 30px !important; }
+  #colorStage .side.solo { width: 150px; max-width: none; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 14px 8px; padding: 6px 0 4px; }
+  .sw { appearance: none; border: 0; background: none; color: var(--muted); cursor: pointer; padding: 0; width: 70px;
+        display: flex; flex-direction: column; align-items: center; gap: 8px; font: 12px/1.2 inherit; }
+  .sw i { width: 36px; height: 36px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12), 0 0 0 3px var(--bg), 0 0 0 4px transparent; transition: box-shadow .2s; }
+  .sw.on i { box-shadow: inset 0 0 0 1px rgba(0,0,0,.12), 0 0 0 3px var(--bg), 0 0 0 4.5px var(--accent); }
+  .sw.on { color: var(--text); }
 </style>
 </head>
 <body>
@@ -602,7 +622,7 @@
   <!-- speaker -->
   <div class="view" id="v-speaker">
     <div class="wrap">
-      <div class="hero"><div class="pair" id="heroPair"></div></div>
+      <div class="hero"><div class="pair s3d" id="heroPair"></div></div>
       <h1 class="ptitle" id="pTitle">VX Lento</h1>
       <div class="chipwrap"><button class="chip" id="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
 
@@ -727,6 +747,7 @@
         <h1 class="bigtitle">Cài đặt</h1>
         <div class="eyebrow subh">Loa</div>
         <div class="setrows">
+          <button class="srow" data-sub="setColor"><span>Màu loa</span><span><em id="colorNow">Đỏ · Trắng</em><i>›</i></span></button>
           <button class="srow" data-sub="setAbout"><span>Giới thiệu</span><i>›</i></button>
           <button class="srow" data-sub="setGuide" id="guide"><span>Nút bấm &amp; đèn báo</span><i>›</i></button>
           <div class="srow info"><span>Phần mềm</span><em id="fwNow">Kết nối để xem</em></div>
@@ -741,6 +762,17 @@
           <button class="btn soft" id="removeProduct">Xoá loa khỏi app</button>
         </div>
         <p class="foot">Chế tác tại Atelier VX · 2026</p>
+      </div>
+
+      <!-- settings > colour -->
+      <div id="setColor" class="subpage" hidden>
+        <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Màu loa</b><span></span></div>
+        <div class="hero colorhero"><div class="pair s3d" id="colorStage"></div></div>
+        <div class="eyebrow subh">Mặt lưới</div>
+        <div class="swatches" id="swGrille"></div>
+        <div class="eyebrow subh">Thân loa</div>
+        <div class="swatches" id="swBody"></div>
+        <p class="note">Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.</p>
       </div>
 
       <!-- settings > about -->
@@ -871,10 +903,53 @@
   };
   const UNKNOWN_MODEL = { name: 'loa VX', image: 'img/speaker-front.png', drivers: true, tagline: 'Loa VX', about: 'Loa VX.', specs: [], guide: false, features: F_WHEEL };
   const modelOf = id => MODELS[id] || Object.assign({}, UNKNOWN_MODEL, { name: 'loa VX ' + id });
-  const speakerHTML = m => `<div class="spk">${m.drivers ? '<svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg>' : ''}<img src="${m.image}" alt="VX ${m.name}" draggable="false"></div>`;
-  // the same speaker as a 3D box (product page): front picture, sides, top, floor shadow
-  const boxHTML = m => `<div class="spk box"><i class="face fl"></i><i class="face tp"></i><i class="face sl"></i><i class="face sr"></i>`
-    + `<div class="front">${m.drivers ? '<svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg>' : ''}<img src="${m.image}" alt="VX ${m.name}" draggable="false"></div></div>`;
+  // ---------- the speaker as built (photos): white printed cabinet, a slatted
+  // grille that stands proud of the baffle, two driver rings cut into the
+  // slats. Drawn in SVG so the colours can change (--grille, --body). ----------
+  let svgN = 0;
+  function frontSVG() {
+    const n = ++svgN, W = 300, H = 440, gx = 9, gy = 11, gw = 282, gh = 418, N = 27, p = gw / N, bw = p * 0.7;
+    let bars = '';
+    for (let i = 0; i < N; i++) bars += `<rect x="${(gx + i * p + (p - bw) / 2).toFixed(2)}" y="${gy}" width="${bw.toFixed(2)}" height="${gh}"/>`;
+    return `<svg class="fsvg" viewBox="0 0 ${W} ${H}" aria-hidden="true"><defs>`
+      + `<clipPath id="gc${n}"><rect x="${gx}" y="${gy}" width="${gw}" height="${gh}" rx="27"/></clipPath>`
+      + `<clipPath id="bc${n}">${bars}</clipPath>`
+      + `<linearGradient id="bg${n}" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset=".35" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#000" stop-opacity=".22"/></linearGradient>`
+      + `<linearGradient id="sh${n}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".12"/></linearGradient>`
+      + `<filter id="ds${n}" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="3"/></filter></defs>`
+      + `<rect class="f-body" width="${W}" height="${H}" rx="18"/><rect width="${W}" height="${H}" rx="18" fill="url(#sh${n})"/>`
+      + `<rect x="${gx + 1}" y="${gy + 4}" width="${gw}" height="${gh}" rx="27" fill="#000" opacity=".35" filter="url(#ds${n})"/>`
+      + `<g clip-path="url(#gc${n})"><rect class="f-gap" x="${gx}" y="${gy}" width="${gw}" height="${gh}"/>`
+      + `<g clip-path="url(#bc${n})"><rect class="f-grille" x="${gx}" y="${gy}" width="${gw}" height="${gh}"/>`
+      + `<g fill="url(#bg${n})">${bars}</g>`
+      + `<g class="f-ring" fill="none" stroke-width="3.2"><circle cx="150" cy="122" r="78"/><circle cx="150" cy="312" r="116"/></g></g></g></svg>`;
+  }
+  const speakerHTML = m => `<div class="spk">${frontSVG()}</div>`;
+  // the same speaker as a 3D box (product page): front, sides, top with the
+  // controls, floor shadow
+  const topSVG = `<svg class="tsvg" viewBox="0 0 100 130" preserveAspectRatio="none" aria-hidden="true">`
+    + `<circle cx="24" cy="36" r="5.2" fill="#111"/><circle cx="24" cy="36" r="2.4" fill="#2b2b2b"/>`
+    + `<g fill="none" stroke="#1a1a1a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M40 32 l-3.4 4 3.4 4"/><path d="M60 32 l3.4 4 -3.4 4"/></g><path d="M48.4 32 l5.6 4 -5.6 4z" fill="#1a1a1a"/>`
+    + `<polygon points="78,31.2 82,33.5 82,38.5 78,40.8 74,38.5 74,33.5" fill="#b9b6ae" stroke="#8b8880" stroke-width=".5"/><circle cx="78" cy="36" r="2.6" fill="#d9c08a" stroke="#a88d55" stroke-width=".5"/></svg>`;
+  const boxHTML = m => `<div class="spk box"><i class="face fl"></i><i class="face tp">${topSVG}</i><i class="face sl"></i><i class="face sr"></i>`
+    + `<div class="front">${frontSVG()}</div></div>`;
+
+  // colours: grille and cabinet, remembered in this browser
+  const GRILLES = [['do', 'Đỏ', '#d8352c'], ['den', 'Đen', '#1f1f21'], ['kem', 'Kem', '#e6d9c2'], ['reu', 'Rêu', '#5b6650'], ['than', 'Xanh than', '#29344a'], ['dat', 'Cam đất', '#b5653d']];
+  const BODIES = [['trang', 'Trắng', '#f1efe9'], ['den', 'Đen', '#2a2a2c'], ['go', 'Gỗ sồi', '#c79f72']];
+  let colour = store.get('vx.colour', { grille: 'do', body: 'trang' });
+  const hexLum = h => { const v = parseInt(h.slice(1), 16); return (0.2126 * (v >> 16 & 255) + 0.7152 * (v >> 8 & 255) + 0.0722 * (v & 255)) / 255; };
+  const shade = (h, k) => { const v = parseInt(h.slice(1), 16); return '#' + [v >> 16 & 255, v >> 8 & 255, v & 255].map(c => Math.round(c * k).toString(16).padStart(2, '0')).join(''); };
+  function applyColour() {
+    const g = (GRILLES.find(x => x[0] === colour.grille) || GRILLES[0]), b = (BODIES.find(x => x[0] === colour.body) || BODIES[0]);
+    const r = document.documentElement.style;
+    r.setProperty('--grille', g[2]); r.setProperty('--grille-gap', shade(g[2], hexLum(g[2]) > .5 ? .55 : .35));
+    r.setProperty('--ring', hexLum(g[2]) < .3 ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.42)');
+    r.setProperty('--body', b[2]); r.setProperty('--body-edge', shade(b[2], .78));
+    if ($('colorNow')) $('colorNow').textContent = `${g[1]} · ${b[1]}`;
+    document.querySelectorAll('.sw[data-grille]').forEach(s => s.classList.toggle('on', s.dataset.grille === g[0]));
+    document.querySelectorAll('.sw[data-body]').forEach(s => s.classList.toggle('on', s.dataset.body === b[0]));
+  }
 
   // remembered speakers (this browser): [{ key, model, btId, kind, last }]
   let products = store.get('vx.products', []);
@@ -901,7 +976,7 @@
   let tab = 'speaker';
   function showTab(name, anchor) {
     tab = name;
-    if (name === 'info' && $('setMain')) ['setMain', 'setAbout', 'setGuide', 'setLog', 'setLang'].forEach(x => $(x).hidden = x !== 'setMain');
+    if (name === 'info' && $('setMain')) ['setMain', 'setAbout', 'setGuide', 'setLog', 'setLang', 'setColor'].forEach(x => $(x).hidden = x !== 'setMain');
     ['speaker', 'sound', 'info'].forEach(t => $('v-' + t).hidden = t !== name);
     document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
     if (anchor) requestAnimationFrame(() => $(anchor).scrollIntoView({ behavior: 'smooth', block: 'start' }));
@@ -909,7 +984,7 @@
     if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
   }
   document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
-  const showSub = id => { ['setMain', 'setAbout', 'setGuide', 'setLog', 'setLang'].forEach(x => $(x).hidden = x !== id); window.scrollTo(0, 0); };
+  const showSub = id => { ['setMain', 'setAbout', 'setGuide', 'setLog', 'setLang', 'setColor'].forEach(x => $(x).hidden = x !== id); window.scrollTo(0, 0); };
   document.querySelectorAll('[data-sub]').forEach(b => b.onclick = () => showSub(b.dataset.sub));
   document.querySelectorAll('[data-up]').forEach(b => b.onclick = () => showSub('setMain'));
   $('setConn').onclick = () => $('rowConn').onclick();
@@ -978,25 +1053,37 @@
     }
     const start = () => { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } };
     document.addEventListener('visibilitychange', start);
-    // box depth follows the drawn width (a bookshelf box ~1.15x deeper than wide)
+    // box depth follows the drawn width (the printed cabinet is ~1.3x deeper than wide)
     const measure = () => {
       const f = hp.querySelector('.side:not([hidden]) .front');
       if (!f || !f.offsetWidth) return;
       hp.style.setProperty('--w', f.offsetWidth + 'px');
-      hp.style.setProperty('--d', Math.round(f.offsetWidth * 1.15) + 'px');
+      hp.style.setProperty('--d', Math.round(f.offsetWidth * 1.3) + 'px');
     };
     if ('ResizeObserver' in window) new ResizeObserver(measure).observe(hp);
     // swing in from the side, like a cover sliding into place
     return { start, measure, enter() { if (!still) { ry = 38; vy = 0; } measure(); start(); } };
   })();
   { const show = showTab; showTab = (name, anchor) => { show(name, anchor); if (name === 'speaker') heroMotion.enter(); }; }
+
+  // Settings > Colour: one speaker turned a little, swatches under it
+  $('colorStage').innerHTML = `<div class="side solo" data-r="0">${boxHTML(MODELS[4])}</div>`;
+  $('colorStage').style.cssText = '--ry: 24; --rx: 0; --w: 150px; --d: 195px;';
+  { const b = $('colorStage').querySelector('.box'); b.style.setProperty('--lf', '1'); b.style.setProperty('--ll', '.62'); b.style.setProperty('--lr', '.97'); }
+  $('swGrille').innerHTML = GRILLES.map(([k, name, c]) => `<button class="sw" data-grille="${k}" style="--c:${c}"><i></i><span>${name}</span></button>`).join('');
+  $('swBody').innerHTML = BODIES.map(([k, name, c]) => `<button class="sw" data-body="${k}" style="--c:${c}"><i></i><span>${name}</span></button>`).join('');
+  document.querySelectorAll('.sw').forEach(s => s.onclick = () => {
+    if (s.dataset.grille) colour.grille = s.dataset.grille; else colour.body = s.dataset.body;
+    store.set('vx.colour', colour); applyColour();
+  });
+  applyColour();
   $('tilePlace').onclick = () => { const b = $('secPlace'); b.hidden = !b.hidden; $('tilePlace').classList.toggle('open', !b.hidden); };
   document.querySelectorAll('[data-go]').forEach(el => el.onclick = () => showTab(el.dataset.go, el.dataset.anchor));
 
   // fill the speaker view for one model: picture, names, which controls exist
   function applyModel(id) {
     const m = modelOf(id), f = (info.model === id && info.features) ? info.features : m.features;
-    $('navThumb').innerHTML = `<img src="${m.image}" alt="">`;
+    $('navThumb').innerHTML = frontSVG();
     $('pTitle').textContent = 'VX ' + m.name;
     document.querySelectorAll('.backname').forEach(e => e.textContent = 'VX ' + m.name);
     const pair = f & F_PAIR;
@@ -2033,7 +2120,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Ứng dụng': 'App', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
