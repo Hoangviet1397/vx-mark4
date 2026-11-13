@@ -716,7 +716,7 @@
   .seg.two button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 9px 4px 8px; font-size: 14px; }
   .seg.two button small { font-size: 11.5px; font-weight: 400; color: var(--muted); }
   .seg.two button.active { color: var(--text); }
-  .roomrows { border-top: 0 !important; }
+  .roomrows { border-top: 1px solid var(--hair) !important; }
   .roomrows > .btnrow { display: none !important; }
   .roomrows > .placebox { border-bottom: 0; padding-top: 12px; }
   #roomPending:empty { display: none; }
@@ -730,6 +730,27 @@
   .connbox #tilePeer { margin-top: 6px; border-top: 1px solid var(--hair); }
   .connbox .twsbox { display: grid; gap: 8px; padding: 0; border: 0; background: none; }
   .connbox .twsbox .cb-t { margin-bottom: 2px; }
+  /* Bù phòng: one of four (Free, Wall, Corner, Đo phòng) */
+  #placement.four { grid-template-columns: repeat(4, 1fr); }
+  #placement.four .slider { width: calc((100% - 6px) / 4); }
+  #placement button { padding: 9px 2px 8px; }
+  #placement button small { font-size: 11px; }
+  .roomrows > #tilePlace { display: flex !important; }
+  #roomPanel { padding: 4px 2px 16px; border-bottom: 1px solid var(--hair); }
+  #roomPanel .placebox { border-bottom: 0; padding: 8px 0 0; }
+  /* Kết nối: a status line and one button per part */
+  .connbox .cb-line { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; }
+  .connbox .cb-line > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .connbox .cb-line b { font-weight: 500; font-size: var(--t-body); }
+  .connbox .cb-line small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+  .connbox .cb-line .btn { flex: none; min-width: 96px; }
+  .connbox #tilePeer { border-top: 1px solid var(--hair); margin-top: 0; }
+  .connbox #twsBox { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: 4px; }
+  .connbox #twsBox[hidden] { display: none; }
+  .connbox { padding-top: 0; }
+  .connbox .cb-line > div { flex: 1 1 auto; }
+  .connbox .cb-line > .btn { flex: 0 0 auto; width: auto; min-width: 104px; margin: 0; position: static; }
+  #tileRoom { display: none !important; }
 </style>
 </head>
 <body>
@@ -825,21 +846,18 @@
 
       <section id="secRoomGroup">
         <div class="eyebrow homeh">Phòng nghe</div>
-      <!-- one or the other: the speaker uses the room measurement in place of
-           the Free / Wall / Corner bands (same filters, firmware sink_loudness.c) -->
-      <div class="seg two" id="roomMode" role="radiogroup" aria-label="Cách bù phòng">
-        <i class="slider" id="rmSlider"></i>
-        <button data-m="place" role="radio">Theo vị trí<small>Chọn nhanh</small></button>
-        <button data-m="room" role="radio">Đo phòng<small>Bằng điện thoại</small></button>
-      </div>
       <div class="rows roomrows">
-        <button class="row btnrow" id="tilePlace"><span>Vị trí đặt loa</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
-      <div class="placebox" id="secPlace" hidden>
+        <button class="row btnrow" id="tilePlace"><span>Bù phòng</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
+      <!-- one of four: three placements, or the room measurement (which the
+           speaker uses in place of the placement bands, firmware sink_loudness.c) -->
+      <div id="roomPanel" hidden>
+      <div class="placebox" id="secPlace">
         <div class="seg" id="placement">
           <i class="slider" id="segSlider"></i>
           <button data-p="0">Free<small>Xa tường</small></button>
           <button data-p="1">Wall<small>Sát tường</small></button>
           <button data-p="2">Corner<small>Trong góc</small></button>
+          <button data-p="room">Đo phòng<small>Điện thoại</small></button>
         </div>
         <div class="place-fig">
           <svg viewBox="0 0 300 120" aria-hidden="true">
@@ -879,6 +897,7 @@
         <p class="note" id="roomMsg"></p>
       </div>
       </div>
+      </div>
       </section>
 
       <!-- everything about connecting in one place: the phone's link to the
@@ -887,17 +906,11 @@
       <div class="rows" id="homeRows">
         <button class="row btnrow" id="rowConn"><span>Điện thoại · Cặp loa</span><span><em id="tConn">Chưa nối</em><i class="chev">›</i></span></button>
         <div class="connbox" id="connBox" hidden>
-          <div class="cb-h">Điện thoại</div>
-          <p class="cb-t" id="connText"></p>
-          <div class="cb-btns"><button class="btn primary" id="connBtn">Kết nối</button><button class="btn soft" id="mySpk">Loa của tôi</button></div>
+          <div class="cb-line"><div><b>Điện thoại</b><small id="connText"></small></div><button class="btn primary" id="connBtn">Kết nối</button></div>
           <div id="tilePeer">
-            <div class="cb-h">Cặp loa <em id="tPeer">Chưa nối</em></div>
-            <div class="twsbox" id="twsBox">
-              <p class="cb-t" id="twsText"></p>
-              <button class="btn soft" id="swapLR" hidden>Đổi trái ↔ phải</button>
-              <button class="btn primary" id="twsPair">Ghép với loa kia</button>
-              <button class="btn soft" id="twsEnd">Tách 2 loa</button>
-            </div>
+            <div class="cb-line"><div><b>Cặp loa</b><small id="twsText"></small></div><button class="btn primary" id="twsPair">Ghép</button></div>
+            <div class="cb-btns" id="twsBox"><button class="btn soft" id="swapLR" hidden>Đổi trái ↔ phải</button><button class="btn soft" id="twsEnd">Tách 2 loa</button></div>
+            <em id="tPeer" hidden></em>
           </div>
         </div>
       </div>
@@ -1301,7 +1314,7 @@
     store.set('vx.colour', colour); applyColour();
   });
   applyColour();
-  $('tilePlace').onclick = () => { const b = $('secPlace'); b.hidden = !b.hidden; $('tilePlace').classList.toggle('open', !b.hidden); };
+  $('tilePlace').onclick = () => openFold('roomPanel');
   document.querySelectorAll('[data-go]').forEach(el => el.onclick = () => showTab(el.dataset.go, el.dataset.anchor));
 
   // fill the speaker view for one model: picture, names, which controls exist
@@ -1351,8 +1364,16 @@
   $('chip').onclick = connectHere;
   const connToggle = async () => { if (link) await disconnectLink(); else connectHere(); };
   $('connBtn').onclick = connToggle;
-  $('mySpk').onclick = openSheet;
-  $('rowConn').onclick = () => { const b = $('connBox'); b.hidden = !b.hidden; $('rowConn').classList.toggle('open', !b.hidden); renderTws(); };
+  // the two folding rows (Bù phòng, Kết nối): opening one closes the other
+  function openFold(id) {
+    [['roomPanel', 'tilePlace'], ['connBox', 'rowConn']].forEach(([pane, row]) => {
+      const open = pane === id && $(pane).hidden;
+      $(pane).hidden = !open; $(row).classList.toggle('open', open);
+    });
+    if (!$('connBox').hidden) renderTws();
+    if (!$('roomPanel').hidden) renderRoomMode();
+  }
+  $('rowConn').onclick = () => openFold('connBox');
 
   // stereo pair (TWS) controls: the same as the button combos on the speaker
   const CMD_TWS = 0x0005, CMD_SET_ROLE = 0x0009, CMD_IDENTIFY = 0x000A;
@@ -1360,24 +1381,22 @@
   const myRole = () => state.role || (state.phone || DEMO ? 1 : 2);
   function renderTws() {
     const t = $('twsText'), live = state.connected || DEMO;
-    if (!live) t.textContent = 'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.';
-    else if (state.peer) t.textContent = myRole() === 2
-      ? 'Hai loa đang chơi stereo. Loa đang nối với điện thoại là loa phải (có chấm trên hình). Nếu trái phải bị ngược, bấm Đổi.'
-      : 'Hai loa đang chơi stereo. Loa đang nối với điện thoại là loa trái (có chấm trên hình). Nếu trái phải bị ngược, bấm Đổi.';
-    else t.textContent = 'Đang dùng một loa (phát cả hai kênh). Muốn nghe stereo, hoặc thay một loa hỏng: bật loa thứ hai để gần, bấm Ghép ở đây, rồi giữ Rew + Play trên loa kia khoảng 3 giây. Loa mới sẽ thay chỗ loa cũ.';
-    // Like the big brands: the pair comes up as left/right by itself (the
-    // speaker with the phone is left); one Swap button if it is the wrong way.
+    t.textContent = !live ? 'Nối điện thoại với một loa trước.'
+      : state.peer ? (myRole() === 2 ? 'Stereo · loa nối với điện thoại là loa phải (chấm đồng trên hình)' : 'Stereo · loa nối với điện thoại là loa trái (chấm đồng trên hình)')
+      : 'Một loa · phát cả hai kênh';
     $('swapLR').hidden = !(live && state.peer && !!(info.features & F_ROLE));
     $('twsPair').hidden = live && state.peer;
+    $('twsPair').disabled = !live;
     $('twsEnd').hidden = !(live && state.peer);
+    $('twsBox').hidden = !(live && state.peer);
   }
   $('swapLR').onclick = async () => {
     // side this speaker plays now: chosen in the app, else left if it holds the phone
     const next = 3 - myRole();
     state.role = next; renderStatus(); renderTws();
     $('twsText').textContent = next === 2
-      ? 'Đã đổi. Loa đang nối với điện thoại giờ là loa phải. Bấm Đổi lần nữa để đổi lại.'
-      : 'Đã đổi. Loa đang nối với điện thoại giờ là loa trái. Bấm Đổi lần nữa để đổi lại.';
+      ? 'Đã đổi · loa nối với điện thoại giờ là loa phải'
+      : 'Đã đổi · loa nối với điện thoại giờ là loa trái';
     if (link) { try { await gaia(CMD_SET_ROLE, [next]); log('Đã đổi trái ↔ phải.'); } catch (e) { log('Lỗi: ' + errText(e)); } }
   };
   const twsCmd = async (op, msg) => {
@@ -1388,7 +1407,7 @@
     try { await gaia(CMD_TWS, [op]); $('twsText').textContent = msg; log(msg); }
     catch (e) { log('Lỗi: ' + errText(e)); }
   };
-  $('twsPair').onclick = () => twsCmd(1, 'Đang tìm loa kia… Đèn nháy đôi là đang tìm.');
+  $('twsPair').onclick = () => twsCmd(1, 'Đang tìm loa kia: bật loa thứ hai để gần, giữ Rew + Play trên loa đó khoảng 3 giây.');
   $('twsEnd').onclick = () => twsCmd(2, 'Đã tách: mỗi loa giờ chơi riêng.');
 
   // "My speakers": one card per remembered speaker, plus "add"
@@ -1683,10 +1702,21 @@
 
   // ---------- placement ----------
   const seg = document.querySelectorAll('#placement button');
-  seg.forEach(b => b.onclick = () => { state.placement = +b.dataset.p; renderPlacement(); if (link) gaia(CMD_SET_PLACEMENT, [state.placement]).catch(err => log('Lỗi: ' + err.message)); });
+  seg.forEach(b => b.onclick = async () => {
+    if (b.dataset.p === 'room') {
+      roomPick = 'room'; store.set('vx.roomPick', roomPick);
+      if (state.roomStored && !state.roomOn) await roomToggle(true);
+      renderPlacement(); return;
+    }
+    roomPick = 'place'; store.set('vx.roomPick', roomPick);
+    if (state.roomOn) await roomToggle(false);
+    state.placement = +b.dataset.p; renderPlacement();
+    if (link) gaia(CMD_SET_PLACEMENT, [state.placement]).catch(err => log('Lỗi: ' + err.message));
+  });
   function renderPlacement() {
-    seg.forEach(b => b.classList.toggle('active', +b.dataset.p === state.placement));
-    $('segSlider').style.transform = `translateX(${state.placement * 100}%)`;
+    const roomOn = typeof roomPick !== 'undefined' && roomModeNow() === 'room';
+    seg.forEach(b => b.classList.toggle('active', roomOn ? b.dataset.p === 'room' : +b.dataset.p === state.placement));
+    $('segSlider').style.transform = `translateX(${(roomOn ? 3 : state.placement) * 100}%)`;
     // little room plan: free = middle of the room, wall = against the back wall, corner = in the corner
     const pos = [[170, 76], [170, 34], [42, 34]][state.placement];
     $('figSpk').style.transform = `translate(${pos[0]}px, ${pos[1]}px)`;
@@ -1785,7 +1815,7 @@
     $('connBtn').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
     $('connBtn').classList.toggle('primary', !state.connected); $('connBtn').classList.toggle('soft', state.connected);
     $('tConn').textContent = state.connected ? `${pair && state.peer ? 'Stereo' : 'Một loa'} · ${via}` : DEMO ? 'Bản thử' : 'Chưa nối';
-    $('connText').textContent = state.connected ? `Đang nối ${side.toLowerCase()} qua ${via}.` : DEMO ? 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.' : 'Chưa nối. Bật loa rồi bấm Kết nối.';
+    $('connText').textContent = state.connected ? `${side} · ${via}` : DEMO ? 'Bản thử · chưa nối loa thật' : 'Chưa nối';
     $('setConn').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
     $('setConn').classList.toggle('primary', !state.connected);
     // one speaker in use (no peer): show only that speaker, not the pair
@@ -1795,7 +1825,7 @@
       el.hidden = solo && +el.dataset.r !== (state.role || 1);
       el.classList.toggle('solo', solo);
     });
-    if (!$('twsBox').hidden) renderTws();
+    if (!$('connBox').hidden) renderTws();
     // highlight the speaker we talk to; the other one is lit too when the pair is synced
     if (sheetOpen) renderHomeList();
     const hp = $('heroPair');
@@ -2375,21 +2405,15 @@
   var roomPick = store.get('vx.roomPick', 'place');   // var: renderPlacement() may run first
   const roomModeNow = () => state.roomOn ? 'room' : roomPick;
   function renderRoomMode() {
-    const m = roomModeNow(), hasRoom = !(state.connected && !(info.features & F_ROOM) && !state.roomStored);
-    $('roomMode').hidden = !hasRoom;
-    document.querySelectorAll('#roomMode button').forEach(b => { const on = b.dataset.m === m; b.classList.toggle('active', on); b.setAttribute('aria-checked', on); });
-    $('rmSlider').style.transform = `translateX(${m === 'room' ? 100 : 0}%)`;
-    const place = m === 'place' || !hasRoom;
-    $('secPlace').hidden = !place; $('secRoom').hidden = place;
-    $('tilePlace').classList.toggle('open', place); $('tileRoom').classList.toggle('open', !place);
-    if (!place) roomRender();
+    const hasRoom = !(state.connected && !(info.features & F_ROOM) && !state.roomStored);
+    const roomBtn = document.querySelector('#placement [data-p="room"]');
+    roomBtn.hidden = !hasRoom; $('placement').classList.toggle('four', hasRoom);
+    const room = hasRoom && roomModeNow() === 'room';
+    document.querySelector('#secPlace .place-fig').hidden = room; $('placeNote').hidden = room;
+    $('secRoom').hidden = !room;
+    $('tPlace').textContent = room ? (state.roomOn ? 'Đo phòng' : 'Đo phòng · chưa đo') : PLACES[state.placement];
+    if (room) roomRender();
   }
-  document.querySelectorAll('#roomMode button').forEach(b => b.onclick = async () => {
-    roomPick = b.dataset.m; store.set('vx.roomPick', roomPick);
-    if (roomPick === 'place' && state.roomOn) await roomToggle(false);
-    else if (roomPick === 'room' && state.roomStored && !state.roomOn) await roomToggle(true);
-    renderRoomMode();
-  });
   renderRoomMode();
   async function roomDelete() {
     if (!confirm(tr('Xoá hiệu chỉnh phòng trên cả 2 loa? Muốn dùng lại thì phải đo lại.'))) return;
