@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VX Âm báo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #f3f1ec; --surface: #fff; --chip: rgba(22,22,26,.06); --text: #16161a; --muted: #7a766f; --hair: rgba(22,22,26,.13); --sel: #f7ead0; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #0b0b0c; --surface: #151517; --chip: rgba(242,240,236,.07); --text: #f2f0ec; --muted: #8b8780; --hair: rgba(242,240,236,.13); --sel: rgba(233,207,154,.22); }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 520px; margin: 0 auto; padding: max(28px, env(safe-area-inset-top)) 16px 40px; }
+  .brand { text-align: center; font-family: "Cormorant Garamond", Garamond, serif; }
+  .brand small { display: block; font-size: 12px; letter-spacing: .5em; padding-left: .5em; color: var(--muted); text-transform: uppercase; }
+  .brand b { display: block; font-weight: 500; font-size: 44px; letter-spacing: .12em; padding-left: .12em; }
+  h1 { font-weight: 500; font-size: 20px; text-align: center; margin: 6px 0 4px; }
+  .lead { color: var(--muted); font-size: 14px; text-align: center; margin: 0 0 22px; }
+  .tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; background: var(--chip); border-radius: 14px; padding: 4px; }
+  .tabs button { appearance: none; border: 0; background: none; color: var(--muted); font: 500 14px/1.2 inherit; padding: 11px 4px 9px; border-radius: 10px; cursor: pointer; }
+  .tabs button small { display: block; font-weight: 400; font-size: 11px; margin-top: 2px; }
+  .tabs button.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .list { margin-top: 14px; display: grid; gap: 8px; }
+  .row { appearance: none; border: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; text-align: left;
+         background: var(--chip); color: var(--text); border-radius: 16px; padding: 15px 16px; font: 15px/1.3 inherit; cursor: pointer; }
+  .row em { font-style: normal; color: var(--muted); font-size: 13px; display: block; margin-top: 2px; }
+  .row i { font-style: normal; width: 34px; height: 34px; flex: none; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--hair); }
+  .row.playing { background: var(--sel); }
+  .all { margin-top: 16px; width: 100%; appearance: none; border: 0; border-radius: 999px; padding: 15px; background: var(--text); color: var(--bg);
+         font: 500 13px/1 inherit; letter-spacing: .14em; text-transform: uppercase; cursor: pointer; }
+  .note { color: var(--muted); font-size: 13px; margin-top: 18px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><small>Atelier</small><b>VX</b></div>
+  <h1>Âm báo cho VX Lento</h1>
+  <p class="lead">Chọn một âm sắc, rồi chạm từng dòng để nghe. Nên nghe bằng loa hoặc tai nghe, âm lượng vừa phải.</p>
+
+  <div class="tabs" id="tabs">
+    <button data-t="crystal" class="on">Pha lê<small>chuông thuỷ tinh</small></button>
+    <button data-t="wood">Gỗ<small>đàn marimba</small></button>
+    <button data-t="soft">Chuông mềm<small>ấm, tròn</small></button>
+  </div>
+
+  <div class="list" id="list"></div>
+  <button class="all" id="all">Nghe cả bộ</button>
+  <p class="note">Âm thanh được tổng hợp bằng code, không dùng mẫu thu sẵn. Âm sắc bạn chọn sẽ được đưa vào loa.</p>
+</div>
+<script>
+(() => {
+  const EVENTS = [
+    ['power_on', 'Bật nguồn', '2 nốt đi lên'],
+    ['power_off', 'Tắt nguồn', '2 nốt đi xuống'],
+    ['connected', 'Đã kết nối / ghép đôi xong', '3 nốt rải đi lên'],
+    ['disconnected', 'Mất kết nối', '2 nốt đi xuống, thấp'],
+    ['identify', 'Nhận diện loa', 'một tiếng ngân'],
+    ['place1', 'Vị trí: Free', '1 tiếng'],
+    ['place2', 'Vị trí: Wall', '2 tiếng'],
+    ['place3', 'Vị trí: Corner', '3 tiếng']
+  ];
+  let timbre = 'crystal', current = null;
+  const list = document.getElementById('list');
+  const play = (ev, row) => new Promise(res => {
+    if (current) { current.pause(); document.querySelectorAll('.row').forEach(r => r.classList.remove('playing')); }
+    const a = new Audio(`${timbre}_${ev}.wav`);
+    current = a;
+    if (row) row.classList.add('playing');
+    a.onended = a.onerror = () => { if (row) row.classList.remove('playing'); res(); };
+    a.play().catch(() => res());
+  });
+  function render() {
+    list.innerHTML = '';
+    EVENTS.forEach(([ev, name, desc]) => {
+      const b = document.createElement('button');
+      b.className = 'row';
+      b.innerHTML = `<span>${name}<em>${desc}</em></span><i>▶</i>`;
+      b.onclick = () => play(ev, b);
+      list.appendChild(b);
+    });
+  }
+  document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+    timbre = b.dataset.t;
+    document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+    render();
+  });
+  document.getElementById('all').onclick = async () => {
+    const rows = [...document.querySelectorAll('.row')];
+    for (let i = 0; i < EVENTS.length; i++) { await play(EVENTS[i][0], rows[i]); await new Promise(r => setTimeout(r, 450)); }
+  };
+  render();
+})();
+</script>
+</body>
+</html>
