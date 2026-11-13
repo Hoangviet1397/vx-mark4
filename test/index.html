@@ -796,6 +796,13 @@
   /* settings rows and stations: arrows nudge on press */
   .srow:active i, .row:active .chev { transform: translateX(3px); }
   .row.open:active .chev { transform: rotate(90deg); }
+  /* main screens: only status and warnings */
+  #placeNote, #roomPending { display: none !important; }
+  #syncNote:not(.warn) { display: none; }
+  /* how-to page */
+  .guide { padding: 2px 0 4px; }
+  .guide p { margin: 0 0 10px; font-size: var(--t-small); line-height: 1.6; color: var(--text); opacity: .85; }
+  .guide p b { font-weight: 600; opacity: 1; }
 </style>
 </head>
 <body>
@@ -849,7 +856,7 @@
       <div class="chipwrap"><button class="chip" id="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
 
       <div id="wheelBlock">
-      <div class="eyebrow homeh">Âm sắc <span class="hint">Giữ núm rồi xoay · chạm đúp về 0</span></div>
+      <div class="eyebrow homeh">Âm sắc</div>
       <!-- two tone knobs, like the front of a hi-fi amplifier -->
       <div class="knobs" id="knobs">
         <div class="tknob" data-k="bass" role="slider" aria-label="Bass" tabindex="0">
@@ -917,7 +924,7 @@
       <div class="placebox roombox" id="secRoom" hidden>
         <div id="roomIdle">
           <p class="note muted" id="roomPending"></p>
-          <p class="note" id="roomIntro">Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.</p>
+          <p class="note" id="roomIntro">Ngồi ở chỗ nghe, âm lượng 60–70%, phòng yên lặng.</p>
           <div class="roombtns"><button class="btn primary" id="roomStart">Hiệu chỉnh</button></div>
         </div>
         <div id="roomRun" hidden>
@@ -965,7 +972,6 @@
   <div class="view" id="v-radio" hidden>
     <div class="wrap">
       <h1 class="title">Radio</h1>
-      <p class="sub">Phát từ điện thoại ra loa qua Bluetooth.</p>
       <div class="rnow" id="radioNow" hidden>
         <div class="rn-dot" id="rnDot"></div>
         <div class="rn-txt"><b id="rnName"></b><small id="rnSub"></small></div>
@@ -992,7 +998,7 @@
         <div class="setrows">
           <button class="srow" data-sub="setColor"><span>Màu loa</span><span><em id="colorNow">Đỏ</em><i>›</i></span></button>
           <button class="srow" data-sub="setAbout"><span>Giới thiệu</span><i>›</i></button>
-          <button class="srow" data-sub="setGuide" id="guide"><span>Nút bấm &amp; đèn báo</span><i>›</i></button>
+          <button class="srow" data-sub="setGuide" id="guide"><span>Hướng dẫn sử dụng</span><i>›</i></button>
           <div class="srow info"><span>Phần mềm</span><em id="fwNow">Kết nối để xem</em></div>
         </div>
         <div class="eyebrow subh">Ứng dụng</div>
@@ -1015,7 +1021,6 @@
         <div class="swatches" id="swGrille"></div>
         
         
-        <p class="note">Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.</p>
       </div>
 
       <!-- settings > about -->
@@ -1026,9 +1031,37 @@
         <div class="setrows" id="specRows"></div>
       </div>
 
-      <!-- settings > buttons and light -->
+      <!-- settings > how to use: every explanation lives here, the main screens stay quiet -->
       <div id="setGuide" class="subpage" hidden>
-        <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Nút bấm &amp; đèn báo</b><span></span></div>
+        <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Hướng dẫn sử dụng</b><span></span></div>
+        <div class="eyebrow subh">Âm sắc</div>
+        <div class="guide">
+          <p><b>Xoay núm:</b> giữ ngón tay trên núm khoảng nửa giây cho tới khi núm nổi lên, rồi xoay. Vuốt ngang qua núm chỉ cuộn trang, không đổi âm.</p>
+          <p><b>Về 0:</b> chạm đúp vào núm.</p>
+          <p>Bass chỉnh ±6 dB, Treble ±8 dB. Khi 2 loa đã ghép, chỉnh một lần là cả hai loa cùng đổi và được lưu trong loa.</p>
+        </div>
+        <div class="eyebrow subh">Chế độ nghe</div>
+        <div class="guide">
+          <p><b>Optimal</b> âm chuẩn · <b>Clear</b> giọng rõ, treble sáng · <b>Dark</b> êm, bớt treble · <b>Podcast</b> cho giọng nói.</p>
+          <p>Chỉnh núm theo ý rồi bấm <b>+ Lưu chế độ</b> để giữ lại. Bấm <b>Sửa</b> để xoá chế độ đã lưu.</p>
+        </div>
+        <div class="eyebrow subh">Phòng nghe</div>
+        <div class="guide">
+          <p><b>Free:</b> loa cách tường trên 50 cm, âm chuẩn, không bù.</p>
+          <p><b>Wall:</b> loa sát tường sau, giảm 4 dB quanh 100 Hz cho bass gọn.</p>
+          <p><b>Corner:</b> loa trong góc phòng, giảm 7 dB quanh 90 Hz, bù nhẹ 250 Hz.</p>
+          <p><b>Đo phòng:</b> loa phát một tiếng quét bass, điện thoại nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Ngồi đúng chỗ nghe, để âm lượng 60–70%, giữ phòng yên lặng; mất khoảng 30 giây. Khi dùng kết quả đo, Free / Wall / Corner không còn tác dụng; chọn lại Free / Wall / Corner thì kết quả đo vẫn được giữ để dùng lại.</p>
+        </div>
+        <div class="eyebrow subh">Kết nối</div>
+        <div class="guide">
+          <p><b>Nối loa:</b> bật loa, bấm <b>Kết nối</b> rồi chọn loa VX trong danh sách. Lần sau app tự nối lại.</p>
+          <p><b>Ghép 2 loa:</b> bật loa thứ hai để gần, bấm <b>Ghép</b>, rồi giữ <b>Rew + Play</b> trên loa đó khoảng 3 giây. Ghép một loa mới thì loa mới thay chỗ loa cũ.</p>
+          <p><b>Trái / phải:</b> chấm đồng trên hình là loa đang nối với điện thoại. Nghe thấy trái phải bị ngược thì bấm <b>Đổi trái ↔ phải</b>.</p>
+        </div>
+        <div class="eyebrow subh">Radio</div>
+        <div class="guide">
+          <p>Điện thoại phát đài rồi đưa tiếng ra loa qua Bluetooth, như mọi app nghe nhạc. Bấm hình trái tim để lưu đài yêu thích, tìm thêm đài theo tên ở cuối trang.</p>
+        </div>
         <div class="eyebrow subh">Nút bấm</div>
         <div class="setrows">
           <div class="srow info"><span>Play</span><em>Phát / dừng · giữ: ghép điện thoại</em></div>
@@ -1883,9 +1916,9 @@
 
     });
     const n = $('homeNote'), sn = $('syncNote');
-    if (!state.connected) { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = 'Kết nối với loa để chỉnh âm.'; }
+    if (!state.connected) { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = ''; }
     else if (!state.peer) { n.className = 'note warn'; n.textContent = pair ? 'Loa kia chưa nối: chỉnh sửa chỉ áp cho loa này.' : ''; sn.className = 'note warn'; sn.textContent = pair ? 'Chỉ áp cho loa này cho tới khi 2 loa nối lại.' : ''; }
-    else { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = 'Áp cho cả 2 loa và được lưu lại.'; }
+    else { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = ''; }
     roomRender();
   }
 
@@ -2489,9 +2522,7 @@
     // shown for one speaker as well as a pair; hidden only when a connected
     // speaker's firmware says it has no room compensation
     $('tileRoom').hidden = state.connected && !ok && !state.roomStored;
-    $('roomIntro').textContent = state.peer
-      ? 'Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.'
-      : 'Loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.';
+    $('roomIntro').textContent = 'Ngồi ở chỗ nghe, âm lượng 60–70%, phòng yên lặng.';
     $('roomPending').textContent = state.roomStored ? '' : `Chưa đo: loa vẫn bù theo vị trí đặt (${PLACES[state.placement]}) cho tới khi đo xong.`;
     $('tRoom').textContent = room.busy || state.measuring ? 'Đang đo' : state.roomOn ? 'Bật' : state.roomStored ? 'Tắt' : 'Chưa đo';
     if ($('secRoom').hidden) return;
@@ -2785,7 +2816,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', '+ Lưu chế độ': '+ Save as mode', 'Điện thoại': 'Phone', 'Điện thoại · Cặp loa': 'Phone · Pair', 'Bản thử': 'Demo', 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.': 'Demo: no real speaker, every button still works.', 'Chưa nối. Bật loa rồi bấm Kết nối.': 'Not connected. Turn the speaker on, then tap Connect.', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu chế độ': '+ Save as mode',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', 'Hướng dẫn sử dụng': 'How to use', 'Ngồi ở chỗ nghe, âm lượng 60–70%, phòng yên lặng.': 'Sit where you listen, volume 60–70%, a quiet room.', '+ Lưu chế độ': '+ Save as mode', 'Điện thoại': 'Phone', 'Điện thoại · Cặp loa': 'Phone · Pair', 'Bản thử': 'Demo', 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.': 'Demo: no real speaker, every button still works.', 'Chưa nối. Bật loa rồi bấm Kết nối.': 'Not connected. Turn the speaker on, then tap Connect.', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu chế độ': '+ Save as mode',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
