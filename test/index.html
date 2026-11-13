@@ -565,6 +565,18 @@
   .s3d .side .eyebrow { margin-top: 52px; }
   .s3d .side { transition: opacity .35s; }
   .s3d .side[hidden] { display: none; }
+  /* WebGL view from the CAD model (body.gl3d-on once it has loaded): the
+     canvas draws the speakers, #heroPair stays on top for dragging and the
+     Trái / Phải labels, which follow the speakers' feet */
+  .gl3d { display: none; }
+  body.gl3d-on .hero { position: relative; }
+  body.gl3d-on .gl3d { display: block; width: 100%; height: 330px; }
+  body.gl3d-on .colorhero .gl3d { height: 300px; }
+  body.gl3d-on .s3d { position: absolute; inset: 0; display: block; perspective: none; }
+  body.gl3d-on .s3d .spk.box { display: none; }
+  body.gl3d-on .s3d .side { position: absolute; width: auto !important; transform: translate(-50%, 14px); }
+  body.gl3d-on .s3d .side .eyebrow { margin: 0; }
+  body.gl3d-on .hero { padding-top: max(20px, env(safe-area-inset-top)) !important; padding-bottom: 6px !important; }
   /* Settings > Colour */
   .colorhero { margin-top: 4px; padding: 26px 20px 30px !important; }
   #colorStage .side.solo { width: 150px; max-width: none; }
@@ -622,7 +634,7 @@
   <!-- speaker -->
   <div class="view" id="v-speaker">
     <div class="wrap">
-      <div class="hero"><div class="pair s3d" id="heroPair"></div></div>
+      <div class="hero"><canvas class="gl3d" id="heroGL" aria-hidden="true"></canvas><div class="pair s3d" id="heroPair"></div></div>
       <h1 class="ptitle" id="pTitle">VX Lento</h1>
       <div class="chipwrap"><button class="chip" id="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
 
@@ -767,7 +779,7 @@
       <!-- settings > colour -->
       <div id="setColor" class="subpage" hidden>
         <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Màu loa</b><span></span></div>
-        <div class="hero colorhero"><div class="pair s3d" id="colorStage"></div></div>
+        <div class="hero colorhero"><canvas class="gl3d" id="colorGL" aria-hidden="true"></canvas><div class="pair s3d" id="colorStage"></div></div>
         <div class="eyebrow subh">Mặt lưới</div>
         <div class="swatches" id="swGrille"></div>
         <div class="eyebrow subh">Thân loa</div>
@@ -852,6 +864,7 @@
   <p class="msg" id="cMsg"></p>
 </div>
 
+<script src="vx3d.js"></script>
 <script>
 (() => {
   'use strict';
@@ -949,6 +962,7 @@
     if ($('colorNow')) $('colorNow').textContent = `${g[1]} · ${b[1]}`;
     document.querySelectorAll('.sw[data-grille]').forEach(s => s.classList.toggle('on', s.dataset.grille === g[0]));
     document.querySelectorAll('.sw[data-body]').forEach(s => s.classList.toggle('on', s.dataset.body === b[0]));
+    if (typeof gl3d !== 'undefined' && gl3d) { gl3d.hero.o.parts = gl3d.stage.o.parts = partColours(); drawStage(); }
   }
 
   // remembered speakers (this browser): [{ key, model, btId, kind, last }]
@@ -1049,6 +1063,7 @@
         box.style.setProperty('--lr', (0.48 + 0.42 * lit(yaw + 90)).toFixed(3));
         box.style.setProperty('--ll', (0.48 + 0.42 * lit(yaw - 90)).toFixed(3));
       });
+      if (gl3d) drawHero(ry, rx);
       raf = requestAnimationFrame(frame);
     }
     const start = () => { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } };
@@ -1065,6 +1080,40 @@
     return { start, measure, enter() { if (!still) { ry = 38; vy = 0; } measure(); start(); } };
   })();
   { const show = showTab; showTab = (name, anchor) => { show(name, anchor); if (name === 'speaker') heroMotion.enter(); }; }
+
+  // ---------- the speaker from its CAD model (vx3d.js, img/lento.bin) ----------
+  // Cabinet and baffle come from the Fusion export; the slatted grille is
+  // built from its measurements (driver rings centred on the baffle holes:
+  // woofer r 67 at 0,0, tweeter r 52.5 at 0,115). If WebGL or the file is
+  // missing the CSS boxes above stay.
+  const GRILLE_SPEC = { x0: -73, x1: 73, y0: -77, y1: 169, r: 17, n: 27, fill: .7, z0: .6, z1: 6.5, notch: 2.2, rings: [[0, 0, 69], [0, 115, 52]] };
+  let gl3d = null;
+  function partColours() {
+    const g = (GRILLES.find(x => x[0] === colour.grille) || GRILLES[0])[2], b = (BODIES.find(x => x[0] === colour.body) || BODIES[0])[2];
+    const dark = hexLum(g) < .3;
+    return { body: b, face: b, grille: dark ? shade(g, 1.25) : g, gback: shade(g, dark ? .5 : .3), gring: dark ? '#d9d5cc' : shade(g, .35) };
+  }
+  const isDark = () => document.documentElement.dataset.theme === 'dark' || (document.documentElement.dataset.theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+  function drawHero(ry, rx) {
+    const hp = $('heroPair'), sides = [...hp.querySelectorAll('.side:not([hidden])')];
+    const dimmed = hp.classList.contains('dim');
+    const speakers = sides.map(s => ({ yaw: s.classList.contains('solo') ? 0 : s.dataset.r === '1' ? 9 : -9, dim: dimmed && !s.classList.contains('lit') ? .5 : 1 }));
+    gl3d.hero.set({ speakers, pitch: -13 + rx, spin: ry, gap: .75, shadow: isDark() ? .8 : .42 });
+    // the labels (Trái / Phải) sit under each speaker's feet
+    (gl3d.hero.feet || []).forEach((f, i) => { const s = sides[i]; if (s) { s.style.left = (f.x * 100).toFixed(2) + '%'; s.style.top = (f.y * 100).toFixed(2) + '%'; } });
+  }
+  function drawStage() {
+    if (!gl3d || $('setColor').hidden) return;
+    gl3d.stage.set({ speakers: [{ yaw: 30 }], pitch: -16, spin: 0, shadow: isDark() ? .8 : .42 });
+  }
+  if (window.VX3D) VX3D.load('img/lento.bin').then(m => {
+    Object.assign(m.parts, VX3D.grille(GRILLE_SPEC));
+    const mk = c => new VX3D.View(c, m, { parts: partColours(), gloss: { grille: .1, body: .07, face: .07, gring: 0, gback: 0 } });
+    gl3d = { hero: mk($('heroGL')), stage: mk($('colorGL')) };
+    document.body.classList.add('gl3d-on');
+    heroMotion.start(); drawStage();
+  }).catch(e => console.warn('3D view off:', e && e.message));
+  $('setColor') && document.querySelector('[data-sub="setColor"]').addEventListener('click', () => requestAnimationFrame(drawStage));
 
   // Settings > Colour: one speaker turned a little, swatches under it
   $('colorStage').innerHTML = `<div class="side solo" data-r="0">${boxHTML(MODELS[4])}</div>`;
