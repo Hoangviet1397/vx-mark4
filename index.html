@@ -677,6 +677,9 @@
   #v-radio section > .eyebrow { margin-top: 20px; }
   /* radio playing: a red dot on the Radio tab */
   body.radio-on nav.tabs button[data-tab="radio"]::after { content: ""; position: absolute; top: 9px; left: calc(50% + 10px); width: 7px; height: 7px; border-radius: 50%; background: #c8452f; }
+  /* the speaker the phone is connected to: a brass dot before its label */
+  .s3d .side.me .eyebrow { color: var(--text); }
+  .s3d .side.me .eyebrow::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-right: 6px; vertical-align: 1px; }
 </style>
 </head>
 <body>
@@ -969,6 +972,7 @@
   <p class="msg" id="cMsg"></p>
 </div>
 
+<script src="native-ble.js?v=1"></script>
 <script src="vx3d.js?v=3"></script>
 <script>
 (() => {
@@ -1283,10 +1287,14 @@
   // stereo pair (TWS) controls: the same as the button combos on the speaker
   const CMD_TWS = 0x0005, CMD_SET_ROLE = 0x0009, CMD_IDENTIFY = 0x000A;
   $('tilePeer').onclick = () => { const b = $('twsBox'); b.hidden = !b.hidden; $('tilePeer').classList.toggle('open', !b.hidden); renderTws(); };
+  // the side the speaker we talk to plays: chosen in the app, else left if it holds the phone
+  const myRole = () => state.role || (state.phone || DEMO ? 1 : 2);
   function renderTws() {
     const t = $('twsText'), live = state.connected || DEMO;
     if (!live) t.textContent = 'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.';
-    else if (state.peer) t.textContent = 'Hai loa đang chơi stereo. Nếu nghe thấy trái phải bị ngược, bấm Đổi.';
+    else if (state.peer) t.textContent = myRole() === 2
+      ? 'Hai loa đang chơi stereo. Loa đang nối với điện thoại là loa phải (có chấm trên hình). Nếu trái phải bị ngược, bấm Đổi.'
+      : 'Hai loa đang chơi stereo. Loa đang nối với điện thoại là loa trái (có chấm trên hình). Nếu trái phải bị ngược, bấm Đổi.';
     else t.textContent = 'Đang dùng một loa (phát cả hai kênh). Muốn nghe stereo, hoặc thay một loa hỏng: bật loa thứ hai để gần, bấm Ghép ở đây, rồi giữ Rew + Play trên loa kia khoảng 3 giây. Loa mới sẽ thay chỗ loa cũ.';
     // Like the big brands: the pair comes up as left/right by itself (the
     // speaker with the phone is left); one Swap button if it is the wrong way.
@@ -1296,9 +1304,11 @@
   }
   $('swapLR').onclick = async () => {
     // side this speaker plays now: chosen in the app, else left if it holds the phone
-    const now = state.role || (state.phone || DEMO ? 1 : 2), next = 3 - now;
+    const next = 3 - myRole();
     state.role = next; renderStatus(); renderTws();
-    $('twsText').textContent = 'Đã đổi: trái thành phải, phải thành trái.';
+    $('twsText').textContent = next === 2
+      ? 'Đã đổi. Loa đang nối với điện thoại giờ là loa phải. Bấm Đổi lần nữa để đổi lại.'
+      : 'Đã đổi. Loa đang nối với điện thoại giờ là loa trái. Bấm Đổi lần nữa để đổi lại.';
     if (link) { try { await gaia(CMD_SET_ROLE, [next]); log('Đã đổi trái ↔ phải.'); } catch (e) { log('Lỗi: ' + errText(e)); } }
   };
   const twsCmd = async (op, msg) => {
@@ -1693,6 +1703,8 @@
     hp.querySelectorAll('.side').forEach(s => {
       const me = +s.dataset.r === state.role, lit = state.connected && (me || state.peer || !state.role);
       s.classList.toggle('lit', lit);
+      // the speaker the phone talks to: a brass dot by its label (moves on Swap)
+      s.classList.toggle('me', (state.connected || DEMO) && state.peer && +s.dataset.r === myRole());
 
     });
     const n = $('homeNote'), sn = $('syncNote');
@@ -2337,12 +2349,12 @@
   let radioFavs = store.get('vx.radioFavs', []);           // [{id,name,tag,url,hls}]
   const nativeHls = () => !!radioAudio.canPlayType('application/vnd.apple.mpegurl');
   let hlsLib = null;
-  const loadHls = () => hlsLib || (hlsLib = new Promise((res, rej) => {
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js';
-    s.onload = () => res(window.Hls); s.onerror = () => { hlsLib = null; rej(new Error('hls.js')); };
-    document.head.appendChild(s);
-  }));
+  // hls.js ships with the app (lib/), the CDN copy is only a fallback
+  const addScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+  const loadHls = () => hlsLib || (hlsLib = addScript('lib/hls.min.js')
+    .catch(() => addScript('https://cdnjs.cloudflare.com/ajax/libs/hls.js/1.5.17/hls.min.js'))
+    .then(() => window.Hls)
+    .catch(e => { hlsLib = null; throw new Error('hls.js'); }));
   const rMsg = (t, warn) => { const m = $('radioMsg'); m.className = 'note' + (warn ? ' warn' : ''); m.textContent = t ? tr(t) : ''; };
   function radioStop() {
     radioAudio.pause();
