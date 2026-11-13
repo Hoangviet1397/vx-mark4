@@ -751,6 +751,24 @@
   .connbox .cb-line > div { flex: 1 1 auto; }
   .connbox .cb-line > .btn { flex: 0 0 auto; width: auto; min-width: 104px; margin: 0; position: static; }
   #tileRoom { display: none !important; }
+  /* modes: the save link sits in the label; the row wraps, nothing runs off the edge */
+  .modesh { display: flex; align-items: baseline; justify-content: space-between; }
+  .modesh > span { display: inline-flex; gap: 14px; }
+  .modes { flex-wrap: wrap; overflow: visible; gap: 6px 22px; }
+  .modes .add { display: none; }
+  /* press feedback */
+  .row, .srow, .station .st-main { transition: background-color .15s; }
+  .row:active, .srow:active, .station .st-main:active { background-color: var(--chip); }
+  .btn, .chip, .rn-play, .sw i, .modes button, .seg button { transition: transform .12s ease, background-color .2s, color .2s, opacity .2s; }
+  .btn:active, .chip:active, .rn-play:active { transform: scale(.96); }
+  .sw:active i { transform: scale(.9); }
+  nav.tabs button svg, nav.tabs .navthumb { transition: transform .15s ease; }
+  nav.tabs button:active svg, nav.tabs button:active .navthumb { transform: scale(.88); }
+  nav.tabs button.on::before { transition: left .3s, right .3s; }
+  .row .chev { transition: transform .25s cubic-bezier(.2,.7,.2,1), color .25s; }
+  .seg .slider { transition: transform .32s cubic-bezier(.2,.7,.2,1), width .32s; }
+  .view .wrap { will-change: transform; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
@@ -833,7 +851,7 @@
       <p class="note" id="syncNote"></p>
 
       <section>
-        <div class="eyebrow">Chế độ nghe <button class="linkbtn" id="editBtn" hidden>Sửa</button></div>
+        <div class="eyebrow modesh">Chế độ nghe <span><button class="linkbtn" id="saveLink" hidden>+ Lưu</button><button class="linkbtn" id="editBtn" hidden>Sửa</button></span></div>
         <div class="modes" id="modes"></div>
         <form class="savebox" id="saveBox" hidden>
           <input id="saveName" maxlength="18" placeholder="Tên chế độ, ví dụ: Tối nay" autocomplete="off">
@@ -1367,8 +1385,9 @@
   // the two folding rows (Bù phòng, Kết nối): opening one closes the other
   function openFold(id) {
     [['roomPanel', 'tilePlace'], ['connBox', 'rowConn']].forEach(([pane, row]) => {
-      const open = pane === id && $(pane).hidden;
-      $(pane).hidden = !open; $(row).classList.toggle('open', open);
+      const el = $(pane), open = pane === id && el.hidden;
+      if (open === !el.hidden) return;
+      foldAnim(el, open); $(row).classList.toggle('open', open);
     });
     if (!$('connBox').hidden) renderTws();
     if (!$('roomPanel').hidden) renderRoomMode();
@@ -1675,14 +1694,12 @@
       };
       box.appendChild(b);
     });
-    if (!currentMode() && !editing && state.distance > 0 && $('saveBox').hidden) {
-      const s = document.createElement('button'); s.className = 'add'; s.textContent = '+ Lưu vị trí này';
-      s.onclick = openSave; box.appendChild(s);
-    }
+    $('saveLink').hidden = !(!currentMode() && !editing && state.distance > 0 && $('saveBox').hidden);
     $('editBtn').hidden = !userModes.length;
     $('editBtn').textContent = editing ? 'Xong' : 'Sửa';
     renderHome();
   }
+  $('saveLink').onclick = () => openSave();
   $('editBtn').onclick = () => { editing = !editing; $('saveBox').hidden = true; renderModes(); };
   function openSave() {
     $('saveBox').hidden = false; renderModes();
@@ -2472,6 +2489,83 @@
   $('roomSwitch').onclick = roomToggle;
   $('roomDelete').onclick = roomDelete;
   // =====================================================================
+  // Motion: tabs slide in from the side they are on, a horizontal swipe on
+  // the page changes tab (the page follows the finger), folding rows open
+  // and close smoothly. Off with "reduce motion".
+  // =====================================================================
+  const STILL = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const TABS = ['speaker', 'radio', 'info'];
+  const EASE = 'cubic-bezier(.2,.7,.2,1)';
+  function slideIn(el, dir) {
+    if (STILL || !el || !el.animate) return;
+    el.animate([{ transform: `translateX(${dir * 40}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, easing: EASE });
+  }
+  function foldAnim(el, open) {
+    if (STILL || !el.animate) { el.hidden = !open; return; }
+    el.getAnimations().forEach(a => a.cancel());
+    el.style.overflow = 'hidden';
+    if (open) {
+      el.hidden = false;
+      const h = el.scrollHeight;
+      el.animate([{ height: '0px', opacity: 0 }, { height: h + 'px', opacity: 1 }], { duration: 260, easing: EASE }).onfinish = () => { el.style.overflow = ''; };
+      setTimeout(() => { if (!el.hidden) { el.getAnimations().forEach(x => x.cancel()); el.style.overflow = ''; } }, 320);   // backup when animations are paused
+    } else {
+      const h = el.scrollHeight;
+      const done = () => { el.hidden = true; el.style.overflow = ''; };
+      el.animate([{ height: h + 'px', opacity: 1 }, { height: '0px', opacity: 0 }], { duration: 200, easing: 'ease-in', fill: 'forwards' }).onfinish = done;
+      setTimeout(() => { if (!el.hidden) { el.getAnimations().forEach(x => x.cancel()); done(); } }, 260);   // backup when animations are paused
+    }
+  }
+  { const show = showTab; showTab = (name, anchor) => {
+      const from = TABS.indexOf(tab), to = TABS.indexOf(name);
+      show(name, anchor);
+      if (from !== to && to >= 0) slideIn($('v-' + name).querySelector('.wrap'), to > from ? 1 : -1);
+    }; }
+  // settings sub pages slide in from the right, back from the left
+  { const sub = showSub; window.vxShowSub = sub; }
+  document.querySelectorAll('[data-sub]').forEach(b => b.addEventListener('click', () => slideIn($(b.dataset.sub), 1)));
+  document.querySelectorAll('[data-up]').forEach(b => b.addEventListener('click', () => slideIn($('setMain'), -1)));
+  // swipe between tabs
+  (() => {
+    if (STILL) return;
+    let sw = null;
+    const skip = el => el.closest('.dial, #heroPair, #heroGL, .seg, .modes, input, textarea, .sheetpanel, .askwrap, .roomdet, #colorStage, .gl3d, .swatches');
+    addEventListener('touchstart', e => {
+      sw = null;
+      if (e.touches.length !== 1 || $('app').hidden || !$('sheet').hidden) return;
+      const t = e.touches[0];
+      if (t.clientX < 24 || t.clientX > innerWidth - 24 || skip(e.target)) return;   // screen edges belong to the system back gesture
+      sw = { x: t.clientX, y: t.clientY, t: Date.now(), dx: 0, on: false, wrap: $('v-' + tab).querySelector('.wrap') };
+    }, { passive: true });
+    addEventListener('touchmove', e => {
+      if (!sw || dragging) return;
+      const t = e.touches[0], dx = t.clientX - sw.x, dy = t.clientY - sw.y;
+      if (!sw.on) {
+        if (Math.abs(dy) > 10 && Math.abs(dy) >= Math.abs(dx)) { sw = null; return; }   // it is a scroll
+        if (Math.abs(dx) < 14) return;
+        sw.on = true; sw.t = Date.now(); sw.x0 = dx;
+      }
+      const i = TABS.indexOf(tab), edge = (dx > 0 && i === 0) || (dx < 0 && i === TABS.length - 1);
+      sw.dx = dx;
+      sw.wrap.style.transition = 'none';
+      sw.wrap.style.transform = `translateX(${(edge ? dx * .15 : dx * .5).toFixed(1)}px)`;
+      sw.wrap.style.opacity = String(1 - Math.min(.4, Math.abs(dx) / 800));
+    }, { passive: true });
+    const end = () => {
+      if (!sw) return;
+      const s0 = sw; sw = null;
+      if (!s0.on) return;
+      const i = TABS.indexOf(tab), v = Math.abs(s0.dx - s0.x0) / Math.max(1, Date.now() - s0.t);
+      const go = (Math.abs(s0.dx) > 80 || v > .55) ? (s0.dx < 0 ? i + 1 : i - 1) : i;
+      s0.wrap.style.transition = `transform .24s ${EASE}, opacity .24s`;
+      s0.wrap.style.transform = ''; s0.wrap.style.opacity = '';
+      if (go !== i && go >= 0 && go < TABS.length) { s0.wrap.style.transition = 'none'; showTab(TABS[go]); }
+    };
+    addEventListener('touchend', end);
+    addEventListener('touchcancel', end);
+  })();
+
+  // =====================================================================
   // Radio: the phone plays the stream and sends it to the speaker over
   // Bluetooth (A2DP), like any other app. Stations checked 2026-11-13:
   // HTTPS only (the page is HTTPS), HLS for VOV (Safari plays it; other
@@ -2647,7 +2741,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', 'Điện thoại': 'Phone', 'Điện thoại · Cặp loa': 'Phone · Pair', 'Bản thử': 'Demo', 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.': 'Demo: no real speaker, every button still works.', 'Chưa nối. Bật loa rồi bấm Kết nối.': 'Not connected. Turn the speaker on, then tap Connect.', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', '+ Lưu': '+ Save', 'Điện thoại': 'Phone', 'Điện thoại · Cặp loa': 'Phone · Pair', 'Bản thử': 'Demo', 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.': 'Demo: no real speaker, every button still works.', 'Chưa nối. Bật loa rồi bấm Kết nối.': 'Not connected. Turn the speaker on, then tap Connect.', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
