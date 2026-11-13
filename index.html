@@ -505,30 +505,55 @@
   .num { font-family: var(--serif); font-size: 30px; font-weight: 500; line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
   .num small { font-family: inherit; font-size: 12px; margin-left: 3px; }
 
-  /* ================= hero in 3D (Cover Flow feel) =================
-     The pair stands toed-in toward the listener, on a glossy floor that
-     reflects it. Drag sideways (or tilt the phone) and both swing round
-     together, then spring back; a light sweep follows the angle.
-     --ry / --rx are set every frame by heroMotion(). */
-  #heroPair { perspective: 900px; perspective-origin: 50% 40%; touch-action: pan-y; cursor: grab; --ry: 0; --rx: 0; }
+  /* ================= hero in 3D =================
+     Each speaker is a real box: the front picture, two side panels, a top and
+     a soft shadow on the floor, seen a little from above. The pair stands
+     toed-in toward the listener; drag sideways (or tilt the phone) and both
+     turn together, then spring back. The panels are lit from the front left,
+     so a side gets brighter as it turns toward the light.
+     --ry / --rx are set every frame by heroMotion(); --w / --d (px) by its
+     resize observer; --lf / --ll / --lr (face brightness) per speaker. */
+  #heroPair { perspective: 820px; perspective-origin: 50% 20%; touch-action: pan-y; cursor: grab;
+              --ry: 0; --rx: 0; --pitch: -11; --w: 120px; --d: 140px; }
   #heroPair.held { cursor: grabbing; }
-  #heroPair .side { --toe: 0; transform-style: preserve-3d; }
-  #heroPair .side[data-r="1"] { --toe: 16; }
-  #heroPair .side[data-r="2"] { --toe: -16; }
+  /* one eye for the pair (perspective on #heroPair), so each box shows its
+     inner side the way two real speakers on a shelf do; the toe-in turns
+     them a little toward the listener */
+  #heroPair .side { --toe: 0; --dim: 1; transform-style: preserve-3d; }
+  #heroPair .spk.box { filter: none; opacity: 1 !important; transition: none; }
+  #heroPair.dim .side:not(.lit) { --dim: .5; }
+  #heroPair .side[data-r="1"] { --toe: 9; }
+  #heroPair .side[data-r="2"] { --toe: -9; }
   #heroPair .side.solo { --toe: 0; }
-  #heroPair .spk {
-    transform: rotateX(calc(var(--rx) * 1deg)) rotateY(calc((var(--toe) + var(--ry)) * 1deg));
-    transform-origin: 50% 60%;
-    will-change: transform;
-    filter: drop-shadow(0 10px 14px rgba(0,0,0,.28));
-    -webkit-box-reflect: below 3px linear-gradient(transparent 78%, rgba(255,255,255,.26));
-  }
-  /* light sweep across the front, moving with the angle */
-  #heroPair .spk::after { content: ""; position: absolute; inset: 0; border-radius: 7% / 4.5%; pointer-events: none;
-    background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.16) 48%, transparent 60%);
-    background-size: 260% 100%; background-position: calc(50% + (var(--toe) + var(--ry)) * 1.6%) 0; mix-blend-mode: screen; }
-  #heroPair .side .eyebrow { margin-top: 58px; }
-  @supports not (-webkit-box-reflect: below) { #heroPair .side .eyebrow { margin-top: 14px; } }
+  #heroPair:has(.side:not(.solo):not([hidden]) + .side:not([hidden])) { gap: 17%; }
+  #heroPair .side:not(.solo) { width: 33%; }
+  #heroPair .box { position: relative; transform-style: preserve-3d; will-change: transform;
+    transform: rotateX(calc((var(--pitch) + var(--rx)) * 1deg)) rotateY(calc((var(--toe) + var(--ry)) * 1deg)); --lf: 1; --ll: .7; --lr: .7; }
+  #heroPair .box .front { position: relative; transform: translateZ(calc(var(--d) / 2)); filter: brightness(calc(var(--lf) * var(--dim))); }
+  #heroPair .box .front svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #heroPair .box .front img { position: relative; width: 100%; height: auto; display: block; user-select: none; -webkit-user-select: none; }
+  /* light sweep across the grille, following the angle */
+  #heroPair .box .front::after { content: ""; position: absolute; inset: 1.5%; border-radius: 6% / 4%; pointer-events: none;
+    background: linear-gradient(100deg, transparent 38%, rgba(255,255,255,.10) 50%, transparent 62%);
+    background-size: 300% 100%; background-position: calc(50% - (var(--toe) + var(--ry)) * 1.8%) 0; }
+  #heroPair .face { position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+  /* cabinet: the same light grey as the front frame, a darker seam at the front edge */
+  #heroPair .face.sl, #heroPair .face.sr { top: 2.2%; height: 95.6%; width: var(--d); }
+  #heroPair .face.sl { left: calc(var(--d) / -2); transform: rotateY(-90deg) translateZ(-1px); filter: brightness(calc(var(--ll) * var(--dim)));
+    background: linear-gradient(to left, #9d9d9b 0, #d9d8d4 2.5%, #cfcec9 60%, #c3c2bd 100%); border-radius: 3px; }
+  #heroPair .face.sr { left: calc(100% - var(--d) / 2); transform: rotateY(90deg) translateZ(-1px); filter: brightness(calc(var(--lr) * var(--dim)));
+    background: linear-gradient(to right, #9d9d9b 0, #d9d8d4 2.5%, #cfcec9 60%, #c3c2bd 100%); border-radius: 3px; }
+  #heroPair .face.tp { left: 2.5%; width: 95%; height: var(--d); top: calc(var(--d) / -2); transform: rotateX(90deg) translateZ(-1px);
+    background: linear-gradient(to top, #a3a3a0 0, #e6e5e1 3%, #dcdbd6 100%); border-radius: 3px; filter: brightness(calc(1.02 * var(--dim))); box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
+  /* contact shadow on the floor, turns with the box */
+  #heroPair .face.fl { left: -22%; width: 144%; height: calc(var(--d) * 1.5); top: calc(100% - var(--d) * .75);
+    transform: rotateX(90deg) translateZ(-2px); backface-visibility: visible; -webkit-backface-visibility: visible;
+    background: radial-gradient(closest-side, rgba(0,0,0,.38), rgba(0,0,0,.16) 60%, transparent); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #heroPair .face.fl { background: radial-gradient(closest-side, rgba(0,0,0,.75), rgba(0,0,0,.3) 60%, transparent); } }
+  :root[data-theme="dark"] #heroPair .face.fl { background: radial-gradient(closest-side, rgba(0,0,0,.75), rgba(0,0,0,.3) 60%, transparent); }
+  #heroPair .side .eyebrow { margin-top: 46px; }
+  #heroPair .side { transition: opacity .35s; }
+  #heroPair .side[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -847,6 +872,9 @@
   const UNKNOWN_MODEL = { name: 'loa VX', image: 'img/speaker-front.png', drivers: true, tagline: 'Loa VX', about: 'Loa VX.', specs: [], guide: false, features: F_WHEEL };
   const modelOf = id => MODELS[id] || Object.assign({}, UNKNOWN_MODEL, { name: 'loa VX ' + id });
   const speakerHTML = m => `<div class="spk">${m.drivers ? '<svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg>' : ''}<img src="${m.image}" alt="VX ${m.name}" draggable="false"></div>`;
+  // the same speaker as a 3D box (product page): front picture, sides, top, floor shadow
+  const boxHTML = m => `<div class="spk box"><i class="face fl"></i><i class="face tp"></i><i class="face sl"></i><i class="face sr"></i>`
+    + `<div class="front">${m.drivers ? '<svg viewBox="0 0 364 568" aria-hidden="true"><use href="#drivers"/></svg>' : ''}<img src="${m.image}" alt="VX ${m.name}" draggable="false"></div></div>`;
 
   // remembered speakers (this browser): [{ key, model, btId, kind, last }]
   let products = store.get('vx.products', []);
@@ -911,7 +939,7 @@
       if (!drag) return;
       const dx = e.clientX - drag.x;
       if (!drag.moved && Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(e.clientY - drag.y)) { drag.moved = true; try { hp.setPointerCapture(drag.id); } catch (_) {} }
-      if (drag.moved) dragY = clamp(drag.base + dx * 0.32, -48, 48);
+      if (drag.moved) dragY = clamp(drag.base + dx * 0.36, -55, 55);
     });
     const up = () => { if (!drag) return; drag = null; dragY = 0; hp.classList.remove('held'); };
     addEventListener('pointerup', up); addEventListener('pointercancel', up); hp.addEventListener('lostpointercapture', up);
@@ -937,12 +965,29 @@
       vx += ((tx - rx) * 60 - vx * 12) * dt; rx += vx * dt;
       hp.style.setProperty('--ry', ry.toFixed(2));
       hp.style.setProperty('--rx', rx.toFixed(2));
+      // light from the front left: each face is as bright as it faces the light
+      hp.querySelectorAll('.side').forEach(s => {
+        const toe = s.classList.contains('solo') ? 0 : s.dataset.r === '1' ? 9 : s.dataset.r === '2' ? -9 : 0;
+        const yaw = toe + ry, L = -40, lit = a => Math.max(0, Math.cos((a - L) * Math.PI / 180));
+        const box = s.firstElementChild;
+        box.style.setProperty('--lf', (0.78 + 0.26 * lit(yaw)).toFixed(3));
+        box.style.setProperty('--lr', (0.48 + 0.42 * lit(yaw + 90)).toFixed(3));
+        box.style.setProperty('--ll', (0.48 + 0.42 * lit(yaw - 90)).toFixed(3));
+      });
       raf = requestAnimationFrame(frame);
     }
     const start = () => { if (!raf) { last = 0; raf = requestAnimationFrame(frame); } };
     document.addEventListener('visibilitychange', start);
+    // box depth follows the drawn width (a bookshelf box ~1.15x deeper than wide)
+    const measure = () => {
+      const f = hp.querySelector('.side:not([hidden]) .front');
+      if (!f || !f.offsetWidth) return;
+      hp.style.setProperty('--w', f.offsetWidth + 'px');
+      hp.style.setProperty('--d', Math.round(f.offsetWidth * 1.15) + 'px');
+    };
+    if ('ResizeObserver' in window) new ResizeObserver(measure).observe(hp);
     // swing in from the side, like a cover sliding into place
-    return { start, enter() { if (!still) { ry = 38; vy = 0; } start(); } };
+    return { start, measure, enter() { if (!still) { ry = 38; vy = 0; } measure(); start(); } };
   })();
   { const show = showTab; showTab = (name, anchor) => { show(name, anchor); if (name === 'speaker') heroMotion.enter(); }; }
   $('tilePlace').onclick = () => { const b = $('secPlace'); b.hidden = !b.hidden; $('tilePlace').classList.toggle('open', !b.hidden); };
@@ -956,8 +1001,9 @@
     document.querySelectorAll('.backname').forEach(e => e.textContent = 'VX ' + m.name);
     const pair = f & F_PAIR;
     $('heroPair').innerHTML = pair
-      ? `<div class="side" data-r="1">${speakerHTML(m)}<span class="eyebrow">Trái</span></div><div class="side" data-r="2">${speakerHTML(m)}<span class="eyebrow">Phải</span></div>`
-      : `<div class="side solo" data-r="0">${speakerHTML(m)}</div>`;
+      ? `<div class="side" data-r="1">${boxHTML(m)}<span class="eyebrow">Trái</span></div><div class="side" data-r="2">${boxHTML(m)}<span class="eyebrow">Phải</span></div>`
+      : `<div class="side solo" data-r="0">${boxHTML(m)}</div>`;
+    heroMotion.measure();
     $('tilePeer').hidden = !pair;
     $('wheelBlock').hidden = !(f & F_WHEEL);
     $('tilePlace').hidden = !(f & F_PLACEMENT);
@@ -1302,7 +1348,8 @@
     $('setConn').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
     $('setConn').classList.toggle('primary', !state.connected);
     // one speaker in use (no peer): show only that speaker, not the pair
-    const solo = pair && state.connected && !state.peer;
+    // one speaker on its own: draw one; the pair only when the two are joined
+    const solo = pair && !state.peer;
     $('heroPair').querySelectorAll('.side').forEach(el => {
       el.hidden = solo && +el.dataset.r !== (state.role || 1);
       el.classList.toggle('solo', solo);
