@@ -748,7 +748,7 @@
         <button class="row btnrow" id="tileRoom" hidden><span>Hiệu chỉnh phòng</span><span><em id="tRoom">Tắt</em><i class="chev">›</i></span></button>
       <div class="placebox roombox" id="secRoom" hidden>
         <div id="roomIdle">
-          <p class="note">Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.</p>
+          <p class="note" id="roomIntro">Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.</p>
           <div class="roombtns"><button class="btn primary" id="roomStart">Hiệu chỉnh</button></div>
         </div>
         <div id="roomRun" hidden>
@@ -2106,7 +2106,12 @@
   }
   function roomRender() {
     const ok = !!(info.features & F_ROOM), r = room.result;
-    $('tileRoom').hidden = !ok && !state.roomStored;
+    // shown for one speaker as well as a pair; hidden only when a connected
+    // speaker's firmware says it has no room compensation
+    $('tileRoom').hidden = state.connected && !ok && !state.roomStored;
+    $('roomIntro').textContent = state.peer
+      ? 'Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.'
+      : 'Loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.';
     $('nowRoom').hidden = $('tileRoom').hidden;
     $('tRoom').textContent = $('tRoom2').textContent = room.busy || state.measuring ? 'Đang đo' : state.roomOn ? 'Bật' : state.roomStored ? 'Tắt' : 'Chưa đo';
     if ($('secRoom').hidden) return;
@@ -2206,6 +2211,8 @@
     // room compensation
     'Hai loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.':
       'Both speakers play a bass sweep, the iPhone listens where you sit and then lowers the bass notes the room makes boomy. Set the volume to about 60–70%; it takes about 30 seconds.',
+    'Loa phát một tiếng quét bass, iPhone nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Để âm lượng khoảng 60–70%, mất khoảng 30 giây.':
+      'The speaker plays a bass sweep, the iPhone listens where you sit and then lowers the bass notes the room makes boomy. Set the volume to about 60–70%; it takes about 30 seconds.',
     'Hiệu chỉnh': 'Calibrate', 'Đo lại': 'Re-measure', 'Xoá': 'Delete', 'Chi tiết': 'Details',
     'Đang bật': 'On', 'Đang tắt': 'Off', 'Bật': 'On', 'Tắt': 'Off', 'Chưa đo': 'Not measured', 'Đang đo': 'Measuring',
     'Đo được': 'Measured', 'Sau hiệu chỉnh': 'Corrected', 'Mục tiêu': 'Target',
