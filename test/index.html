@@ -1103,11 +1103,12 @@
   { const show = showTab; showTab = (name, anchor) => { show(name, anchor); if (name === 'speaker') heroMotion.enter(); }; }
 
   // ---------- the speaker from its CAD model (vx3d.js, img/lento.bin) ----------
-  // Cabinet and baffle come from the Fusion export; the slatted grille is
-  // built from its measurements (driver rings centred on the baffle holes:
-  // woofer r 67 at 0,0, tweeter r 52.5 at 0,115). If WebGL or the file is
-  // missing the CSS boxes above stay.
-  const GRILLE_SPEC = { x0: -73, x1: 73, y0: -77, y1: 169, r: 17, n: 27, fill: .7, z0: .6, z1: 6.5, notch: 2.2, rings: [[0, 0, 69], [0, 115, 52]] };
+  // Cabinet and baffle come from the 3MF export; the grille was measured in
+  // the Fusion design (nubert 3.f3d display mesh): 21 slats, 7 mm pitch,
+  // 5 mm wide, round tops 5 mm high, ring grooves woofer r 66..69 at (0,0)
+  // and tweeter r 43.4..46.5 at (0,115). If WebGL or the file is missing the
+  // CSS boxes above stay.
+  const GRILLE_SPEC = { pitch: 7, n: 21, w: 5, z0: 0, zs: 3, zt: 5, y0: -75.5, y1: 167.5, xo: 74.5, r: 10, rings: [[0, 0, 66, 69], [0, 115, 43.4, 46.5]] };
   let gl3d = null;
   function partColours() {
     const g = (GRILLES.find(x => x[0] === colour.grille) || GRILLES[0])[2], b = BODIES[0][2];

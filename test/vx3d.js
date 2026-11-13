@@ -218,50 +218,78 @@
       gl.depthMask(true); gl.disable(gl.BLEND);
     }
   }
-  // The slatted grille is printed separately and is not in the CAD export:
-  // build it from its measurements. Vertical slats inside a rounded outline,
-  // a dark backing between them, and the two driver rings cut through the
-  // slats (a narrow notch where each circle crosses a slat), as on the
-  // printed part.
+  // The slatted grille, measured from the Fusion design (its display mesh in
+  // "nubert 3.f3d"; the grille was not in the 3MF export): 21 slats on a 7 mm
+  // pitch, 5 mm wide, 3 mm straight then a round top to 5 mm, running
+  // y -75.5..167.5 inside an outline of x +-74.5 with ~10 mm corners. Two ring
+  // grooves cut through the slats: woofer r 66..69 at (0,0), tweeter
+  // r 43.4..46.5 at (0,115). Behind the 2 mm gaps a dark backing.
   function grille(g) {
     const S = { slat: [], back: [], ring: [] };
+    const push = (L, P, N) => L.push([P, N]);
     const box = (L, x0, x1, y0, y1, z0, z1) => {
       const P = [], N = [];
       const q = (a, b, c, d, n) => { P.push(...a, ...b, ...c, ...a, ...c, ...d); for (let i = 0; i < 6; i++) N.push(...n); };
       q([x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1], [0, 0, 1]);
-      q([x1, y0, z0], [x0, y0, z0], [x0, y1, z0], [x1, y1, z0], [0, 0, -1]);
       q([x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0], [-1, 0, 0]);
       q([x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [1, 0, 0]);
       q([x0, y1, z1], [x1, y1, z1], [x1, y1, z0], [x0, y1, z0], [0, 1, 0]);
       q([x0, y0, z0], [x1, y0, z0], [x1, y0, z1], [x0, y0, z1], [0, -1, 0]);
-      L.push([P, N]);
+      push(L, P, N);
     };
-    const { x0, x1, y0, y1, r, n, fill, z0, z1, rings, notch } = g;
-    const pitch = (x1 - x0) / n, w = pitch * fill;
-    const span = x => {            // top/bottom of the outline at this x (rounded corners)
-      const e = Math.abs(x) - (x1 - r);
+    // one slat piece: straight sides to zs, a round top to zt, flat end caps
+    const { pitch, n, w, zs, zt, y0, y1, xo, r, rings, z0 } = g;
+    const R = ((w / 2) ** 2 + (zt - zs) ** 2) / (2 * (zt - zs)), cz = zt - R, a0 = Math.asin((w / 2) / R);
+    const prof = [[-w / 2, z0, -1, 0], [-w / 2, zs, -1, 0]];
+    for (let i = 0; i <= 8; i++) {
+      const a = -a0 + 2 * a0 * i / 8;
+      prof.push([R * Math.sin(a), cz + R * Math.cos(a), Math.sin(a), Math.cos(a)]);
+    }
+    prof.push([w / 2, zs, 1, 0], [w / 2, z0, 1, 0]);
+    const slat = (xc, ya, yb) => {
+      if (yb - ya < 0.3) return;
+      const P = [], N = [];
+      for (let i = 0; i < prof.length - 1; i++) {
+        const [xa, za, na, ma] = prof[i], [xb, zb, nb, mb] = prof[i + 1];
+        if (xa === xb && za === zb) continue;
+        const A = [xc + xa, ya, za], B = [xc + xb, ya, zb], C = [xc + xb, yb, zb], D = [xc + xa, yb, za];
+        P.push(...A, ...B, ...C, ...A, ...C, ...D);
+        N.push(na, 0, ma, nb, 0, mb, nb, 0, mb, na, 0, ma, nb, 0, mb, na, 0, ma);
+      }
+      // end caps (fan over the profile)
+      for (const [y, s] of [[ya, -1], [yb, 1]]) for (let i = 1; i < prof.length - 1; i++) {
+        const p0 = prof[0], p1 = prof[i], p2 = prof[i + 1];
+        P.push(xc + p0[0], y, p0[1], xc + p1[0], y, p1[1], xc + p2[0], y, p2[1]);
+        N.push(0, s, 0, 0, s, 0, 0, s, 0);
+      }
+      push(S.slat, P, N);
+    };
+    const end = x => {            // slat ends follow the rounded corners of the outline
+      const e = Math.abs(x) + w / 2 - (xo - r);
       const d = e > 0 ? r - Math.sqrt(Math.max(0, r * r - e * e)) : 0;
       return [y0 + d, y1 - d];
     };
-    for (let i = 0; i < n; i++) {
-      const xc = x0 + pitch * (i + 0.5), [ya, yb] = span(xc);
-      box(S.back, xc - pitch / 2, xc + pitch / 2, ya, yb, z0 - 0.6, z0 + 0.4);
-      // cut points where a ring crosses this slat
+    for (let k = -(n - 1) / 2; k <= (n - 1) / 2; k++) {
+      const xc = k * pitch, [ya, yb] = end(xc);
+      box(S.back, xc - pitch / 2, xc + pitch / 2, ya, yb, z0 - 0.8, z0 - 0.2);
+      // where the ring grooves cross this slat (its centre line)
       const cuts = [];
-      for (const [cx, cy, rr] of rings) {
-        const dx = xc - cx;
-        if (Math.abs(dx) < rr) { const h = Math.sqrt(rr * rr - dx * dx); cuts.push(cy - h, cy + h); }
+      for (const [cx, cy, ri, ro] of rings) {
+        const dx = Math.abs(xc - cx);
+        if (dx >= ro) continue;
+        const ho = Math.sqrt(ro * ro - dx * dx), hi = dx < ri ? Math.sqrt(ri * ri - dx * dx) : 0;
+        if (hi > 0) cuts.push([cy - ho, cy - hi], [cy + hi, cy + ho]); else cuts.push([cy - ho, cy + ho]);
       }
-      cuts.sort((a, b) => a - b);
+      cuts.sort((p, q) => p[0] - q[0]);
       let y = ya;
-      for (const c of cuts) {
-        if (c - notch / 2 > y && c + notch / 2 < yb) {
-          box(S.slat, xc - w / 2, xc + w / 2, y, c - notch / 2, z0, z1);
-          box(S.ring, xc - w / 2, xc + w / 2, c - notch / 2, c + notch / 2, z0, z0 + 1.2);
-          y = c + notch / 2;
-        }
+      for (const [c0, c1] of cuts) {
+        const a = Math.max(c0, ya), b = Math.min(c1, yb);
+        if (b <= a) continue;
+        slat(xc, y, a);
+        box(S.ring, xc - w / 2, xc + w / 2, a, b, z0, z0 + 0.8);
+        y = b;
       }
-      box(S.slat, xc - w / 2, xc + w / 2, y, yb, z0, z1);
+      slat(xc, y, yb);
     }
     const pack = L => {
       const n3 = L.reduce((s, [P]) => s + P.length, 0), P = new Float32Array(n3), N = new Float32Array(n3);
