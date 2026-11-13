@@ -721,6 +721,15 @@
   .roomrows > .placebox { border-bottom: 0; padding-top: 12px; }
   #roomPending:empty { display: none; }
   #roomPending { margin-top: 0; }
+  /* Kết nối: one row, opens the phone link and the speaker pair together */
+  .connbox { padding: 4px 2px 16px; border-bottom: 1px solid var(--hair); }
+  .connbox .cb-h { margin: 14px 0 6px; font-size: var(--t-label); font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+  .connbox .cb-h em { font-style: normal; letter-spacing: 0; text-transform: none; font-weight: 400; font-size: 13px; }
+  .connbox .cb-t { margin: 0 0 10px; font-size: var(--t-small); line-height: 1.5; color: var(--muted); }
+  .connbox .cb-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .connbox #tilePeer { margin-top: 6px; border-top: 1px solid var(--hair); }
+  .connbox .twsbox { display: grid; gap: 8px; padding: 0; border: 0; background: none; }
+  .connbox .twsbox .cb-t { margin-bottom: 2px; }
 </style>
 </head>
 <body>
@@ -872,16 +881,25 @@
       </div>
       </section>
 
-      <div class="eyebrow homeh">Loa</div>
+      <!-- everything about connecting in one place: the phone's link to the
+           speaker, and the two speakers' link to each other -->
+      <div class="eyebrow homeh">Kết nối</div>
       <div class="rows" id="homeRows">
-        <button class="row btnrow" id="tilePeer"><span>Cặp loa</span><span><em id="tPeer">Chưa nối</em><i class="chev">›</i></span></button>
-      <div class="twsbox" id="twsBox" hidden>
-        <p id="twsText"></p>
-        <button class="btn soft" id="swapLR" hidden>Đổi trái ↔ phải</button>
-        <button class="btn primary" id="twsPair">Ghép với loa kia</button>
-        <button class="btn" id="twsEnd">Tách 2 loa</button>
-      </div>
-        <button class="row btnrow" id="rowConn"><span id="rowConnTxt">Kết nối</span><span><i class="chev">›</i></span></button>
+        <button class="row btnrow" id="rowConn"><span>Điện thoại · Cặp loa</span><span><em id="tConn">Chưa nối</em><i class="chev">›</i></span></button>
+        <div class="connbox" id="connBox" hidden>
+          <div class="cb-h">Điện thoại</div>
+          <p class="cb-t" id="connText"></p>
+          <div class="cb-btns"><button class="btn primary" id="connBtn">Kết nối</button><button class="btn soft" id="mySpk">Loa của tôi</button></div>
+          <div id="tilePeer">
+            <div class="cb-h">Cặp loa <em id="tPeer">Chưa nối</em></div>
+            <div class="twsbox" id="twsBox">
+              <p class="cb-t" id="twsText"></p>
+              <button class="btn soft" id="swapLR" hidden>Đổi trái ↔ phải</button>
+              <button class="btn primary" id="twsPair">Ghép với loa kia</button>
+              <button class="btn soft" id="twsEnd">Tách 2 loa</button>
+            </div>
+          </div>
+        </div>
       </div>
       <p class="note" id="homeNote"></p>
     </div>
@@ -1159,7 +1177,7 @@
   const showSub = id => { ['setMain', 'setAbout', 'setGuide', 'setLog', 'setLang', 'setColor'].forEach(x => $(x).hidden = x !== id); window.scrollTo(0, 0); };
   document.querySelectorAll('[data-sub]').forEach(b => b.onclick = () => showSub(b.dataset.sub));
   document.querySelectorAll('[data-up]').forEach(b => b.onclick = () => showSub('setMain'));
-  $('setConn').onclick = () => $('rowConn').onclick();
+  $('setConn').onclick = () => connToggle();
   $('removeProduct').onclick = async () => {
     if (!currentKey || !confirm(tr('Xoá loa này khỏi app? Loa vẫn giữ nguyên thiết lập; muốn dùng lại chỉ cần Tìm loa.'))) return;
     if (link) await disconnectLink();
@@ -1331,11 +1349,13 @@
   $('navSpeaker').addEventListener('click', () => { if (tab === 'speaker') openSheet(); }, true);
   const connectHere = () => { if (link) return; if (products.length) reconnect(currentKey || products[0].key); else openAdd(); };
   $('chip').onclick = connectHere;
-  $('rowConn').onclick = async () => { if (link) await disconnectLink(); else connectHere(); };
+  const connToggle = async () => { if (link) await disconnectLink(); else connectHere(); };
+  $('connBtn').onclick = connToggle;
+  $('mySpk').onclick = openSheet;
+  $('rowConn').onclick = () => { const b = $('connBox'); b.hidden = !b.hidden; $('rowConn').classList.toggle('open', !b.hidden); renderTws(); };
 
   // stereo pair (TWS) controls: the same as the button combos on the speaker
   const CMD_TWS = 0x0005, CMD_SET_ROLE = 0x0009, CMD_IDENTIFY = 0x000A;
-  $('tilePeer').onclick = () => { const b = $('twsBox'); b.hidden = !b.hidden; $('tilePeer').classList.toggle('open', !b.hidden); renderTws(); };
   // the side the speaker we talk to plays: chosen in the app, else left if it holds the phone
   const myRole = () => state.role || (state.phone || DEMO ? 1 : 2);
   function renderTws() {
@@ -1762,7 +1782,10 @@
     // firmware of the speaker the app talks to (GET_INFO), e.g. "Loa trái · 2.3"
     $('fwNow').textContent = state.connected && info.fw ? `${side} · ${info.fw}` : 'Kết nối để xem';
     $('tPeer').textContent = !(state.connected || DEMO) ? 'Chưa nối' : state.peer ? 'Stereo · đồng bộ' : 'Một loa';
-    $('rowConnTxt').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
+    $('connBtn').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
+    $('connBtn').classList.toggle('primary', !state.connected); $('connBtn').classList.toggle('soft', state.connected);
+    $('tConn').textContent = state.connected ? `${pair && state.peer ? 'Stereo' : 'Một loa'} · ${via}` : DEMO ? 'Bản thử' : 'Chưa nối';
+    $('connText').textContent = state.connected ? `Đang nối ${side.toLowerCase()} qua ${via}.` : DEMO ? 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.' : 'Chưa nối. Bật loa rồi bấm Kết nối.';
     $('setConn').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
     $('setConn').classList.toggle('primary', !state.connected);
     // one speaker in use (no peer): show only that speaker, not the pair
@@ -2600,7 +2623,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', 'Điện thoại': 'Phone', 'Điện thoại · Cặp loa': 'Phone · Pair', 'Bản thử': 'Demo', 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.': 'Demo: no real speaker, every button still works.', 'Chưa nối. Bật loa rồi bấm Kết nối.': 'Not connected. Turn the speaker on, then tap Connect.', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu vị trí này': '+ Save this position',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
