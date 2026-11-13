@@ -612,6 +612,32 @@
   .note { margin-top: 10px; }
   .colorhero { padding: 6px 20px 14px !important; }
   .swatches { gap: 12px 6px; }
+  /* ================= tone knobs =================
+     Two amplifier knobs instead of the wheel: a walnut cap with a knurled
+     rim and a brass pointer, a scale of one tick per dB, the brass arc
+     from 0 to the setting. Drag up/right to turn up, double tap = 0. */
+  .knobs { display: flex; justify-content: space-around; gap: 12px; margin: 10px 0 2px; }
+  .tknob { display: flex; flex-direction: column; align-items: center; gap: 2px; outline: none; }
+  .tknob .dial { position: relative; width: min(38vw, 150px, 22vh); aspect-ratio: 1; touch-action: none; cursor: grab; -webkit-user-select: none; user-select: none; }
+  .tknob.held .dial { cursor: grabbing; }
+  .tknob svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .tknob .ticks line { stroke: var(--muted); stroke-width: 1.2; stroke-linecap: round; opacity: .7; }
+  .tknob .ticks line.long { stroke: var(--text); stroke-width: 1.6; opacity: .9; }
+  .tknob .ticks text { font: 600 12px/1 -apple-system, "Segoe UI", sans-serif; fill: var(--muted); text-anchor: middle; }
+  .tknob .track { fill: none; stroke: var(--hair); stroke-width: 3; stroke-linecap: round; }
+  .tknob .fill { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+  .tknob .cap { position: absolute; inset: 24%; border-radius: 50%; border: 3px solid transparent;
+    background:
+      radial-gradient(circle at 34% 28%, #6a5646 0%, #3a2d22 45%, #1e1712 100%) padding-box,
+      repeating-conic-gradient(#4a3b2e 0 4deg, #17110c 4deg 8deg) border-box;
+    box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 6px 14px rgba(0,0,0,.35), inset 0 1px 1px rgba(255,255,255,.18);
+    transition: transform .12s ease-out; }
+  .tknob .cap .mark { position: absolute; left: 50%; top: 7%; width: 3px; height: 26%; margin-left: -1.5px; border-radius: 2px;
+    background: linear-gradient(#e2c48e, #a8834c); box-shadow: 0 0 4px rgba(226,196,142,.5); }
+  .tknob:focus-visible .cap { box-shadow: 0 0 0 3px #2a211a, 0 0 0 5px var(--accent), 0 6px 14px rgba(0,0,0,.35); }
+  .tknob .eyebrow { margin-top: 6px; }
+  .tknob .num { font-size: 24px; }
+  #app.offline #wheelBlock .knobs { opacity: .45; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -690,9 +716,20 @@
   <div class="view" id="v-sound" hidden>
     <div class="wrap">
       <h1 class="title">Âm thanh</h1>
-      <p class="sub">Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.</p>
+      <p class="sub">Xoay núm Bass và Treble. Chạm đúp để về 0.</p>
       <div id="wheelBlock">
-      <div class="wheel" id="wheel">
+      <!-- two tone knobs, like the front of a hi-fi amplifier -->
+      <div class="knobs" id="knobs">
+        <div class="tknob" data-k="bass" role="slider" aria-label="Bass" tabindex="0">
+          <div class="dial"><svg viewBox="0 0 140 140" aria-hidden="true"><g class="ticks"></g><path class="track"/><path class="fill"/></svg><div class="cap"><i class="mark"></i></div></div>
+          <span class="eyebrow">Bass</span><span class="num" id="numBass">0.0<small>dB</small></span>
+        </div>
+        <div class="tknob" data-k="treble" role="slider" aria-label="Treble" tabindex="0">
+          <div class="dial"><svg viewBox="0 0 140 140" aria-hidden="true"><g class="ticks"></g><path class="track"/><path class="fill"/></svg><div class="cap"><i class="mark"></i></div></div>
+          <span class="eyebrow">Treble</span><span class="num" id="numTreble">0.0<small>dB</small></span>
+        </div>
+      </div>
+      <div class="wheel" id="wheel" hidden>
         <div class="glow" id="glow"></div>
         <div class="ring"></div><div class="ring inner"></div><div class="centre"></div>
         <div class="lbl" data-a="180">Bright</div>
@@ -705,10 +742,6 @@
         <div class="lbl sub" data-a="315">Treble −</div>
         <div class="pad" id="pad"></div>
         <div class="knob" id="knob"></div>
-      </div>
-      <div class="readout">
-        <div><span class="eyebrow">Bass</span><span class="num" id="numBass">0.0<small>dB</small></span></div>
-        <div><span class="eyebrow">Treble</span><span class="num" id="numTreble">0.0<small>dB</small></span></div>
       </div>
       <p class="note" id="syncNote"></p>
 
@@ -860,8 +893,8 @@
 
   <nav class="tabs"><div class="wrap">
     <button data-tab="speaker" id="navSpeaker"><span class="navthumb" id="navThumb"></span><svg class="caret" viewBox="0 0 24 24" id="navCaret" aria-label="Loa của tôi"><path d="M6 15l6-6 6 6"/></svg></button>
-    <button data-tab="sound" aria-label="Âm thanh"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="15.5" cy="9" r="2"/></svg></button>
-    <button data-tab="info" aria-label="Cài đặt"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></button>
+    <button data-tab="sound" aria-label="Âm thanh"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 12 16.2 7.8"/></svg></button>
+    <button data-tab="info" aria-label="Cài đặt"><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
   </div></nav>
 </div>
 
@@ -1321,12 +1354,11 @@
         ? (k * Math.max(0, 1 - d / 60) * 0.95).toFixed(2)
         : (0.32 + 0.68 * (k === 0 ? 0.55 : Math.max(0.15, 1 - (d / 120) * k))).toFixed(2);
     });
-    const g = beosonic(state.angle, state.distance);
-    $('numBass').innerHTML = fmtDb(g.bass) + '<small>dB</small>'; $('numTreble').innerHTML = fmtDb(g.treble) + '<small>dB</small>';
+    renderKnobs();
   }
   let anim = null;
   function animateTo() {
-    cancelAnimationFrame(anim);
+    cancelAnimationFrame(anim); toneFromKnob = false;
     const step = () => {
       let da = state.angle - shown.angle; if (da > 180) da -= 360; if (da < -180) da += 360;
       if (shown.distance === 0) { shown.angle = state.angle; da = 0; }
@@ -1358,6 +1390,80 @@
     if (final) { cancelAnimationFrame(frame); frame = 0; render(); renderModes(); scheduleSend(true); return; }
     if (!frame) frame = requestAnimationFrame(() => { frame = 0; render(); });
   }
+
+  // ---------- tone knobs: Bass and Treble, like the front of an amplifier ----------
+  // The speaker still takes (angle, distance) (CMD_SET_BEOSONIC); the knobs
+  // set bass/treble in dB and polarFromTone() finds the matching point, the
+  // exact inverse of beosonic(): the tone lies on a square of size d.
+  var TMAX = { bass: 6, treble: 8 }, SWEEP = 135;        // +-135 degrees of travel (var: render() may run first)
+  var tone = { bass: 0, treble: 0 }, toneFromKnob = false;
+  function polarFromTone(b, t) {
+    const B = b / TMAX.bass, T = t / TMAX.treble, d = Math.max(Math.abs(B), Math.abs(T));
+    if (d < 1e-3) return { angle: 0, distance: 0 };
+    const bk = B / d, tk = T / d;
+    const a = bk > 0.999 ? 45 * tk : tk > 0.999 ? 90 - 45 * bk : bk < -0.999 ? 180 - 45 * tk : 270 + 45 * bk;
+    return { angle: Math.round((a + 45 + 720) % 360), distance: Math.round(d * MAX_DIST) };
+  }
+  var knobs = [...document.querySelectorAll(".tknob")];
+  // dial artwork: a tick every dB, longer at 0 and the ends, a track and a brass fill from 0
+  const arcPt = (deg, r) => { const t = (deg - 90) * Math.PI / 180; return [70 + r * Math.cos(t), 70 + r * Math.sin(t)]; };
+  const arcPath = (a0, a1, r) => { const [x0, y0] = arcPt(a0, r), [x1, y1] = arcPt(a1, r); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${Math.abs(a1 - a0) > 180 ? 1 : 0} ${a1 > a0 ? 1 : 0} ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+  knobs.forEach(k => {
+    const max = TMAX[k.dataset.k]; let s = '';
+    for (let v = -max; v <= max; v++) {
+      const a = v / max * SWEEP, long = v === 0 || Math.abs(v) === max, [x0, y0] = arcPt(a, 66), [x1, y1] = arcPt(a, long ? 58 : 61.5);
+      s += `<line x1="${x0.toFixed(2)}" y1="${y0.toFixed(2)}" x2="${x1.toFixed(2)}" y2="${y1.toFixed(2)}"${long ? ' class="long"' : ''}/>`;
+    }
+    const [mx, my] = arcPt(-SWEEP, 70), [px, py] = arcPt(SWEEP, 70);
+    s += `<text x="${(mx - 4).toFixed(1)}" y="${(my + 8).toFixed(1)}">−</text><text x="${(px + 4).toFixed(1)}" y="${(py + 8).toFixed(1)}">+</text>`;
+    k.querySelector('.ticks').innerHTML = s;
+    k.querySelector('.track').setAttribute('d', arcPath(-SWEEP, SWEEP, 52));
+  });
+  function renderKnobs() {
+    if (!knobs) return;
+    const g = toneFromKnob ? tone : beosonic(shown.angle, shown.distance);
+    knobs.forEach(k => {
+      const key = k.dataset.k, v = g[key], a = v / TMAX[key] * SWEEP;
+      k.querySelector('.cap').style.transform = `rotate(${a.toFixed(1)}deg)`;
+      k.querySelector('.fill').setAttribute('d', Math.abs(a) < 0.5 ? '' : arcPath(Math.min(0, a), Math.max(0, a), 52));
+      k.setAttribute('aria-valuenow', v.toFixed(1));
+    });
+    const s = beosonic(state.angle, state.distance), d = toneFromKnob ? tone : s;
+    $('numBass').innerHTML = fmtDb(d.bass) + '<small>dB</small>'; $('numTreble').innerHTML = fmtDb(d.treble) + '<small>dB</small>';
+  }
+  function setTone(key, v, final) {
+    const max = TMAX[key];
+    v = Math.max(-max, Math.min(max, Math.round(v * 2) / 2));          // 0.5 dB steps
+    if (!toneFromKnob) { const g = beosonic(state.angle, state.distance); tone = { bass: Math.round(g.bass * 2) / 2, treble: Math.round(g.treble * 2) / 2 }; }
+    const was = tone[key]; tone[key] = v; toneFromKnob = true;
+    if (was !== v && v === 0 && navigator.vibrate) navigator.vibrate(8);   // a little click at the centre detent
+    const p = polarFromTone(tone.bass, tone.treble);
+    state.angle = p.angle; state.distance = p.distance;
+    cancelAnimationFrame(anim); shown = { angle: p.angle, distance: p.distance };
+    if (final) { render(); renderModes(); scheduleSend(true); }
+    else if (!frame) frame = requestAnimationFrame(() => { frame = 0; render(); });
+  }
+  knobs.forEach(k => {
+    const key = k.dataset.k, dial = k.querySelector('.dial');
+    let drag = null;
+    dial.addEventListener('pointerdown', e => {
+      const g = toneFromKnob ? tone : beosonic(state.angle, state.distance);
+      drag = { x: e.clientX, y: e.clientY, v: g[key], id: e.pointerId }; dragging = true;
+      try { dial.setPointerCapture(e.pointerId); } catch (_) {} k.classList.add("held");
+    });
+    dial.addEventListener('pointermove', e => {
+      if (!drag) return;
+      const px = (drag.y - e.clientY) + (e.clientX - drag.x);            // up or right = more
+      setTone(key, drag.v + px * TMAX[key] / 120, false);
+    });
+    const up = () => { if (!drag) return; drag = null; dragging = false; k.classList.remove('held'); setTone(key, tone[key], true); };
+    dial.addEventListener('pointerup', up); dial.addEventListener('pointercancel', up);
+    dial.addEventListener('dblclick', () => setTone(key, 0, true));
+    k.addEventListener('keydown', e => {
+      const g = toneFromKnob ? tone : beosonic(state.angle, state.distance), step = { ArrowUp: .5, ArrowRight: .5, ArrowDown: -.5, ArrowLeft: -.5 }[e.key];
+      if (step) { e.preventDefault(); setTone(key, g[key] + step, true); }
+    });
+  });
 
   // ---------- listening modes (Beocreate) + user modes ----------
   const builtin = [ { name: 'Optimal', angle: 0, distance: 0 }, { name: 'Clear', angle: 180, distance: 15 },
