@@ -145,15 +145,39 @@
       if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
       gl.viewport(0, 0, w, h); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       const st = this.state, [W, H, D] = this.size, n = st.speakers.length;
-      // frame: the whole group fits the canvas with a little air
-      const span = (n - 1) * W * (1 + (st.gap || 0.9)) + Math.max(W, D) * 1.2;
-      const fov = this.o.fov * Math.PI / 180, asp = w / h;
-      const need = Math.max(span / asp, H * 1.3) / 2;
-      const dist = need / Math.tan(fov / 2) + D;
-      const pit = st.pitch * Math.PI / 180, cy = this.floor + H * 0.48;
-      const eye = [0, cy - Math.sin(pit) * dist, Math.cos(pit) * dist];
-      const VP = mul(persp(fov, asp, dist * 0.2, dist * 4), lookAt(eye, [0, cy, 0]));
+      const fov = this.o.fov * Math.PI / 180, asp = w / h, pit = st.pitch * Math.PI / 180;
       const step = W * (1 + (st.gap || 0.9));
+      // frame: measured, not guessed. Project the box corners (over the whole
+      // range the speakers can turn to) and move the camera until they fill
+      // the canvas with a little air. Cached per layout so dragging never zooms.
+      const key = [n, w, h, st.fitPitch == null ? st.pitch : st.fitPitch, st.gap].join('|');
+      if (this.fitKey !== key) {
+        const fp = (st.fitPitch == null ? st.pitch : st.fitPitch) * Math.PI / 180;
+        const pts = [];
+        for (let i = 0; i < n; i++) for (let a = -40; a <= 40; a += 8) {
+          const c = Math.cos(a * Math.PI / 180), s = Math.sin(a * Math.PI / 180), xi = (i - (n - 1) / 2) * step;
+          for (const dx of [-W / 2, W / 2]) for (const dz of [-D / 2, D / 2]) for (const y of [this.floor, this.floor + H])
+            pts.push([xi + c * dx + s * dz, y, -s * dx + c * dz]);
+        }
+        let dist = (H / 2) / Math.tan(fov / 2) * 1.3 + D, cy = this.floor + H / 2;
+        for (let it = 0; it < 8; it++) {
+          const eye = [0, cy - Math.sin(fp) * dist, Math.cos(fp) * dist];
+          const VP = mul(persp(fov, asp, dist * 0.1, dist * 4), lookAt(eye, [0, cy, 0]));
+          let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+          for (const [x, y, z] of pts) {
+            const cw = VP[3] * x + VP[7] * y + VP[11] * z + VP[15];
+            const px = (VP[0] * x + VP[4] * y + VP[8] * z + VP[12]) / cw, py = (VP[1] * x + VP[5] * y + VP[9] * z + VP[13]) / cw;
+            x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py);
+          }
+          const k = Math.max((x1 - x0) / 1.84, (y1 - y0) / 1.80);
+          cy += (y0 + y1) / 2 * dist * Math.tan(fov / 2);
+          dist *= k;
+        }
+        this.fitKey = key; this.fit = { dist, cy };
+      }
+      const { dist, cy } = this.fit;
+      const eye = [0, cy - Math.sin(pit) * dist, Math.cos(pit) * dist];
+      const VP = mul(persp(fov, asp, dist * 0.1, dist * 4), lookAt(eye, [0, cy, 0]));
       gl.enable(gl.DEPTH_TEST); gl.disable(gl.BLEND);
       gl.useProgram(this.p);
       const L = n2 => gl.getUniformLocation(this.p, n2), aP = gl.getAttribLocation(this.p, 'p'), aN = gl.getAttribLocation(this.p, 'n');

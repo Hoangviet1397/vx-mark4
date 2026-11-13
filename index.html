@@ -586,6 +586,27 @@
   .sw i { width: 36px; height: 36px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(0,0,0,.12), 0 0 0 3px var(--bg), 0 0 0 4px transparent; transition: box-shadow .2s; }
   .sw.on i { box-shadow: inset 0 0 0 1px rgba(0,0,0,.12), 0 0 0 3px var(--bg), 0 0 0 4.5px var(--accent); }
   .sw.on { color: var(--text); }
+  /* ================= fit one screen =================
+     Speaker page and Sound tab should fit a phone without scrolling:
+     the picture takes about a quarter of the height, rows are tighter, the
+     wheel is capped. One speaker on its own carries no Left / Right label. */
+  .s3d .side.solo .eyebrow { display: none; }
+  body.gl3d-on .gl3d { height: clamp(170px, 27vh, 240px); }
+  body.gl3d-on .colorhero .gl3d { height: clamp(170px, 26vh, 230px); }
+  body.gl3d-on .hero { padding-top: max(10px, env(safe-area-inset-top)) !important; padding-bottom: 0 !important; }
+  body.gl3d-on #v-speaker .hero:has(.side:not(.solo):not([hidden])) { padding-bottom: 22px !important; }
+  body.gl3d-on .s3d .side { transform: translate(-50%, 6px); }
+  .ptitle { margin: 2px 0 6px; }
+  .ptitle::after { margin-top: 8px; }
+  #v-speaker .chipwrap + .homeh { margin-top: 16px; }
+  .homeh, section > .eyebrow, .subh { margin-top: 18px; padding-bottom: 7px; }
+  .row, #v-speaker .row, .srow { padding: 12px 2px; }
+  #v-sound .title, #v-info .bigtitle { margin-top: max(22px, calc(env(safe-area-inset-top) + 12px)); }
+  .wheel { max-width: min(100%, 36vh, 280px); margin-left: auto; margin-right: auto; }
+  .readout { padding-top: 12px; }
+  .note { margin-top: 10px; }
+  .colorhero { padding: 6px 20px 14px !important; }
+  .swatches { gap: 12px 6px; }
 </style>
 </head>
 <body>
@@ -759,7 +780,7 @@
         <h1 class="bigtitle">Cài đặt</h1>
         <div class="eyebrow subh">Loa</div>
         <div class="setrows">
-          <button class="srow" data-sub="setColor"><span>Màu loa</span><span><em id="colorNow">Đỏ · Trắng</em><i>›</i></span></button>
+          <button class="srow" data-sub="setColor"><span>Màu loa</span><span><em id="colorNow">Đỏ</em><i>›</i></span></button>
           <button class="srow" data-sub="setAbout"><span>Giới thiệu</span><i>›</i></button>
           <button class="srow" data-sub="setGuide" id="guide"><span>Nút bấm &amp; đèn báo</span><i>›</i></button>
           <div class="srow info"><span>Phần mềm</span><em id="fwNow">Kết nối để xem</em></div>
@@ -782,8 +803,8 @@
         <div class="hero colorhero"><canvas class="gl3d" id="colorGL" aria-hidden="true"></canvas><div class="pair s3d" id="colorStage"></div></div>
         <div class="eyebrow subh">Mặt lưới</div>
         <div class="swatches" id="swGrille"></div>
-        <div class="eyebrow subh">Thân loa</div>
-        <div class="swatches" id="swBody"></div>
+        
+        
         <p class="note">Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.</p>
       </div>
 
@@ -954,12 +975,12 @@
   const hexLum = h => { const v = parseInt(h.slice(1), 16); return (0.2126 * (v >> 16 & 255) + 0.7152 * (v >> 8 & 255) + 0.0722 * (v & 255)) / 255; };
   const shade = (h, k) => { const v = parseInt(h.slice(1), 16); return '#' + [v >> 16 & 255, v >> 8 & 255, v & 255].map(c => Math.round(c * k).toString(16).padStart(2, '0')).join(''); };
   function applyColour() {
-    const g = (GRILLES.find(x => x[0] === colour.grille) || GRILLES[0]), b = (BODIES.find(x => x[0] === colour.body) || BODIES[0]);
+    const g = (GRILLES.find(x => x[0] === colour.grille) || GRILLES[0]), b = BODIES[0];   // cabinets are always white printed
     const r = document.documentElement.style;
     r.setProperty('--grille', g[2]); r.setProperty('--grille-gap', shade(g[2], hexLum(g[2]) > .5 ? .55 : .35));
     r.setProperty('--ring', hexLum(g[2]) < .3 ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.42)');
     r.setProperty('--body', b[2]); r.setProperty('--body-edge', shade(b[2], .78));
-    if ($('colorNow')) $('colorNow').textContent = `${g[1]} · ${b[1]}`;
+    if ($('colorNow')) $('colorNow').textContent = g[1];
     document.querySelectorAll('.sw[data-grille]').forEach(s => s.classList.toggle('on', s.dataset.grille === g[0]));
     document.querySelectorAll('.sw[data-body]').forEach(s => s.classList.toggle('on', s.dataset.body === b[0]));
     if (typeof gl3d !== 'undefined' && gl3d) { gl3d.hero.o.parts = gl3d.stage.o.parts = partColours(); drawStage(); }
@@ -1089,7 +1110,7 @@
   const GRILLE_SPEC = { x0: -73, x1: 73, y0: -77, y1: 169, r: 17, n: 27, fill: .7, z0: .6, z1: 6.5, notch: 2.2, rings: [[0, 0, 69], [0, 115, 52]] };
   let gl3d = null;
   function partColours() {
-    const g = (GRILLES.find(x => x[0] === colour.grille) || GRILLES[0])[2], b = (BODIES.find(x => x[0] === colour.body) || BODIES[0])[2];
+    const g = (GRILLES.find(x => x[0] === colour.grille) || GRILLES[0])[2], b = BODIES[0][2];
     const dark = hexLum(g) < .3;
     return { body: b, face: b, grille: dark ? shade(g, 1.25) : g, gback: shade(g, dark ? .5 : .3), gring: dark ? '#d9d5cc' : shade(g, .35) };
   }
@@ -1098,9 +1119,10 @@
     const hp = $('heroPair'), sides = [...hp.querySelectorAll('.side:not([hidden])')];
     const dimmed = hp.classList.contains('dim');
     const speakers = sides.map(s => ({ yaw: s.classList.contains('solo') ? 0 : s.dataset.r === '1' ? 9 : -9, dim: dimmed && !s.classList.contains('lit') ? .5 : 1 }));
-    gl3d.hero.set({ speakers, pitch: -13 + rx, spin: ry, gap: .75, shadow: isDark() ? .8 : .42 });
-    // the labels (Trái / Phải) sit under each speaker's feet
-    (gl3d.hero.feet || []).forEach((f, i) => { const s = sides[i]; if (s) { s.style.left = (f.x * 100).toFixed(2) + '%'; s.style.top = (f.y * 100).toFixed(2) + '%'; } });
+    gl3d.hero.set({ speakers, pitch: -13 + rx, fitPitch: -13, spin: ry, gap: .75, shadow: isDark() ? .8 : .42 });
+    // the labels (Trái / Phải) sit under each speaker's feet (canvas pixels)
+    const c = $('heroGL');
+    (gl3d.hero.feet || []).forEach((f, i) => { const s = sides[i]; if (s) { s.style.left = (c.offsetLeft + f.x * c.clientWidth).toFixed(1) + 'px'; s.style.top = (c.offsetTop + f.y * c.clientHeight).toFixed(1) + 'px'; } });
   }
   function drawStage() {
     if (!gl3d || $('setColor').hidden) return;
@@ -1120,7 +1142,7 @@
   $('colorStage').style.cssText = '--ry: 24; --rx: 0; --w: 150px; --d: 195px;';
   { const b = $('colorStage').querySelector('.box'); b.style.setProperty('--lf', '1'); b.style.setProperty('--ll', '.62'); b.style.setProperty('--lr', '.97'); }
   $('swGrille').innerHTML = GRILLES.map(([k, name, c]) => `<button class="sw" data-grille="${k}" style="--c:${c}"><i></i><span>${name}</span></button>`).join('');
-  $('swBody').innerHTML = BODIES.map(([k, name, c]) => `<button class="sw" data-body="${k}" style="--c:${c}"><i></i><span>${name}</span></button>`).join('');
+  if ($('swBody')) $('swBody').innerHTML = BODIES.map(([k, name, c]) => `<button class="sw" data-body="${k}" style="--c:${c}"><i></i><span>${name}</span></button>`).join('');
   document.querySelectorAll('.sw').forEach(s => s.onclick = () => {
     if (s.dataset.grille) colour.grille = s.dataset.grille; else colour.body = s.dataset.body;
     store.set('vx.colour', colour); applyColour();
