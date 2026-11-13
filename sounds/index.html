@@ -42,9 +42,9 @@
   <p class="lead">Chọn một âm sắc, rồi chạm từng dòng để nghe. Nên nghe bằng loa hoặc tai nghe, âm lượng vừa phải.</p>
 
   <div class="tabs" id="tabs">
-    <button data-t="crystal" class="on">Pha lê<small>chuông thuỷ tinh</small></button>
-    <button data-t="wood">Gỗ<small>đàn marimba</small></button>
-    <button data-t="soft">Chuông mềm<small>ấm, tròn</small></button>
+    <button data-t="warm" class="on">Ấm<small>tròn, trầm</small></button>
+    <button data-t="bubble">Bong bóng<small>"bụp" nhẹ</small></button>
+    <button data-t="lowwood">Gỗ trầm<small>gõ gỗ nhỏ</small></button>
   </div>
 
   <div class="list" id="list"></div>
@@ -63,7 +63,7 @@
     ['place2', 'Vị trí: Wall', '2 tiếng'],
     ['place3', 'Vị trí: Corner', '3 tiếng']
   ];
-  let timbre = 'crystal', current = null;
+  let timbre = 'warm', current = null;
   const list = document.getElementById('list');
   const play = (ev, row) => new Promise(res => {
     if (current) { current.pause(); document.querySelectorAll('.row').forEach(r => r.classList.remove('playing')); }
