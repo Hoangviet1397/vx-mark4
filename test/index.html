@@ -256,6 +256,9 @@
   #facts .tile.open { background: var(--sel); }
   .twsbox { margin-top: 10px; padding: 16px; border-radius: 16px; background: var(--chip); display: grid; gap: 10px; animation: fadein .2s ease; }
   .twsbox p { margin: 0 0 4px; color: var(--muted); font-size: 14px; }
+  .rolebox { display: grid; gap: 10px; margin-bottom: 6px; }
+  .seg.seg2 { grid-template-columns: repeat(2, 1fr); }
+  .seg.seg2 .slider { width: calc((100% - 8px) / 2); }
   #v-speaker .rows { border-top: 0; margin-top: 10px; display: grid; gap: 10px; }
   #v-speaker .row { appearance: none; width: 100%; border: 0; border-radius: 16px; background: var(--chip); padding: 18px; color: var(--text); font: 16px/1.2 inherit; cursor: pointer; }
   #v-speaker .row em { font-style: normal; color: var(--muted); margin-right: 10px; }
@@ -439,6 +442,11 @@
       </div>
       <div class="twsbox" id="twsBox" hidden>
         <p id="twsText"></p>
+        <div class="rolebox" id="roleBox" hidden>
+          <div class="eyebrow">Loa đang nối với app là</div>
+          <div class="seg seg2" id="roleSeg"><i class="slider" id="roleSlider"></i><button data-r="1">Trái</button><button data-r="2">Phải</button></div>
+          <div class="roombtns two"><button class="btn soft" id="beepThis">Bíp loa này</button><button class="btn soft" id="beepOther">Bíp loa kia</button></div>
+        </div>
         <button class="btn primary" id="twsPair">Ghép với loa kia</button>
         <button class="btn" id="twsEnd">Tách 2 loa</button>
       </div>
@@ -666,7 +674,7 @@
   // =====================================================================
   // product catalog: one entry per VX model (model id from GET_INFO)
   // =====================================================================
-  const F_WHEEL = 1, F_PLACEMENT = 2, F_PAIR = 4, F_USB = 8, F_ALIGNED = 16, F_ROOM = 32;
+  const F_WHEEL = 1, F_PLACEMENT = 2, F_PAIR = 4, F_USB = 8, F_ALIGNED = 16, F_ROOM = 32, F_ROLE = 64;
   const MODELS = {
     4: {
       name: 'Lento', image: 'img/speaker-front.png', drivers: true,
@@ -695,7 +703,7 @@
   // greyed out, changes stay in the page, room calibration is simulated (no mic, no
   // sound). A real speaker can still be connected and then everything works as usual.
   const DEMO = /[?&]demo\b/.test(location.search) || /\/test\//.test(location.pathname);
-  if (DEMO) info.features = MODELS[4].features | F_ROOM;
+  if (DEMO) info.features = MODELS[4].features | F_ROOM | F_ROLE;
 
   // =====================================================================
   // screens and tabs
@@ -781,18 +789,36 @@
   $('rowConn').onclick = async () => { if (link) await disconnectLink(); else connectHere(); };
 
   // stereo pair (TWS) controls: the same as the button combos on the speaker
-  const CMD_TWS = 0x0005;
+  const CMD_TWS = 0x0005, CMD_SET_ROLE = 0x0009, CMD_IDENTIFY = 0x000A;
   $('tilePeer').onclick = () => { const b = $('twsBox'); b.hidden = !b.hidden; $('tilePeer').classList.toggle('open', !b.hidden); renderTws(); };
   function renderTws() {
-    const t = $('twsText');
-    if (!state.connected) t.textContent = 'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.';
-    else if (state.peer) t.textContent = 'Hai loa đang chơi stereo (trái / phải). Tách ra nếu muốn dùng từng loa riêng.';
-    else t.textContent = 'Đang dùng một loa. Bật loa kia, để gần, rồi bấm Ghép. Thường mất 10–30 giây.';
-    $('twsPair').hidden = state.connected && state.peer;
-    $('twsEnd').hidden = !(state.connected && state.peer);
+    const t = $('twsText'), live = state.connected || DEMO;
+    if (!live) t.textContent = 'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.';
+    else if (state.peer) t.textContent = 'Hai loa đang chơi stereo. Chọn loa đang nối với app là bên trái hay phải, loa kia tự nhận bên còn lại. Bấm Bíp để biết loa nào là loa nào.';
+    else t.textContent = 'Đang dùng một loa (phát cả hai kênh). Muốn nghe stereo, hoặc thay một loa hỏng: bật loa thứ hai để gần, bấm Ghép ở đây, rồi giữ Rew + Play trên loa kia khoảng 3 giây. Loa mới sẽ thay chỗ loa cũ.';
+    // one firmware for all (fw 2.3): the side is chosen here, not built in
+    const roleOk = live && state.peer && !!(info.features & F_ROLE);
+    $('roleBox').hidden = !roleOk;
+    if (roleOk) {
+      $('roleSeg').querySelectorAll('button').forEach(b => b.classList.toggle('active', +b.dataset.r === state.role));
+      $('roleSlider').style.opacity = state.role ? 1 : 0;
+      $('roleSlider').style.transform = `translateX(${state.role === 2 ? 100 : 0}%)`;
+    }
+    $('twsPair').hidden = live && state.peer;
+    $('twsEnd').hidden = !(live && state.peer);
   }
+  $('roleSeg').querySelectorAll('button').forEach(b => b.onclick = async () => {
+    const r = +b.dataset.r;
+    state.role = r; renderTws(); renderStatus();
+    if (link) { try { await gaia(CMD_SET_ROLE, [r]); log(r === 1 ? 'Loa này: trái, loa kia: phải.' : 'Loa này: phải, loa kia: trái.'); } catch (e) { log('Lỗi: ' + errText(e)); } }
+  });
+  $('beepThis').onclick = () => { if (link) gaia(CMD_IDENTIFY, [0]).catch(() => {}); };
+  $('beepOther').onclick = () => { if (link) gaia(CMD_IDENTIFY, [1]).catch(() => {}); };
   const twsCmd = async (op, msg) => {
-    if (!link) { connectHere(); return; }
+    if (!link) {
+      if (DEMO) { state.peer = op === 1; renderStatus(); renderTws(); return; }   // test page: just show the other state
+      connectHere(); return;
+    }
     try { await gaia(CMD_TWS, [op]); $('twsText').textContent = msg; log(msg); }
     catch (e) { log('Lỗi: ' + errText(e)); }
   };
@@ -1813,6 +1839,13 @@
     'Hợp mọi chỗ đặt': 'At home anywhere', 'Free, Wall, Corner: bass gọn dù loa đứng giữa phòng hay sát góc.': 'Free, Wall, Corner: tight bass in the middle of the room or in a corner.',
     'Loa bass': 'Woofer', 'Loa treble': 'Tweeter', 'Phân tần': 'Crossover', 'Thùng': 'Cabinet', 'Kín': 'Sealed', 'Điều khiển': 'Control'
   };
+  Object.assign(EN, {
+    'Loa đang nối với app là': 'The speaker connected to the app is', 'Bíp loa này': 'Beep this one', 'Bíp loa kia': 'Beep the other',
+    'Hai loa đang chơi stereo. Chọn loa đang nối với app là bên trái hay phải, loa kia tự nhận bên còn lại. Bấm Bíp để biết loa nào là loa nào.':
+      'Both speakers play in stereo. Choose whether the speaker connected to the app is left or right; the other one takes the other side. Tap Beep to tell them apart.',
+    'Đang dùng một loa (phát cả hai kênh). Muốn nghe stereo, hoặc thay một loa hỏng: bật loa thứ hai để gần, bấm Ghép ở đây, rồi giữ Rew + Play trên loa kia khoảng 3 giây. Loa mới sẽ thay chỗ loa cũ.':
+      'Using one speaker (both channels). For stereo, or to replace a broken speaker: switch the second speaker on nearby, tap Pair here, then hold Rew + Play on it for about 3 seconds. The new speaker takes the place of the old one.',
+    'Loa này: trái, loa kia: phải.': 'This speaker: left, the other: right.', 'Loa này: phải, loa kia: trái.': 'This speaker: right, the other: left.' });
   Object.assign(EN, { 'Bản thử · chưa nối loa': 'Test page · no speaker connected',
     'Bản thử: kết quả đo giả lập, không có gì được gửi tới loa.': 'Test page: simulated measurement, nothing was sent to the speakers.' });
   Object.assign(EN, { 'Để sau': 'Not now', 'Chuyển': 'Switch', 'Giữ loa này': 'Keep this one', 'Chuyển sang loa chính…': 'Switching to the main speaker…' });
