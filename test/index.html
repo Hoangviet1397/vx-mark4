@@ -246,7 +246,8 @@
   .chip svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
   .chip.on { color: var(--text); }
   .chip.on svg { stroke: var(--ok); }
-  #facts { grid-template-columns: 1fr 1fr; margin-top: 26px; }
+  #facts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin-top: 26px; }   /* minmax: a long value must not widen its column */
+  #facts .tile { min-width: 0; }
   #facts .tile { appearance: none; border: 0; text-align: left; font: inherit; color: var(--text); flex-direction: row; align-items: center; justify-content: flex-start; gap: 12px; min-height: 76px; cursor: pointer; }
   #facts .tile svg { width: 30px; height: 30px; flex: none; stroke: var(--muted); fill: none; stroke-width: 1.3; }
   #facts .tile span { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
@@ -639,6 +640,10 @@
   const GAIA_SERVICE  = '00001100-d102-11e1-9b23-00025b00a5a5';
   const GAIA_COMMAND  = '00001101-d102-11e1-9b23-00025b00a5a5';
   const GAIA_RESPONSE = '00001102-d102-11e1-9b23-00025b00a5a5';
+  // Chooser: only devices that advertise the GAIA service AND carry an Atelier VX
+  // name (both in one filter = AND). "VX Lento" from fw 2.3, "V&X ..." before.
+  const VX_CHOOSER = { filters: [{ services: [GAIA_SERVICE], namePrefix: 'VX' }, { services: [GAIA_SERVICE], namePrefix: 'V&X' }],
+                       optionalServices: [GAIA_SERVICE] };
   // VX vendor commands (firmware sink_loudness.c)
   const VX_VENDOR = 0x7658, CMD_GET_STATE = 0x0001, CMD_SET_BEOSONIC = 0x0002, CMD_SET_PLACEMENT = 0x0003, CMD_GET_INFO = 0x0004;
   const MAX_DIST = 50;
@@ -1012,6 +1017,8 @@
   }
   function onResponse(ev) { handlePacket(new Uint8Array(ev.target.value.buffer)); }
   let infoWaiter = null;   // resolves when the GET_INFO reply (or its refusal) arrives
+  let vxProof = false, proofWaiter = null;   // a VX command succeeded on this link = it is an Atelier VX speaker
+  const gotProof = () => { vxProof = true; if (proofWaiter) { proofWaiter(); proofWaiter = null; } };
   function handlePacket(v) {
     if (v.length < 5 || ((v[0] << 8) | v[1]) !== VX_VENDOR) return;
     const cmd = ((v[2] << 8) | v[3]) & 0x7fff;
@@ -1021,12 +1028,14 @@
         const p = v.slice(5);
         info.model = (p[1] << 8) | p[2]; info.fw = p[3] + '.' + p[4]; info.features = (p[5] << 8) | p[6];
         state.proto = p[0]; state.role = p[7];
+        gotProof();
       } else { info.model = 4; info.fw = 'cũ (trước 2.1)'; info.features = MODELS[4].features; }
       if (infoWaiter) { infoWaiter(); infoWaiter = null; }
       return;
     }
     if (v[4] !== 0) { log('Loa trả lỗi ' + v[4]); return; }
     if (v.length < 13) return;
+    gotProof();
     const p = v.slice(5);
     state.proto = p[0]; state.placement = p[1]; state.role = p[5]; state.peer = !!p[6];
     if (p.length >= 9) {
@@ -1097,10 +1106,26 @@
   async function startLink(l, btId) {
     link = l; l.btId = btId; state.connected = true; sentKey = ""; inFlight = false; mainChecked = false;
     if (askKind === 'connect') askClose();
-    info.model = 0; info.features = 0; info.fw = '';
+    info.model = 0; info.features = 0; info.fw = ''; vxProof = false;
     const got = new Promise(res => { infoWaiter = res; });
     await gaia(CMD_GET_INFO);
     await Promise.race([got, new Promise(res => setTimeout(res, 1500))]);
+    // Only Atelier VX speakers: a VX command must SUCCEED. Any other GAIA device
+    // (Qualcomm earbuds, speakers...) answers the 0x7658 vendor with "not supported".
+    // Firmware before 2.1 has no GET_INFO, but its GET_STATE succeeds.
+    if (!vxProof) {
+      const ok = new Promise(res => { proofWaiter = res; });
+      await gaia(CMD_GET_STATE);
+      await Promise.race([ok, new Promise(res => setTimeout(res, 1500))]);
+    }
+    if (!vxProof) {
+      log('Không phải loa Atelier VX: thiết bị không trả lời lệnh VX.');
+      const bad = link; link = null; proofWaiter = null;
+      try { await bad.close(); } catch {}
+      onDisconnect();
+      openSheet(); cMsg('Thiết bị này không phải loa Atelier VX.', true);
+      return false;
+    }
     if (!info.model) { info.model = 4; info.features = MODELS[4].features; }
     const key = 'm' + info.model;
     let p = products.find(x => x.key === key);
@@ -1114,6 +1139,7 @@
     pollTimer = setInterval(() => { if (link && !dragging) gaia(CMD_GET_STATE).catch(() => {}); }, 3000);
     cMsg(''); closeSheet();
     if (splashDone) openProduct(key);
+    return true;
   }
   async function disconnectLink() {
     const l = link; link = null; if (l) { try { await l.close(); } catch {} } onDisconnect();
@@ -1143,7 +1169,7 @@
       step = 'ghép nối';
       await resp.startNotifications(); resp.addEventListener('characteristicvaluechanged', onResponse);
       const ch = cmdChar;
-      await startLink({ kind: 'bt', send: b => ch.writeValue(new Uint8Array(b)), close: () => device.gatt.disconnect() }, device.id);
+      if (!await startLink({ kind: 'bt', send: b => ch.writeValue(new Uint8Array(b)), close: () => device.gatt.disconnect() }, device.id)) return false;
       log('Đã kết nối qua Bluetooth.');
       return true;
     } catch (e) {
@@ -1153,7 +1179,7 @@
       if (quiet) return false;
       if (step === 'ghép nối' || /security|auth|encrypt|insufficient|pair/i.test(msg))
         cMsg(`Không ghép được với loa. Vào <b>Cài đặt → Bluetooth</b>, nếu thấy loa VX thì chọn <b>Quên thiết bị này</b>, rồi bấm Tìm loa lại.<br><small>${msg}</small>`, true);
-      else if (step === 'mở kênh điều khiển') cMsg(`Thiết bị này không phải loa VX.<br><small>${msg}</small>`, true);
+      else if (step === 'mở kênh điều khiển') cMsg(`Thiết bị này không phải loa Atelier VX.<br><small>${msg}</small>`, true);
       else cMsg(`Không kết nối được: ${msg}`, true);
       return false;
     }
@@ -1165,7 +1191,7 @@
     try {
       device = await navigator.bluetooth.requestDevice(all
         ? { acceptAllDevices: true, optionalServices: [GAIA_SERVICE] }
-        : { filters: [{ services: [GAIA_SERVICE] }, { namePrefix: 'VX' }, { namePrefix: 'V&X' }], optionalServices: [GAIA_SERVICE] });
+        : VX_CHOOSER);
     } catch (e) {
       const msg = errText(e);
       if (/cancel/i.test(msg)) { cMsg(''); return; }
@@ -1253,7 +1279,7 @@
   // speaker keeps BLE quiet, so the chooser lists the main speaker only
   function switchToMain() {
     if (!navigator.bluetooth) return;
-    navigator.bluetooth.requestDevice({ filters: [{ services: [GAIA_SERVICE] }, { namePrefix: 'VX' }, { namePrefix: 'V&X' }], optionalServices: [GAIA_SERVICE] })
+    navigator.bluetooth.requestDevice(VX_CHOOSER)
       .then(async d => { if (link) await disconnectLink(); await openBluetooth(d); })
       .catch(e => { if (!/cancel/i.test(errText(e))) log('Không mở được Bluetooth: ' + errText(e)); });
   }
@@ -1767,7 +1793,7 @@
     ', nếu thấy loa VX thì chọn': ', and if the VX speaker is listed choose', 'Quên thiết bị này': 'Forget This Device', ', rồi bấm Tìm loa lại.': ', then tap Find speaker again.',
     'Loa ngắt ngay sau khi nối. Nếu loa vừa được nạp lại firmware: vào': 'The speaker disconnected right after connecting. If its firmware was just updated: go to',
     'trên điện thoại, chọn loa →': 'on the phone, choose the speaker →',
-    'Thiết bị này không phải loa VX.': 'This device is not a VX speaker.', 'Đang kết nối qua USB…': 'Connecting over USB…',
+    'Thiết bị này không phải loa Atelier VX.': 'This device is not an Atelier VX speaker.', 'Không phải loa Atelier VX: thiết bị không trả lời lệnh VX.': 'Not an Atelier VX speaker: the device does not answer VX commands.', 'Đang kết nối qua USB…': 'Connecting over USB…',
     'Máy này không có Bluetooth hoặc Bluetooth đang tắt.': 'This device has no Bluetooth or Bluetooth is off.', 'Có thể nối loa bằng cáp USB.': 'You can connect the speaker with a USB cable.',
     'Trình duyệt này không có Bluetooth. iPhone: mở bằng Bluefy. Android / máy tính: Chrome.': 'This browser has no Bluetooth. iPhone: open in Bluefy. Android / computer: Chrome.',
     'Xoá loa này khỏi app? Loa vẫn giữ nguyên thiết lập; muốn dùng lại chỉ cần Tìm loa.': 'Remove this speaker from the app? The speaker keeps its settings; to use it again just tap Find speaker.',
