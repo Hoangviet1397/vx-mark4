@@ -1017,7 +1017,7 @@
       <div class="placebox roombox" id="secRoom" hidden>
         <div id="roomIdle">
           <p class="note muted" id="roomPending"></p>
-          <p class="note" id="roomIntro">Ngồi ở chỗ nghe, âm lượng 60–70%, phòng yên lặng.</p>
+          <p class="note" id="roomIntro">Ngồi ở chỗ nghe, giữ phòng yên lặng. Loa tự phát tiếng quét ở mức chuẩn.</p>
           <div class="roombtns"><button class="btn primary" id="roomStart">Hiệu chỉnh</button></div>
         </div>
         <div id="roomRun" hidden>
@@ -2405,6 +2405,7 @@
     const noise = rms(0, Math.round(ROOM.pre * fs * 0.9));
     const sig = rms(Math.round((ROOM.pre + lead) * fs), Math.min(rec.length, Math.round((ROOM.pre + lead + ROOM.T) * fs)));
     const snr = 20 * Math.log10(sig / Math.max(noise, 1e-9));
+    log(`Đo phòng · mức thu: nền ${(20 * Math.log10(noise + 1e-9)).toFixed(0)} dBFS, quét ${(20 * Math.log10(sig + 1e-9)).toFixed(0)} dBFS, đỉnh ${(20 * Math.log10(peak + 1e-9)).toFixed(0)} dBFS`);
     if (peak > 0.98) throw new Error('Quá to, micro bị quá tải. Giảm âm lượng một chút rồi đo lại chỗ này.');
     if (snr < 10) throw new Error(`Tiếng quét quá nhỏ so với tiếng ồn trong phòng (${snr.toFixed(0)} dB). Tăng âm lượng hoặc giữ phòng yên tĩnh rồi đo lại.`);
     const r = responseFromIr(impulseResponse(rec, sweep), fs);
@@ -2435,7 +2436,9 @@
         room.stream = await navigator.mediaDevices.getUserMedia({ audio: Object.assign({ deviceId: { exact: good.deviceId } }, opts) });
       }
     }
-    log('Micro: ' + ((room.stream.getAudioTracks()[0] || {}).label || 'mặc định') + ', ' + room.ctx.sampleRate + ' Hz');
+    const tr0 = room.stream.getAudioTracks()[0] || {}, st = tr0.getSettings ? tr0.getSettings() : {};
+    log('Micro: ' + (tr0.label || 'mặc định') + ', ' + room.ctx.sampleRate + ' Hz' +
+        ` · lọc vọng ${st.echoCancellation}, lọc ồn ${st.noiseSuppression}, tự chỉnh mức ${st.autoGainControl}`);
   }
   function roomStopMic() {
     if (room.stream) room.stream.getTracks().forEach(t => t.stop());
@@ -2644,7 +2647,7 @@
     // shown for one speaker as well as a pair; hidden only when a connected
     // speaker's firmware says it has no room compensation
     $('tileRoom').hidden = state.connected && !ok && !state.roomStored;
-    $('roomIntro').textContent = 'Ngồi ở chỗ nghe, âm lượng 60–70%, phòng yên lặng.';
+    $('roomIntro').textContent = 'Ngồi ở chỗ nghe, giữ phòng yên lặng. Loa tự phát tiếng quét ở mức chuẩn.';
     $('roomPending').textContent = state.roomStored ? '' : `Chưa đo: loa vẫn bù theo vị trí đặt (${PLACES[state.placement]}) cho tới khi đo xong.`;
     $('tRoom').textContent = room.busy || state.measuring ? 'Đang đo' : state.roomOn ? 'Bật' : state.roomStored ? 'Tắt' : 'Chưa đo';
     if ($('secRoom').hidden) return;
@@ -2938,7 +2941,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', 'Âm thanh': 'Sound', 'Hướng dẫn sử dụng': 'How to use', 'Ngồi ở chỗ nghe, âm lượng 60–70%, phòng yên lặng.': 'Sit where you listen, volume 60–70%, a quiet room.', '+ Lưu chế độ': '+ Save as mode', 'Điện thoại': 'Phone', 'Điện thoại · Cặp loa': 'Phone · Pair', 'Bản thử': 'Demo', 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.': 'Demo: no real speaker, every button still works.', 'Chưa nối. Bật loa rồi bấm Kết nối.': 'Not connected. Turn the speaker on, then tap Connect.', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu chế độ': '+ Save as mode',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', 'Âm thanh': 'Sound', 'Hướng dẫn sử dụng': 'How to use', 'Ngồi ở chỗ nghe, giữ phòng yên lặng. Loa tự phát tiếng quét ở mức chuẩn.': 'Sit where you listen and keep the room quiet. The speaker plays the sweep at a set level.', '+ Lưu chế độ': '+ Save as mode', 'Điện thoại': 'Phone', 'Điện thoại · Cặp loa': 'Phone · Pair', 'Bản thử': 'Demo', 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.': 'Demo: no real speaker, every button still works.', 'Chưa nối. Bật loa rồi bấm Kết nối.': 'Not connected. Turn the speaker on, then tap Connect.', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu chế độ': '+ Save as mode',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
@@ -3133,7 +3136,7 @@
     '<b>Free:</b> place the speaker more than 50 cm from a wall; reference sound, no compensation.',
     '<b>Wall:</b> place the speaker against the back wall; 4 dB less around 100 Hz for tighter bass.',
     '<b>Corner:</b> place the speaker in a corner; 7 dB less around 90 Hz with a slight 250 Hz lift.',
-    '<b>Room measurement:</b> the speaker plays a bass sweep, the phone listens where you sit, then lowers boomy bass notes. Sit in your listening position, set volume to 60–70%, and keep the room quiet; it takes about 30 seconds. Once measurement is active, Free / Wall / Corner have no effect; choosing them again keeps the measurement saved for later.',
+    '<b>Room measurement:</b> the speaker plays a bass sweep, the phone listens where you sit, then lowers boomy bass notes. Sit in your listening position and keep the room quiet; it takes about 30 seconds. Once measurement is active, Free / Wall / Corner have no effect; choosing them again keeps the measurement saved for later.',
     '<b>Connect a speaker:</b> turn it on, tap <b>Connect</b>, then choose the VX speaker from the list. The app reconnects next time.',
     '<b>Pair two speakers:</b> turn on the second speaker nearby, tap <b>Pair</b>, then hold <b>Rew + Play</b> on that speaker for about 3 seconds. Pairing a new speaker replaces the old one.',
     '<b>Left / right:</b> the brass dot marks the speaker connected to the phone. If left and right sound reversed, tap <b>Swap left ↔ right</b>.',
