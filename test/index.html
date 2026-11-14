@@ -1891,11 +1891,26 @@
   }
   // One packet format for both links (firmware sink_loudness.h):
   //   [vendor_hi, vendor_lo, cmd_hi, cmd_lo, payload] -> [vendor, cmd|0x8000, status, state...]
-  function gaia(cmd, payload = []) {
+  // A Bluetooth write that fails means the link is dead even if the browser
+  // never said so (e.g. the speaker restarted after a firmware update; Bluefy
+  // then rejects every write with a bare code): drop it, reconnect once, resend.
+  let relinking = null;
+  function gaia(cmd, payload = [], retry = true) {
     const pkt = [VX_VENDOR >> 8, VX_VENDOR & 0xff, cmd >> 8, cmd & 0xff, ...payload];
     const l = link;
-    writing = writing.catch(() => {}).then(() => l && l.send(pkt));   // writes must not overlap
-    return writing;
+    const p = writing = writing.catch(() => {}).then(() => l && l.send(pkt));   // writes must not overlap
+    return p.catch(async e => {
+      const err = e instanceof Error ? e : new Error('loa không nhận lệnh (' + e + ')');
+      if (!retry || relinking || !l || l.kind !== 'bt') throw err;   // a write made BY the reconnect must not wait for it
+      if (link === l) {
+        link = null; onDisconnect(); log('Lệnh không tới được loa, đang nối lại…');
+        try { if (l.close) l.close(); } catch {}
+      }
+      if (!relinking) relinking = autoReconnect().catch(() => false).finally(() => { relinking = null; });
+      await relinking;
+      if (!link) throw new Error('mất kết nối với loa, bấm Kết nối để nối lại');
+      return gaia(cmd, payload, false);
+    });
   }
   function onResponse(ev) { handlePacket(new Uint8Array(ev.target.value.buffer)); }
   let infoWaiter = null;   // resolves when the GET_INFO reply (or its refusal) arrives
