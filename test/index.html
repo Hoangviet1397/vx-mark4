@@ -1132,7 +1132,7 @@
         <div class="guide-kicker">Bắt đầu</div>
         <ol class="guide-steps"><li class="guide-step"><div><b>Kết nối loa</b><span>Bật loa, chọn <strong>Kết nối</strong>, rồi chọn loa VX trong danh sách.</span></div></li><li class="guide-step"><div><b>Chọn vị trí đặt</b><span>Chọn <strong>Free</strong>, <strong>Wall</strong> hoặc <strong>Corner</strong>.</span></div></li><li class="guide-step"><div><b>Chỉnh âm</b><span>Giữ núm Bass hoặc Treble rồi xoay. Chạm đúp để về 0.</span></div></li></ol>
         <div class="guide-kicker">Âm thanh</div><div class="guide-card"><span class="guide-label">Tone</span><p><b>Bass và Treble</b>Bass ±6 dB, Treble ±8 dB. Hai loa ghép sẽ cùng thay đổi.</p><p><b>Chế độ nghe</b><strong>Optimal</strong> âm chuẩn · <strong>Clear</strong> rõ giọng · <strong>Dark</strong> êm hơn · <strong>Podcast</strong> cho lời nói.</p><p><b>Lưu thiết lập</b>Chọn <strong>+ Lưu chế độ</strong> để lưu; chọn <strong>Sửa</strong> để xoá.</p></div>
-        <div class="guide-kicker">Phòng nghe</div><div class="guide-card"><span class="guide-label">Placement</span><p><b>Free</b>Cách tường trên 50 cm.</p><p><b>Wall</b>Sát tường sau, bass gọn hơn.</p><p><b>Corner</b>Trong góc, giảm bass ù.</p><p><b>Đo phòng</b>Đặt âm lượng 60–70%, ngồi đúng vị trí và giữ phòng yên lặng. Mất khoảng 30 giây.</p></div>
+        <div class="guide-kicker">Phòng nghe</div><div class="guide-card"><span class="guide-label">Placement</span><p><b>Free</b>Cách tường trên 50 cm.</p><p><b>Wall</b>Sát tường sau, bass gọn hơn.</p><p><b>Corner</b>Trong góc, giảm bass ù.</p><p><b>Đo phòng</b>Loa tự phát tiếng quét, iPhone chỉ nghe. Ngồi đúng chỗ nghe, giữ phòng yên lặng. App đo ở 4 chỗ quanh đầu bạn: mỗi chỗ có đếm ngược để dời iPhone tới, rồi giữ yên iPhone trong lúc loa quét. Có 2 loa thì đo lần lượt từng loa. Mất khoảng 1 phút.</p></div>
         <div class="guide-tip"><strong>Lưu ý:</strong> Khi dùng kết quả đo phòng, Free / Wall / Corner tạm thời không có tác dụng.</div>
         <div class="guide-kicker">Kết nối</div><div class="guide-card"><span class="guide-label">Bluetooth &amp; USB</span><p><b>Ghép hai loa</b>Chọn <strong>Ghép</strong>, rồi giữ <strong>Rew + Play</strong> trên loa thứ hai khoảng 3 giây.</p><p><b>Trái / phải</b>Chấm đồng đánh dấu loa đang nối với điện thoại. Nếu bị ngược, chọn <strong>Đổi trái ↔ phải</strong>.</p><p><b>Chưa thấy loa kia</b>Hai loa đã ghép nhưng loa kia đang tắt hoặc ở xa: âm sắc, chế độ và phòng nghe chỉ đổi trên loa đang nối. Bật loa kia lên là hai loa tự đồng bộ lại.</p><p><b>USB</b>Chrome/Edge desktop hỗ trợ QCC3034 qua WebHID; app điện thoại dùng Bluetooth.</p></div>
         <div class="guide-kicker">Radio</div><div class="guide-card"><span class="guide-label">Listen</span><p>Điện thoại phát đài và gửi tiếng ra loa qua Bluetooth. Chạm trái tim để lưu yêu thích.</p></div>
@@ -2244,6 +2244,7 @@
   const ROOM = {
     f1: 15, f2: 2000, T: 4.0, level: 0.25,      // exponential sweep, -12 dBFS
     pre: 0.4, tail: 1.8,                        // s of room noise before, room decay after
+    spkWait: 1.8,                               // speaker sweep: Bluetooth command + 0.8 s DAC lead-in before it starts
     fmin: 20, fmax: 1000, ppo: 48,              // analysis grid
     cutLo: 30, cutHi: 300, maxBands: 3, minExcess: 2.0, maxCut: 12
   };
@@ -2382,11 +2383,11 @@
     return { ref, tgt, bands, after: db.map((d, i) => d + eqDb(bands, GRID[i])) };
   }
   // one recording -> smoothed power on the grid, with sanity checks
-  function roomAnalyse(rec, sweep, fs) {
+  function roomAnalyse(rec, sweep, fs, lead = 0) {
     const rms = (a, b) => { let s = 0; for (let i = a; i < b; i++) s += rec[i] * rec[i]; return Math.sqrt(s / Math.max(1, b - a)); };
     let peak = 0; for (let i = 0; i < rec.length; i++) peak = Math.max(peak, Math.abs(rec[i]));
     const noise = rms(0, Math.round(ROOM.pre * fs * 0.9));
-    const sig = rms(Math.round(ROOM.pre * fs), Math.min(rec.length, Math.round((ROOM.pre + ROOM.T) * fs)));
+    const sig = rms(Math.round((ROOM.pre + lead) * fs), Math.min(rec.length, Math.round((ROOM.pre + lead + ROOM.T) * fs)));
     const snr = 20 * Math.log10(sig / Math.max(noise, 1e-9));
     if (peak > 0.98) throw new Error('Quá to, micro bị quá tải. Giảm âm lượng một chút rồi đo lại chỗ này.');
     if (snr < 10) throw new Error(`Tiếng quét quá nhỏ so với tiếng ồn trong phòng (${snr.toFixed(0)} dB). Tăng âm lượng hoặc giữ phòng yên tĩnh rồi đo lại.`);
@@ -2395,7 +2396,7 @@
     const bassVsMid = meanDb(db, 40, 120) - meanDb(db, 300, 1000);
     if (bassVsMid < -20)
       throw new Error('Gần như không thu được bass: tiếng có vẻ phát ra loa iPhone chứ không qua loa VX. Kiểm tra iPhone đang phát qua Bluetooth tới VX (Trung tâm điều khiển → AirPlay) rồi đo lại.');
-    return { pw, snr, delay: r.delay - ROOM.pre, bassVsMid };
+    return { pw, snr, delay: r.delay - ROOM.pre - lead, bassVsMid };
   }
 
   // ---- microphone and sweep ----
@@ -2426,9 +2427,10 @@
     if (room.ctx) { room.ctx.close().catch(() => {}); room.ctx = null; }
   }
   // records pre + sweep + tail; the sweep starts once the noise sample is in
-  function roomRecordSweep() {
-    const ctx = room.ctx, fs = ctx.sampleRate, sweep = makeSweep(fs);
-    const total = Math.round((ROOM.pre + ROOM.T + ROOM.tail) * fs), rec = new Float32Array(total);
+  // target: null = the phone plays it (old firmware), 0 = this speaker, 1 = the other one
+  function roomRecordSweep(target = null) {
+    const ctx = room.ctx, fs = ctx.sampleRate, sweep = makeSweep(fs), spk = target !== null;
+    const total = Math.round((ROOM.pre + (spk ? ROOM.spkWait : 0) + ROOM.T + ROOM.tail) * fs), rec = new Float32Array(total);
     const src = ctx.createMediaStreamSource(room.stream), proc = ctx.createScriptProcessor(4096, 1, 1), mute = ctx.createGain();
     mute.gain.value = 0;
     return new Promise((resolve, reject) => {
@@ -2441,7 +2443,12 @@
       proc.onaudioprocess = ev => {
         const d = ev.inputBuffer.getChannelData(0), n = Math.min(d.length, total - got);
         rec.set(d.subarray(0, n), got); got += n;
-        if (!player && got >= ROOM.pre * fs) {
+        if (spk && !player && got >= ROOM.pre * fs) {
+          // the speaker plays its stored sweep; with the mic open iOS would play ours on the iPhone speaker
+          player = { stop() {} };
+          gaia(CMD_ROOM_MEASURE, [2, target]).catch(e => finish(e));
+        }
+        if (!spk && !player && got >= ROOM.pre * fs) {
           // same signal in L and R: the pair plays it in phase
           const buf = ctx.createBuffer(2, sweep.length, fs);
           buf.copyToChannel(sweep, 0); buf.copyToChannel(sweep, 1);
@@ -2452,7 +2459,7 @@
       room.stopRec = () => finish(new Error('cancel'));   // the Cancel button
       src.connect(proc); proc.connect(mute); mute.connect(ctx.destination);
       setTimeout(() => finish(new Error('Micro không gửi dữ liệu. Thử lại, hoặc kiểm tra quyền Micro của Bluefy.')),
-                 (ROOM.pre + ROOM.T + ROOM.tail + 5) * 1000);
+                 (ROOM.pre + ROOM.spkWait + ROOM.T + ROOM.tail + 5) * 1000);
     });
   }
 
@@ -2460,6 +2467,13 @@
   //      around the listener's head, then design and apply automatically
   //      (one-step calibration like B&O; the speaker has no mic of its own) ----
   const ROOM_SWEEPS = 4;
+  // like B&O's ARC: a few fixed spots around the seat, the phone held still while it measures
+  const ROOM_SPOTS = [
+    'Ngồi đúng chỗ nghe, cầm iPhone ngang tai.',
+    'Dịch iPhone sang trái khoảng 30 cm, vẫn ngang tai.',
+    'Dịch iPhone sang phải khoảng 30 cm, vẫn ngang tai.',
+    'Đưa iPhone lên cao hơn đầu khoảng một gang tay.'
+  ];
   let roomAbort = false;
   const roomMsg = (t, warn) => { const m = $('roomMsg'); m.className = 'note' + (warn ? ' warn' : ''); m.innerHTML = t; };
   const roomView = v => ['roomIdle', 'roomRun', 'roomDoneBox'].forEach(id => $(id).hidden = id !== v);
@@ -2493,14 +2507,24 @@
       }
       await gaia(CMD_ROOM_MEASURE, [1]); measuring = true;
       await wait(900);                              // both speakers' EQ settles
+      const spkSweep = state.proto >= 5;              // firmware 2.4+: the speaker plays the sweep
+      const targets = spkSweep ? (state.peer ? [0, 1] : [0]) : [null];
       for (let k = 0; k < ROOM_SWEEPS; k++) {
-        roomProgress(k / ROOM_SWEEPS, `${k + 1}/${ROOM_SWEEPS}`, 'Từ từ đưa iPhone vòng quanh đầu, cách đầu khoảng một gang tay.');
+        for (let s = k ? 5 : 3; s > 0; s--) {         // time to move the phone to the next spot
+          roomProgress(k / ROOM_SWEEPS, `${k + 1}/${ROOM_SWEEPS}`, `${ROOM_SPOTS[k]} Đo sau ${s} giây…`);
+          await wait(1000);
+          if (roomAbort) throw new Error('cancel');
+        }
         if (k) await gaia(CMD_ROOM_MEASURE, [1]);   // keeps the speakers' 2 min timeout fresh
-        const r = await roomRecordSweep();
-        if (roomAbort) throw new Error('cancel');
-        const m = roomAnalyse(r.rec, r.sweep, r.fs);
-        room.pos.push(m);
-        log(`Đo phòng ${k + 1}: SNR ${m.snr.toFixed(0)} dB, trễ ${(m.delay * 1000).toFixed(0)} ms, bass/mid ${m.bassVsMid.toFixed(1)} dB`);
+        for (const t of targets) {
+          roomProgress((k + 0.5) / ROOM_SWEEPS, `${k + 1}/${ROOM_SWEEPS}`,
+            targets.length > 1 ? `Giữ yên iPhone, đang đo loa ${t ? 'kia' : 'này'}…` : 'Giữ yên iPhone, đang đo…');
+          const r = await roomRecordSweep(t);
+          if (roomAbort) throw new Error('cancel');
+          const m = roomAnalyse(r.rec, r.sweep, r.fs, t === null ? 0 : ROOM.spkWait);
+          room.pos.push(m);
+          log(`Đo phòng ${k + 1}${t === null ? '' : t ? ' loa kia' : ' loa này'}: SNR ${m.snr.toFixed(0)} dB, trễ ${(m.delay * 1000).toFixed(0)} ms, bass/mid ${m.bassVsMid.toFixed(1)} dB`);
+        }
       }
       roomProgress(1, '✓', 'Đang tính…'); await wait(30);
       const n = room.pos.length;
@@ -2535,8 +2559,12 @@
         await wait(700); if (roomAbort) throw new Error('cancel');
       }
       for (let k = 0; k < ROOM_SWEEPS; k++) {
-        roomProgress(k / ROOM_SWEEPS, `${k + 1}/${ROOM_SWEEPS}`, 'Từ từ đưa iPhone vòng quanh đầu, cách đầu khoảng một gang tay.');
-        await wait(1200); if (roomAbort) throw new Error('cancel');
+        for (let s = 2; s > 0; s--) {
+          roomProgress(k / ROOM_SWEEPS, `${k + 1}/${ROOM_SWEEPS}`, `${ROOM_SPOTS[k]} Đo sau ${s} giây…`);
+          await wait(600); if (roomAbort) throw new Error('cancel');
+        }
+        roomProgress((k + 0.5) / ROOM_SWEEPS, `${k + 1}/${ROOM_SWEEPS}`, 'Giữ yên iPhone, đang đo…');
+        await wait(900); if (roomAbort) throw new Error('cancel');
       }
       roomProgress(1, '✓', 'Đang tính…'); await wait(300);
       window.vxRoomTest(true);
@@ -2856,7 +2884,7 @@
       state.roomStored = state.roomOn = show !== 'idle'; if (!DEMO) state.connected = true; info.features |= F_ROOM;
       $('roomMsg').textContent = '';
       $('secRoom').hidden = false; roomRender(); $('tileRoom').hidden = false;
-      if (show === 'run') { roomView('roomRun'); roomProgress(0.5, '2/4', 'Từ từ đưa iPhone vòng quanh đầu, cách đầu khoảng một gang tay.'); }
+      if (show === 'run') { roomView('roomRun'); roomProgress(0.5, '2/4', 'Giữ yên iPhone, đang đo…'); }
     }
     return { ms: Math.round(performance.now() - t0), snr: +m.snr.toFixed(1), delayMs: Math.round(m.delay * 1000), simulated: modes, bands: d.bands,
              worstBefore: +Math.max(...GRID.map((f, i) => f >= 30 && f <= 300 ? m.pw.map(toDb)[i] - d.tgt[i] : -99)).toFixed(1),
@@ -2915,6 +2943,9 @@
     'Đang mở micro…': 'Opening the microphone…', 'Đang tính…': 'Calculating…', 'Đã huỷ.': 'Cancelled.',
     'Ngồi vào chỗ nghe, cầm iPhone ngang tai. Giữ phòng yên lặng.': 'Sit in your listening seat, hold the iPhone at ear height. Keep the room quiet.',
     'Từ từ đưa iPhone vòng quanh đầu, cách đầu khoảng một gang tay.': 'Slowly move the iPhone around your head, about a hand-span away.',
+    'Giữ yên iPhone, đang đo…': 'Hold the iPhone still, measuring…',
+    'Giữ yên iPhone, đang đo loa này…': 'Hold the iPhone still, measuring this speaker…',
+    'Giữ yên iPhone, đang đo loa kia…': 'Hold the iPhone still, measuring the other speaker…',
     'Xong. Phòng của bạn không có nốt bass nào bị ù đáng kể, không cần hiệu chỉnh.': 'Done. Your room has no clearly boomy bass notes; no correction needed.',
     'Đã đo và lưu trong loa.': 'Measured and saved in the speakers.', 'Đã xoá hiệu chỉnh phòng.': 'Room compensation deleted.',
     'Kết nối với loa trước.': 'Connect to a speaker first.', 'Loa cần firmware 2.2 trở lên để hiệu chỉnh phòng.': 'Room compensation needs speaker firmware 2.2 or later.',
@@ -3000,6 +3031,11 @@
     'Hai loa ghép sẽ cùng thay đổi.': 'Both paired speakers change together.', 'Cách tường trên 50 cm.': 'Place it more than 50 cm from a wall.', 'Sát tường sau, bass gọn hơn.': 'Place it against the back wall for tighter bass.', 'Trong góc, giảm bass ù.': 'Place it in a corner to reduce boomy bass.', 'Đặt âm lượng 60–70%, ngồi đúng vị trí và giữ phòng yên lặng. Mất khoảng 30 giây.': 'Set volume to 60–70%, sit in your listening position, and keep the room quiet. It takes about 30 seconds.', 'Khi dùng kết quả đo phòng, Free / Wall / Corner tạm thời không có tác dụng.': 'When room measurement is active, Free / Wall / Corner have no effect.', 'Điện thoại phát đài và gửi tiếng ra loa qua Bluetooth. Chạm trái tim để lưu yêu thích.': 'The phone plays the station and sends audio to the speaker over Bluetooth. Tap the heart to save a favourite.', 'Kiểm tra loa đang bật và ở gần điện thoại, rồi chọn Tìm loa.': 'Make sure the speaker is on and nearby, then tap Find speaker.', 'Chọn đầu ra âm thanh là loa VX.': 'Choose the VX speaker as the audio output.', 'Cho phép microphone và giảm âm lượng nếu micro quá tải.': 'Allow microphone access and lower the volume if the microphone overloads.'
   });
   const EN_RX = [
+    [/^(.*) Đo sau (\d) giây…$/, (m, a, n) => `${{
+      'Ngồi đúng chỗ nghe, cầm iPhone ngang tai.': 'Sit in your listening seat, iPhone at ear height.',
+      'Dịch iPhone sang trái khoảng 30 cm, vẫn ngang tai.': 'Move the iPhone about 30 cm to the left, still at ear height.',
+      'Dịch iPhone sang phải khoảng 30 cm, vẫn ngang tai.': 'Move the iPhone about 30 cm to the right, still at ear height.',
+      'Đưa iPhone lên cao hơn đầu khoảng một gang tay.': 'Raise the iPhone about a hand-span above your head.' }[a] || a} Measuring in ${n} s…`],
     [/^(Loa trái|Loa phải|Loa) · chưa thấy loa kia$/, (m, s) => `${{ 'Loa trái': 'Left speaker', 'Loa phải': 'Right speaker', 'Loa': 'Speaker' }[s]} · other speaker not found`],
     [/^(Một loa|Stereo) · (USB|Bluetooth)$/, (m, a, v) => `${a === 'Một loa' ? 'One speaker' : 'Stereo'} · ${v}`],
     [/^(Loa trái|Loa phải|Loa) · (USB|Bluetooth|[\d.]+)$/, (m, s, v) => `${{ 'Loa trái': 'Left speaker', 'Loa phải': 'Right speaker', 'Loa': 'Speaker' }[s]} · ${v}`],
