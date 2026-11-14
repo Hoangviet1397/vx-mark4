@@ -1521,7 +1521,7 @@
     const t = $('twsText'), live = state.connected || DEMO;
     t.textContent = !live ? 'Nối điện thoại với một loa trước.'
       : state.peer ? (myRole() === 2 ? 'Stereo · loa nối với điện thoại là loa phải (chấm đồng trên hình)' : 'Stereo · loa nối với điện thoại là loa trái (chấm đồng trên hình)')
-      : 'Một loa · phát cả hai kênh';
+      : 'Thêm loa thứ hai để nghe stereo';
     $('swapLR').hidden = !(live && state.peer && !!(info.features & F_ROLE));
     $('twsPair').hidden = live && state.peer;
     $('twsPair').disabled = !live;
@@ -1947,17 +1947,18 @@
     const via = link ? (link.kind === 'usb' ? 'USB' : 'Bluetooth') : '';
     const side = state.role === 1 ? 'Loa trái' : state.role === 2 ? 'Loa phải' : 'Loa';
     const chip = $('chip'), pair = !$('tilePeer').hidden;
-    const alone = state.connected && pair && !state.peer;   // paired before, the other one is off: say it here, once
-    chip.classList.toggle('on', state.connected && !alone);
-    chip.classList.toggle('half', alone);
-    $('chipTxt').textContent = alone ? `${side} · chưa thấy loa kia` : state.connected ? `${side} · ${via}` : DEMO ? 'Bản thử · chưa nối loa' : 'Chưa kết nối · chạm để nối';
-    // firmware of the speaker the app talks to (GET_INFO), e.g. "Loa trái · 2.3"
-    $('fwNow').textContent = state.connected && info.fw ? `${side} · ${info.fw}` : 'Kết nối để xem';
-    $('tPeer').textContent = !(state.connected || DEMO) ? 'Chưa nối' : state.peer ? 'Stereo · đồng bộ' : 'Một loa';
+    // One speaker is the whole product: no "left / right", no "the other one is missing".
+    // Sides and "Stereo" only appear while two speakers actually play together.
+    chip.classList.toggle('on', state.connected);
+    chip.classList.remove('half');
+    $('chipTxt').textContent = state.connected ? (state.peer ? `Stereo · ${via}` : `Đã kết nối · ${via}`) : DEMO ? 'Bản thử · chưa nối loa' : 'Chưa kết nối · chạm để nối';
+    // firmware of the speaker the app talks to (GET_INFO), e.g. "Loa trái · 2.3" in a pair, "2.4" alone
+    $('fwNow').textContent = state.connected && info.fw ? (state.peer ? `${side} · ${info.fw}` : info.fw) : 'Kết nối để xem';
+    $('tPeer').textContent = !(state.connected || DEMO) ? 'Chưa nối' : state.peer ? 'Stereo · đồng bộ' : 'Thêm loa thứ hai để nghe stereo';
     $('connBtn').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
     $('connBtn').classList.toggle('primary', !state.connected); $('connBtn').classList.toggle('soft', state.connected);
-    $('tConn').textContent = state.connected ? `${pair && state.peer ? 'Stereo' : 'Một loa'} · ${via}` : DEMO ? 'Bản thử' : 'Chưa nối';
-    $('connText').textContent = state.connected ? `${side} · ${via}` : DEMO ? 'Bản thử · chưa nối loa thật' : 'Chưa nối';
+    $('tConn').textContent = state.connected ? (pair && state.peer ? `Stereo · ${via}` : via) : DEMO ? 'Bản thử' : 'Chưa nối';
+    $('connText').textContent = state.connected ? (state.peer ? `${side} · ${via}` : `Đã kết nối · ${via}`) : DEMO ? 'Bản thử · chưa nối loa thật' : 'Chưa nối';
     $('setConn').textContent = state.connected ? 'Ngắt kết nối' : 'Kết nối';
     $('setConn').classList.toggle('primary', !state.connected);
     // one speaker in use (no peer): show only that speaker, not the pair
@@ -1971,7 +1972,7 @@
     // highlight the speaker we talk to; the other one is lit too when the pair is synced
     if (sheetOpen) renderHomeList();
     const hp = $('heroPair');
-    hp.classList.toggle('dim', state.connected && !state.peer);
+    hp.classList.remove('dim');   // a speaker on its own is never shown as "half" of something
     hp.querySelectorAll('.side').forEach(s => {
       const me = +s.dataset.r === state.role, lit = state.connected && (me || state.peer || !state.role);
       s.classList.toggle('lit', lit);
@@ -2944,6 +2945,7 @@
     'Ngồi vào chỗ nghe, cầm iPhone ngang tai. Giữ phòng yên lặng.': 'Sit in your listening seat, hold the iPhone at ear height. Keep the room quiet.',
     'Từ từ đưa iPhone vòng quanh đầu, cách đầu khoảng một gang tay.': 'Slowly move the iPhone around your head, about a hand-span away.',
     'Giữ yên iPhone, đang đo…': 'Hold the iPhone still, measuring…',
+    'Thêm loa thứ hai để nghe stereo': 'Add a second speaker for stereo',
     'Giữ yên iPhone, đang đo loa này…': 'Hold the iPhone still, measuring this speaker…',
     'Giữ yên iPhone, đang đo loa kia…': 'Hold the iPhone still, measuring the other speaker…',
     'Xong. Phòng của bạn không có nốt bass nào bị ù đáng kể, không cần hiệu chỉnh.': 'Done. Your room has no clearly boomy bass notes; no correction needed.',
@@ -3031,6 +3033,7 @@
     'Hai loa ghép sẽ cùng thay đổi.': 'Both paired speakers change together.', 'Cách tường trên 50 cm.': 'Place it more than 50 cm from a wall.', 'Sát tường sau, bass gọn hơn.': 'Place it against the back wall for tighter bass.', 'Trong góc, giảm bass ù.': 'Place it in a corner to reduce boomy bass.', 'Đặt âm lượng 60–70%, ngồi đúng vị trí và giữ phòng yên lặng. Mất khoảng 30 giây.': 'Set volume to 60–70%, sit in your listening position, and keep the room quiet. It takes about 30 seconds.', 'Khi dùng kết quả đo phòng, Free / Wall / Corner tạm thời không có tác dụng.': 'When room measurement is active, Free / Wall / Corner have no effect.', 'Điện thoại phát đài và gửi tiếng ra loa qua Bluetooth. Chạm trái tim để lưu yêu thích.': 'The phone plays the station and sends audio to the speaker over Bluetooth. Tap the heart to save a favourite.', 'Kiểm tra loa đang bật và ở gần điện thoại, rồi chọn Tìm loa.': 'Make sure the speaker is on and nearby, then tap Find speaker.', 'Chọn đầu ra âm thanh là loa VX.': 'Choose the VX speaker as the audio output.', 'Cho phép microphone và giảm âm lượng nếu micro quá tải.': 'Allow microphone access and lower the volume if the microphone overloads.'
   });
   const EN_RX = [
+    [/^Đã kết nối · (USB|Bluetooth)$/, (m, v) => `Connected · ${v}`],
     [/^(.*) Đo sau (\d) giây…$/, (m, a, n) => `${{
       'Ngồi đúng chỗ nghe, cầm iPhone ngang tai.': 'Sit in your listening seat, iPhone at ear height.',
       'Dịch iPhone sang trái khoảng 30 cm, vẫn ngang tai.': 'Move the iPhone about 30 cm to the left, still at ear height.',
