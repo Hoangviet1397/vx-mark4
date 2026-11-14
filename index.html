@@ -674,6 +674,7 @@
   .station .st-fav.faved { color: var(--accent); } .station .st-fav.faved svg { fill: currentColor; }
   .rsearch { display: flex; gap: 8px; margin-bottom: 4px; }
   .rsearch input { flex: 1; min-width: 0; padding: 11px 12px; border: 1px solid var(--hair); border-radius: 3px; background: transparent; color: var(--text); font: 16px/1.2 inherit; }
+  .usbhint { margin: 10px 0 0; font-size: 12px; line-height: 1.45; text-align: left; }
   #v-radio section > .eyebrow { margin-top: 20px; }
   /* radio playing: a red dot on the Radio tab */
   body.radio-on nav.tabs button[data-tab="radio"]::after { content: ""; position: absolute; top: 9px; left: calc(50% + 10px); width: 7px; height: 7px; border-radius: 50%; background: #c8452f; }
@@ -803,6 +804,95 @@
   .guide { padding: 2px 0 4px; }
   .guide p { margin: 0 0 10px; font-size: var(--t-small); line-height: 1.6; color: var(--text); opacity: .85; }
   .guide p b { font-weight: 600; opacity: 1; }
+  /* polished guide: onboarding first, reference second */
+  .guide-lead { margin: -2px 0 22px; font-size: 16px; line-height: 1.55; color: var(--text); max-width: 34em; }
+  .guide-lead strong { font-weight: 600; }
+  .guide-kicker { display: flex; align-items: center; gap: 9px; margin: 26px 0 10px; color: var(--muted); font-size: var(--t-label); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+  .guide-kicker::after { content: ""; height: 1px; flex: 1; background: var(--hair); }
+  .guide-steps { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; counter-reset: guide-step; }
+  .guide-step { display: grid; grid-template-columns: 30px 1fr; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--hair); counter-increment: guide-step; }
+  .guide-step::before { content: counter(guide-step); display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--accent); border-radius: 50%; color: var(--accent); font-size: 12px; font-weight: 700; }
+  .guide-step b, .guide-card b { display: block; margin-bottom: 3px; color: var(--text); font-weight: 600; }
+  .guide-step span, .guide-card p, .guide-tip { color: var(--muted); font-size: var(--t-small); line-height: 1.55; }
+  .guide-card { padding: 14px 0 4px; border-top: 1px solid var(--hair); }
+  .guide-card + .guide-card { margin-top: 6px; }
+  .guide-card p { margin: 0 0 11px; }
+  .guide-card p:last-child { margin-bottom: 6px; }
+  .guide-card .guide-label { color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .guide-tip { margin: 12px 0 4px; padding: 11px 13px; border-left: 2px solid var(--accent); background: var(--chip); }
+  .guide-tip strong { color: var(--text); }
+  .guide-ref { display: grid; grid-template-columns: minmax(74px, .35fr) 1fr; gap: 0 14px; border-top: 1px solid var(--hair); }
+  .guide-ref > div { padding: 11px 0; border-bottom: 1px solid var(--hair); font-size: var(--t-small); line-height: 1.4; }
+  .guide-ref > div:nth-child(odd) { color: var(--text); font-weight: 600; }
+  .guide-ref > div:nth-child(even) { color: var(--muted); }
+  @media (max-width: 380px) { .guide-step { grid-template-columns: 27px 1fr; gap: 10px; } .guide-ref { grid-template-columns: 1fr; } .guide-ref > div:nth-child(odd) { padding-bottom: 2px; border-bottom: 0; } .guide-ref > div:nth-child(even) { padding-top: 2px; } }
+  /* ================= v2 look =================
+     Like the hi-fi apps (Sonos, KEF Connect, Bluesound): the speaker on a
+     soft stage, its state as one quiet line, controls grouped on cards,
+     sentence-case titles, pill buttons, a labelled tab bar. */
+  :root { --card: #fbf8f2; --card-edge: rgba(30,27,22,.06); --card-shadow: 0 1px 2px rgba(40,30,20,.05), 0 10px 28px rgba(40,30,20,.06); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --card: #1c1915; --card-edge: rgba(239,232,220,.07); --card-shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.25); } }
+  :root[data-theme="dark"] { --card: #1c1915; --card-edge: rgba(239,232,220,.07); --card-shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 28px rgba(0,0,0,.25); }
+  /* status: one quiet line with a dot */
+  #v-speaker .chipwrap { margin: 0; }
+  .chip { border: 0 !important; background: none !important; padding: 2px 4px !important; gap: 8px; font-size: 13.5px !important; color: var(--muted); }
+  .chip svg { display: none; }
+  .chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--faint); flex: none; }
+  .chip.on::before { background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 18%, transparent); }
+  .chip.on { color: var(--text); }
+  #v-speaker .ptitle { margin: 6px 0 2px; }
+  #v-speaker .ptitle::after { display: none; }
+  /* cards */
+  .card { background: var(--card); border: 1px solid var(--card-edge); border-radius: 18px; box-shadow: var(--card-shadow); padding: 18px 16px 16px; margin: 22px 0 0; }
+  .card .homeh, .card section > .eyebrow, #wheelBlock > .homeh { margin: 0 0 6px !important; padding: 0 !important; font-size: 15px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--text) !important; font-family: inherit !important; }
+  .card section > .eyebrow { margin-top: 22px !important; }
+  .card .linkbtn { font-size: 13px; letter-spacing: 0; text-transform: none; color: var(--accent); font-weight: 500; }
+  .cardlist { padding: 4px 16px; }
+  .cardlist section, .cardlist #homeRows { margin: 0 !important; }
+  .cardlist .roomrows, .cardlist #homeRows { border-top: 0 !important; }
+  .cardlist #secRoomGroup { margin-top: 0 !important; }
+  .cardlist .row { padding: 15px 0; }
+  .cardlist #rowConn { border-top: 1px solid var(--hair); }
+  .cardlist > :last-child .row:last-child, .cardlist #homeRows > .row:last-child { border-bottom: 0; }
+  .cardlist #roomPanel, .cardlist .connbox { border-bottom: 0; padding-left: 0; padding-right: 0; }
+  .cardlist #homeRows .connbox { border-top: 0; }
+  .row .rl { display: inline-flex; align-items: center; gap: 12px; }
+  .row .ri { width: 20px; height: 20px; fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  /* knobs: fewer marks, sans numbers */
+  .knobs { margin: 6px 0 0; }
+  .tknob .dial { width: min(36vw, 136px, 21vh); }
+  .tknob .ticks line:not(.long) { opacity: .28; }
+  .tknob .ticks text { display: none; }
+  .tknob .eyebrow { margin-top: 4px !important; font-size: 11px !important; letter-spacing: .12em !important; }
+  .tknob .num { font-family: inherit; font-size: 19px; font-weight: 500; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .tknob .num small { font-size: 12px; color: var(--muted); margin-left: 2px; }
+  /* modes as pills */
+  .modes { gap: 8px; margin-top: 4px; }
+  .modes button { padding: 8px 14px !important; border: 1px solid var(--hair) !important; border-radius: 999px; font-size: 14px !important; color: var(--text) !important; background: transparent; transform: none !important; }
+  .modes button::after { display: none !important; }
+  .modes button.active { background: var(--text); color: var(--bg) !important; border-color: var(--text) !important; }
+  .modes button .x { margin-left: 6px; }
+  /* tab bar: icon over label */
+  nav.tabs button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 9px 0 7px !important; }
+  nav.tabs .tl { font-size: 10.5px; font-weight: 500; letter-spacing: .02em; color: var(--muted); line-height: 1; }
+  nav.tabs button.on .tl { color: var(--text); }
+  nav.tabs #navCaret { display: none; }
+  nav.tabs .navthumb { height: 24px; width: auto; }
+  nav.tabs .navthumb .fsvg { height: 24px; }
+  nav.tabs button svg { width: 23px; height: 23px; }
+  nav.tabs button.on::before { left: 38%; right: 38%; }
+  #v-speaker #wheelBlock.card > .homeh, #v-speaker .chipwrap + #wheelBlock.card > .homeh { margin-top: 0 !important; }
+  #setupCard #secRoomGroup .roomrows { border-top: 0 !important; }
+  nav.tabs .tl { text-transform: none; letter-spacing: .01em; }
+  /* v2 look on Radio and Settings: the same cards as the speaker page */
+  .setrows, #v-radio .rows:not(:empty) { background: var(--card); border: 1px solid var(--card-edge) !important; border-radius: 18px; box-shadow: var(--card-shadow); padding: 0 16px; margin-top: 8px !important; }
+  .setrows .srow { padding: 15px 0; }
+  .setrows .srow:last-child, #v-radio .rows .row:last-child { border-bottom: 0; }
+  #v-radio .rows:empty { border: 0; margin: 0; }
+  #v-radio .station .st-main { padding: 11px 0; }
+  #v-radio section > .eyebrow, #setMain > .eyebrow.subh { margin: 26px 2px 0 !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--muted) !important; font-family: inherit !important; }
+  #radioNow { border-radius: 18px; box-shadow: var(--card-shadow); }
+  .setbtns { margin-top: 28px; }
 </style>
 </head>
 <body>
@@ -853,17 +943,17 @@
     <div class="wrap">
       <div class="hero"><canvas class="gl3d" id="heroGL" aria-hidden="true"></canvas><div class="pair s3d" id="heroPair"></div></div>
       <h1 class="ptitle" id="pTitle">VX Lento</h1>
-      <div class="chipwrap"><button class="chip" id="chip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
+      <div class="chipwrap"><button class="chip" id="chip" aria-live="polite"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg><span id="chipTxt">Chưa kết nối</span></button></div>
 
-      <div id="wheelBlock">
-      <div class="eyebrow homeh">Âm sắc</div>
+      <div id="wheelBlock" class="card">
+      <div class="eyebrow homeh">Âm thanh</div>
       <!-- two tone knobs, like the front of a hi-fi amplifier -->
       <div class="knobs" id="knobs">
-        <div class="tknob" data-k="bass" role="slider" aria-label="Bass" tabindex="0">
+        <div class="tknob" data-k="bass" role="slider" aria-label="Bass" aria-valuemin="-6" aria-valuemax="6" aria-valuenow="0" aria-valuestep="0.5" tabindex="0">
           <div class="dial"><svg viewBox="0 0 140 140" aria-hidden="true"><g class="ticks"></g><path class="track"/><path class="fill"/></svg><div class="cap"><i class="mark"></i></div></div>
           <span class="eyebrow">Bass</span><span class="num" id="numBass">0.0<small>dB</small></span>
         </div>
-        <div class="tknob" data-k="treble" role="slider" aria-label="Treble" tabindex="0">
+        <div class="tknob" data-k="treble" role="slider" aria-label="Treble" aria-valuemin="-8" aria-valuemax="8" aria-valuenow="0" aria-valuestep="0.5" tabindex="0">
           <div class="dial"><svg viewBox="0 0 140 140" aria-hidden="true"><g class="ticks"></g><path class="track"/><path class="fill"/></svg><div class="cap"><i class="mark"></i></div></div>
           <span class="eyebrow">Treble</span><span class="num" id="numTreble">0.0<small>dB</small></span>
         </div>
@@ -896,9 +986,10 @@
 
       </div>
 
+      <div class="card cardlist" id="setupCard">
       <section id="secRoomGroup">
       <div class="rows roomrows">
-        <button class="row btnrow" id="tilePlace"><span>Phòng nghe</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
+        <button class="row btnrow" id="tilePlace"><span class="rl"><svg class="ri" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20V5h18"/><rect x="13" y="9" width="5" height="8" rx="1"/><path d="M7 16c1.2-1.2 1.2-3.8 0-5"/></svg>Phòng nghe</span><span><em id="tPlace">Free</em><i class="chev">›</i></span></button>
       <!-- one of four: three placements, or the room measurement (which the
            speaker uses in place of the placement bands, firmware sink_loudness.c) -->
       <div id="roomPanel" hidden>
@@ -928,8 +1019,8 @@
           <div class="roombtns"><button class="btn primary" id="roomStart">Hiệu chỉnh</button></div>
         </div>
         <div id="roomRun" hidden>
-          <div class="roomprog"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="rp-bg" cx="60" cy="60" r="52"/><circle class="rp-fg" id="roomRing" cx="60" cy="60" r="52"/></svg><b id="roomCount"></b></div>
-          <p class="roomstep" id="roomStep"></p>
+          <div class="roomprog" role="progressbar" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0" aria-valuetext="0%"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="rp-bg" cx="60" cy="60" r="52"/><circle class="rp-fg" id="roomRing" cx="60" cy="60" r="52"/></svg><b id="roomCount"></b></div>
+          <p class="roomstep" id="roomStep" aria-live="polite"></p>
           <div class="roombtns"><button class="btn soft" id="roomCancel">Huỷ</button></div>
         </div>
         <div id="roomDoneBox" hidden>
@@ -945,7 +1036,7 @@
           </details>
           <div class="roombtns two"><button class="btn soft" id="roomRedo">Đo lại</button><button class="btn soft" id="roomDelete">Xoá</button></div>
         </div>
-        <p class="note" id="roomMsg"></p>
+        <p class="note" id="roomMsg" role="status" aria-live="polite"></p>
       </div>
       </div>
       </div>
@@ -954,7 +1045,7 @@
       <!-- everything about connecting in one place: the phone's link to the
            speaker, and the two speakers' link to each other -->
       <div class="rows" id="homeRows">
-        <button class="row btnrow" id="rowConn"><span>Kết nối</span><span><em id="tConn">Chưa nối</em><i class="chev">›</i></span></button>
+        <button class="row btnrow" id="rowConn"><span class="rl"><svg class="ri" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></svg>Kết nối</span><span><em id="tConn">Chưa nối</em><i class="chev">›</i></span></button>
         <div class="connbox" id="connBox" hidden>
           <div class="cb-line"><div><b>Điện thoại</b><small id="connText"></small></div><button class="btn primary" id="connBtn">Kết nối</button></div>
           <div id="tilePeer">
@@ -963,6 +1054,7 @@
             <em id="tPeer" hidden></em>
           </div>
         </div>
+      </div>
       </div>
       <p class="note" id="homeNote"></p>
     </div>
@@ -1034,49 +1126,15 @@
       <!-- settings > how to use: every explanation lives here, the main screens stay quiet -->
       <div id="setGuide" class="subpage" hidden>
         <div class="subhead"><button class="backicon" data-up aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8"/></svg></button><b>Hướng dẫn sử dụng</b><span></span></div>
-        <div class="eyebrow subh">Âm sắc</div>
-        <div class="guide">
-          <p><b>Xoay núm:</b> giữ ngón tay trên núm khoảng nửa giây cho tới khi núm nổi lên, rồi xoay. Vuốt ngang qua núm chỉ cuộn trang, không đổi âm.</p>
-          <p><b>Về 0:</b> chạm đúp vào núm.</p>
-          <p>Bass chỉnh ±6 dB, Treble ±8 dB. Khi 2 loa đã ghép, chỉnh một lần là cả hai loa cùng đổi và được lưu trong loa.</p>
-        </div>
-        <div class="eyebrow subh">Chế độ nghe</div>
-        <div class="guide">
-          <p><b>Optimal</b> âm chuẩn · <b>Clear</b> giọng rõ, treble sáng · <b>Dark</b> êm, bớt treble · <b>Podcast</b> cho giọng nói.</p>
-          <p>Chỉnh núm theo ý rồi bấm <b>+ Lưu chế độ</b> để giữ lại. Bấm <b>Sửa</b> để xoá chế độ đã lưu.</p>
-        </div>
-        <div class="eyebrow subh">Phòng nghe</div>
-        <div class="guide">
-          <p><b>Free:</b> loa cách tường trên 50 cm, âm chuẩn, không bù.</p>
-          <p><b>Wall:</b> loa sát tường sau, giảm 4 dB quanh 100 Hz cho bass gọn.</p>
-          <p><b>Corner:</b> loa trong góc phòng, giảm 7 dB quanh 90 Hz, bù nhẹ 250 Hz.</p>
-          <p><b>Đo phòng:</b> loa phát một tiếng quét bass, điện thoại nghe ở chỗ bạn ngồi rồi tự hạ những nốt bass bị phòng làm ù. Ngồi đúng chỗ nghe, để âm lượng 60–70%, giữ phòng yên lặng; mất khoảng 30 giây. Khi dùng kết quả đo, Free / Wall / Corner không còn tác dụng; chọn lại Free / Wall / Corner thì kết quả đo vẫn được giữ để dùng lại.</p>
-        </div>
-        <div class="eyebrow subh">Kết nối</div>
-        <div class="guide">
-          <p><b>Nối loa:</b> bật loa, bấm <b>Kết nối</b> rồi chọn loa VX trong danh sách. Lần sau app tự nối lại.</p>
-          <p><b>Ghép 2 loa:</b> bật loa thứ hai để gần, bấm <b>Ghép</b>, rồi giữ <b>Rew + Play</b> trên loa đó khoảng 3 giây. Ghép một loa mới thì loa mới thay chỗ loa cũ.</p>
-          <p><b>Trái / phải:</b> chấm đồng trên hình là loa đang nối với điện thoại. Nghe thấy trái phải bị ngược thì bấm <b>Đổi trái ↔ phải</b>.</p>
-        </div>
-        <div class="eyebrow subh">Radio</div>
-        <div class="guide">
-          <p>Điện thoại phát đài rồi đưa tiếng ra loa qua Bluetooth, như mọi app nghe nhạc. Bấm hình trái tim để lưu đài yêu thích, tìm thêm đài theo tên ở cuối trang.</p>
-        </div>
-        <div class="eyebrow subh">Nút bấm</div>
-        <div class="setrows">
-          <div class="srow info"><span>Play</span><em>Phát / dừng · giữ: ghép điện thoại</em></div>
-          <div class="srow info"><span>Rew · Next</span><em>Bài trước / sau · giữ: âm lượng</em></div>
-          <div class="srow info"><span>Next + Play</span><em>Đổi vị trí Free → Wall → Corner</em></div>
-          <div class="srow info"><span>Rew + Play (giữ)</span><em>Ghép 2 loa với nhau</em></div>
-          <div class="srow info"><span>Rew + Next (giữ)</span><em>Tách 2 loa</em></div>
-        </div>
-        <div class="eyebrow subh">Đèn báo</div>
-        <div class="setrows">
-          <div class="srow info"><span><i class="led slow"></i>Nháy chậm</span><em>Chờ ghép điện thoại</em></div>
-          <div class="srow info"><span><i class="led double"></i>Nháy đôi</span><em>Đang tìm loa kia</em></div>
-          <div class="srow info"><span><i class="led solid"></i>Sáng 2.5 giây</span><em>Đã kết nối</em></div>
-          <div class="srow info"><span><i class="led off"></i>Tắt</span><em>Đang phát nhạc</em></div>
-        </div>
+        <p class="guide-lead">Bắt đầu với ba bước: <strong>kết nối loa</strong>, chọn vị trí đặt, rồi chỉnh âm theo gu của bạn.</p>
+        <div class="guide-kicker">Bắt đầu</div>
+        <ol class="guide-steps"><li class="guide-step"><div><b>Kết nối loa</b><span>Bật loa, chọn <strong>Kết nối</strong>, rồi chọn loa VX trong danh sách.</span></div></li><li class="guide-step"><div><b>Chọn vị trí đặt</b><span>Chọn <strong>Free</strong>, <strong>Wall</strong> hoặc <strong>Corner</strong>.</span></div></li><li class="guide-step"><div><b>Chỉnh âm</b><span>Giữ núm Bass hoặc Treble rồi xoay. Chạm đúp để về 0.</span></div></li></ol>
+        <div class="guide-kicker">Âm thanh</div><div class="guide-card"><span class="guide-label">Tone</span><p><b>Bass và Treble</b>Bass ±6 dB, Treble ±8 dB. Hai loa ghép sẽ cùng thay đổi.</p><p><b>Chế độ nghe</b><strong>Optimal</strong> âm chuẩn · <strong>Clear</strong> rõ giọng · <strong>Dark</strong> êm hơn · <strong>Podcast</strong> cho lời nói.</p><p><b>Lưu thiết lập</b>Chọn <strong>+ Lưu chế độ</strong> để lưu; chọn <strong>Sửa</strong> để xoá.</p></div>
+        <div class="guide-kicker">Phòng nghe</div><div class="guide-card"><span class="guide-label">Placement</span><p><b>Free</b>Cách tường trên 50 cm.</p><p><b>Wall</b>Sát tường sau, bass gọn hơn.</p><p><b>Corner</b>Trong góc, giảm bass ù.</p><p><b>Đo phòng</b>Đặt âm lượng 60–70%, ngồi đúng vị trí và giữ phòng yên lặng. Mất khoảng 30 giây.</p></div>
+        <div class="guide-tip"><strong>Lưu ý:</strong> Khi dùng kết quả đo phòng, Free / Wall / Corner tạm thời không có tác dụng.</div>
+        <div class="guide-kicker">Kết nối</div><div class="guide-card"><span class="guide-label">Bluetooth &amp; USB</span><p><b>Ghép hai loa</b>Chọn <strong>Ghép</strong>, rồi giữ <strong>Rew + Play</strong> trên loa thứ hai khoảng 3 giây.</p><p><b>Trái / phải</b>Chấm đồng đánh dấu loa đang nối với điện thoại. Nếu bị ngược, chọn <strong>Đổi trái ↔ phải</strong>.</p><p><b>USB</b>Chrome/Edge desktop hỗ trợ QCC3034 qua WebHID; app điện thoại dùng Bluetooth.</p></div>
+        <div class="guide-kicker">Radio</div><div class="guide-card"><span class="guide-label">Listen</span><p>Điện thoại phát đài và gửi tiếng ra loa qua Bluetooth. Chạm trái tim để lưu yêu thích.</p></div>
+        <div class="guide-kicker">Nếu gặp sự cố</div><div class="guide-card"><span class="guide-label">Troubleshooting</span><p><b>Không thấy loa</b>Kiểm tra loa đang bật và ở gần điện thoại, rồi chọn Tìm loa.</p><p><b>Không có tiếng</b>Chọn đầu ra âm thanh là loa VX.</p><p><b>Đo phòng không chạy</b>Cho phép microphone và giảm âm lượng nếu micro quá tải.</p></div>
       </div>
 
       <!-- settings > language -->
@@ -1097,9 +1155,9 @@
   </div>
 
   <nav class="tabs"><div class="wrap">
-    <button data-tab="speaker" id="navSpeaker"><span class="navthumb" id="navThumb"></span><svg class="caret" viewBox="0 0 24 24" id="navCaret" aria-label="Loa của tôi"><path d="M6 15l6-6 6 6"/></svg></button>
-    <button data-tab="radio" aria-label="Radio"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2.5"/><path d="M7 8 16.5 3.5"/><circle cx="15.5" cy="14" r="3"/><path d="M6.5 12.5h3M6.5 15.5h3"/></svg></button>
-    <button data-tab="info" aria-label="Cài đặt"><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    <button data-tab="speaker" id="navSpeaker"><span class="navthumb" id="navThumb"></span><svg class="caret" viewBox="0 0 24 24" id="navCaret" aria-label="Loa của tôi"><path d="M6 15l6-6 6 6"/></svg><span class="tl">Loa</span></button>
+    <button data-tab="radio" aria-label="Radio"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2.5"/><path d="M7 8 16.5 3.5"/><circle cx="15.5" cy="14" r="3"/><path d="M6.5 12.5h3M6.5 15.5h3"/></svg><span class="tl">Radio</span></button>
+    <button data-tab="info" aria-label="Cài đặt"><svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg><span class="tl">Cài đặt</span></button>
   </div></nav>
 </div>
 
@@ -1124,8 +1182,9 @@
       <button class="textbtn" id="usbBtn">Nối bằng cáp USB</button>
       <button class="textbtn" id="btAllBtn">Không thấy loa?</button>
     </div>
+    <p class="note usbhint" id="usbHint" hidden><span>USB cần Chrome hoặc Edge trên máy tính. Khi bấm, chọn giao diện </span><b>QCC3034</b><span> trong hộp cấp quyền. Trên app điện thoại, dùng Bluetooth.</span></p>
   </div>
-  <p class="msg" id="cMsg"></p>
+  <p class="msg" id="cMsg" role="status" aria-live="polite"></p>
 </div>
 
 <script src="native-ble.js?v=2"></script>
@@ -1648,6 +1707,7 @@
       k.querySelector('.cap').style.transform = `rotate(${a.toFixed(1)}deg)`;
       k.querySelector('.fill').setAttribute('d', Math.abs(a) < 0.5 ? '' : arcPath(Math.min(0, a), Math.max(0, a), 52));
       k.setAttribute('aria-valuenow', v.toFixed(1));
+      k.setAttribute('aria-valuetext', `${fmtDb(v)} dB`);
     });
     const d = toneFromKnob ? tone : beosonic(shown.angle, shown.distance);   // follows the knob animation
     $('numBass').innerHTML = fmtDb(d.bass) + '<small>dB</small>'; $('numTreble').innerHTML = fmtDb(d.treble) + '<small>dB</small>';
@@ -2136,19 +2196,29 @@
     });
   }
   async function connectUsb() {
+    if (!navigator.hid) { cMsg('Trình duyệt này không hỗ trợ USB HID. Trên app điện thoại, hãy dùng Bluetooth.', true); return; }
     if (link) await disconnectLink();
     try {
+      cMsg('<span class="spin"></span>Đang mở hộp chọn thiết bị USB…');
       const list = await navigator.hid.requestDevice({ filters: HID_FILTER });
-      if (!list.length) return;
+      if (!list.length) { cMsg('Chưa chọn thiết bị USB. Bấm lại rồi chọn giao diện QCC3034.', true); return; }
       cMsg('<span class="spin"></span>Đang kết nối qua USB…');
       await openUsb(list[0]);
-    } catch (e) { log('USB lỗi: ' + errText(e)); cMsg('USB lỗi: ' + errText(e), true); link = null; onDisconnect(); }
+    } catch (e) {
+      const msg = errText(e);
+      log('USB lỗi: ' + msg);
+      if (/NotFoundError|cancel|aborted/i.test(msg)) cMsg('Chưa chọn thiết bị USB. Chọn giao diện QCC3034 để tiếp tục.', true);
+      else if (/SecurityError|NotAllowedError|permission/i.test(msg)) cMsg('Trình duyệt chưa được cấp quyền USB. Bấm Nối bằng cáp USB và cho phép giao diện QCC3034.', true);
+      else cMsg('USB lỗi: ' + msg, true);
+      link = null; onDisconnect();
+    }
   }
 
   $('findBtn').onclick = () => navigator.bluetooth ? findBluetooth(false) : (navigator.hid ? connectUsb() : cMsg('Trình duyệt này không có Bluetooth. iPhone: mở bằng Bluefy. Android / máy tính: Chrome.', true));
   $('btAllBtn').onclick = () => { if (navigator.bluetooth) findBluetooth(true); };
   $('usbBtn').onclick = connectUsb;
   $('usbBtn').hidden = !navigator.hid;
+  $('usbHint').hidden = !navigator.hid;
   $('btAllBtn').hidden = !navigator.bluetooth;
   if (navigator.hid) {
     navigator.hid.addEventListener('disconnect', () => { if (link && link.kind === 'usb') { link = null; onDisconnect(); log('Đã rút USB.'); } });
@@ -2391,7 +2461,11 @@
   const roomView = v => ['roomIdle', 'roomRun', 'roomDoneBox'].forEach(id => $(id).hidden = id !== v);
   function roomProgress(frac, count, text) {
     const ring = $('roomRing'), c = 2 * Math.PI * 52;
-    ring.style.strokeDasharray = c; ring.style.strokeDashoffset = c * (1 - frac);
+    const progress = Math.max(0, Math.min(1, Number(frac) || 0));
+    ring.style.strokeDasharray = c; ring.style.strokeDashoffset = c * (1 - progress);
+    const meter = document.querySelector('.roomprog');
+    meter.setAttribute('aria-valuenow', progress.toFixed(2));
+    meter.setAttribute('aria-valuetext', `${Math.round(progress * 100)}% · ${text}`);
     $('roomCount').textContent = count; $('roomStep').textContent = text;
   }
   function roomSend(bands) {
@@ -2816,7 +2890,7 @@
     'Kết nối với một loa trước, rồi ghép hoặc tách cặp ở đây.': 'Connect to one speaker first, then pair or split here.',
     // sound
     'Kéo núm để chỉnh tông giọng. Tâm vòng là âm chuẩn.': 'Drag the knob to shape the tone. The centre is the reference sound.',
-    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', 'Hướng dẫn sử dụng': 'How to use', 'Ngồi ở chỗ nghe, âm lượng 60–70%, phòng yên lặng.': 'Sit where you listen, volume 60–70%, a quiet room.', '+ Lưu chế độ': '+ Save as mode', 'Điện thoại': 'Phone', 'Điện thoại · Cặp loa': 'Phone · Pair', 'Bản thử': 'Demo', 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.': 'Demo: no real speaker, every button still works.', 'Chưa nối. Bật loa rồi bấm Kết nối.': 'Not connected. Turn the speaker on, then tap Connect.', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu chế độ': '+ Save as mode',
+    'Chế độ nghe': 'Listening modes', 'Phòng nghe': 'Room', 'Đang nghe': 'Listening', 'Âm sắc': 'Tone', 'Giữ núm rồi xoay · chạm đúp về 0': 'Hold a knob, then turn · double-tap for 0', 'Theo vị trí': 'By placement', 'Âm thanh': 'Sound', 'Hướng dẫn sử dụng': 'How to use', 'Ngồi ở chỗ nghe, âm lượng 60–70%, phòng yên lặng.': 'Sit where you listen, volume 60–70%, a quiet room.', '+ Lưu chế độ': '+ Save as mode', 'Điện thoại': 'Phone', 'Điện thoại · Cặp loa': 'Phone · Pair', 'Bản thử': 'Demo', 'Bản thử: chưa nối loa thật, mọi nút vẫn bấm thử được.': 'Demo: no real speaker, every button still works.', 'Chưa nối. Bật loa rồi bấm Kết nối.': 'Not connected. Turn the speaker on, then tap Connect.', 'Chọn nhanh': 'Quick pick', 'Đo phòng': 'Measure room', 'Bằng điện thoại': 'With your phone', 'Đang dùng kết quả đo': 'Using the measurement', 'Kết quả đo đã lưu': 'Measurement saved', 'Phát từ điện thoại ra loa qua Bluetooth.': 'Plays from your phone to the speaker over Bluetooth.', 'Yêu thích': 'Favourites', 'Việt Nam': 'Vietnam', 'Thế giới': 'World', 'Tìm đài': 'Find a station', 'Tìm': 'Search', 'Đang kết nối…': 'Connecting…', 'Đang phát': 'Playing', 'Đã dừng': 'Stopped', 'Đang tìm…': 'Searching…', 'Thời sự': 'News', 'Âm nhạc': 'Music', 'Văn hoá, đời sống': 'Culture', 'Nhạc chọn lọc': 'Curated music', 'Tin tức': 'News', 'Đài này đang không phát được. Thử đài khác nhé.': 'This station is not playing right now. Try another one.', 'Chạm lại vào đài để phát.': 'Tap the station again to play.', 'Không thấy đài nào hợp. Thử tên khác.': 'No station found. Try another name.', 'Không tìm được lúc này. Kiểm tra mạng rồi thử lại.': 'Search failed. Check the network and try again.', 'Ứng dụng': 'App', 'Màu loa': 'Colour', 'Mặt lưới': 'Grille', 'Thân loa': 'Cabinet', 'Đỏ': 'Red', 'Đen': 'Black', 'Kem': 'Cream', 'Rêu': 'Moss', 'Xanh than': 'Navy', 'Cam đất': 'Terracotta', 'Trắng': 'White', 'Gỗ sồi': 'Oak', 'Chỉ đổi màu hình loa trong app, cho giống loa nhà bạn.': 'Changes only the picture in the app, to match your speakers.', 'Sửa': 'Edit', 'Lưu': 'Save', 'Huỷ': 'Cancel', '×': '×', '+ Lưu chế độ': '+ Save as mode',
     'Tên chế độ, ví dụ: Tối nay': 'Mode name, e.g. Tonight',
     'Trình duyệt không cho lưu lâu dài: chế độ chỉ giữ tới khi đóng trang.': 'This browser does not keep data: modes last until the page is closed.',
     // placement
@@ -2849,6 +2923,12 @@
     // connect sheet
     'Bật loa lên rồi bấm': 'Turn the speaker on, then tap', 'Tìm loa': 'Find speaker', '. Không cần giữ nút nào trên loa.': '. No need to hold any button on the speaker.',
     'Nối bằng cáp USB': 'Connect with a USB cable', 'Không thấy loa?': 'Speaker not listed?',
+    'USB cần Chrome hoặc Edge trên máy tính. Khi bấm, chọn giao diện': 'USB requires Chrome or Edge on a computer. When prompted, choose the',
+    'trong hộp cấp quyền. Trên app điện thoại, dùng Bluetooth.': 'interface in the permission dialog. On the phone app, use Bluetooth.',
+    'USB cần Chrome hoặc Edge trên máy tính. Khi bấm, chọn giao diện QCC3034 trong hộp cấp quyền. Trên app điện thoại, dùng Bluetooth.': 'USB requires Chrome or Edge on a computer. When prompted, choose the QCC3034 interface. On the phone app, use Bluetooth.',
+    'Đang mở hộp chọn thiết bị USB…': 'Opening the USB device chooser…', 'Chưa chọn thiết bị USB. Bấm lại rồi chọn giao diện QCC3034.': 'No USB device selected. Try again and choose the QCC3034 interface.',
+    'Chưa chọn thiết bị USB. Chọn giao diện QCC3034 để tiếp tục.': 'No USB device selected. Choose the QCC3034 interface to continue.',
+    'Trình duyệt chưa được cấp quyền USB. Bấm Nối bằng cáp USB và cho phép giao diện QCC3034.': 'The browser has not been granted USB access. Tap Connect with a USB cable and allow the QCC3034 interface.',
     'Bluetooth chưa sẵn sàng. Bật Bluetooth, và kiểm tra': 'Bluetooth is not ready. Turn Bluetooth on and check that', 'Cài đặt → Bluefy → Bluetooth': 'Settings → Bluefy → Bluetooth', 'đã bật.': 'is on.',
     'Không ghép được với loa. Vào': 'Could not pair with the speaker. Go to', 'Cài đặt → Bluetooth': 'Settings → Bluetooth',
     ', nếu thấy loa VX thì chọn': ', and if the VX speaker is listed choose', 'Quên thiết bị này': 'Forget This Device', ', rồi bấm Tìm loa lại.': ', then tap Find speaker again.',
@@ -2875,14 +2955,46 @@
     'Loa bass': 'Woofer', 'Loa treble': 'Tweeter', 'Phân tần': 'Crossover', 'Thùng': 'Cabinet', 'Kín': 'Sealed', 'Điều khiển': 'Control'
   };
   Object.assign(EN, {
-    'Đổi trái ↔ phải': 'Swap left ↔ right',
+    'Xoay núm: giữ ngón tay trên núm khoảng nửa giây cho tới khi núm nổi lên, rồi xoay. Vuốt ngang qua núm chỉ cuộn trang, không đổi âm.': 'Turn the knob: hold your finger on it for about half a second until it lifts, then turn it. Swiping across the knob only scrolls the page; it does not change the sound.',
+    'Về 0: chạm đúp vào núm.': 'Reset to zero: double-tap the knob.',
+    'Bass chỉnh ±6 dB, Treble ±8 dB. Khi 2 loa đã ghép, chỉnh một lần là cả hai loa cùng đổi và được lưu trong loa.': 'Bass adjusts by ±6 dB and Treble by ±8 dB. When two speakers are paired, one adjustment changes both and is saved in the speakers.',
+    'Optimal âm chuẩn · Clear giọng rõ, treble sáng · Dark êm, bớt treble · Podcast cho giọng nói.': 'Optimal is reference sound · Clear has clear voice and bright treble · Dark is smooth with reduced treble · Podcast is for speech.',
+    'Chỉnh núm theo ý rồi bấm + Lưu chế độ để giữ lại. Bấm Sửa để xoá chế độ đã lưu.': 'Adjust the knobs, then tap + Save as mode to keep it. Tap Edit to delete a saved mode.',
+    'Free: loa cách tường trên 50 cm, âm chuẩn, không bù.': 'Free: place the speaker more than 50 cm from a wall; reference sound, no compensation.',
+    'Wall: loa sát tường sau, giảm 4 dB quanh 100 Hz cho bass gọn.': 'Wall: place the speaker against the back wall; 4 dB less around 100 Hz for tighter bass.',
+    'Corner: loa trong góc phòng, giảm 7 dB quanh 90 Hz, bù nhẹ 250 Hz.': 'Corner: place the speaker in a corner; 7 dB less around 90 Hz with a slight 250 Hz lift.',
+    'Nối loa: bật loa, bấm Kết nối rồi chọn loa VX trong danh sách. Lần sau app tự nối lại.': 'Connect a speaker: turn it on, tap Connect, then choose the VX speaker from the list. The app reconnects next time.',
+    'Ghép 2 loa: bật loa thứ hai để gần, bấm Ghép, rồi giữ Rew + Play trên loa đó khoảng 3 giây. Ghép một loa mới thì loa mới thay chỗ loa cũ.': 'Pair two speakers: turn on the second speaker nearby, tap Pair, then hold Rew + Play on that speaker for about 3 seconds. Pairing a new speaker replaces the old one.',
+    'Trái / phải: chấm đồng trên hình là loa đang nối với điện thoại. Nghe thấy trái phải bị ngược thì bấm Đổi trái ↔ phải.': 'Left / right: the brass dot marks the speaker connected to the phone. If left and right sound reversed, tap Swap left ↔ right.',
+    'Điện thoại phát đài rồi đưa tiếng ra loa qua Bluetooth, như mọi app nghe nhạc. Bấm hình trái tim để lưu đài yêu thích, tìm thêm đài theo tên ở cuối trang.': 'The phone plays the station and sends audio to the speaker over Bluetooth, like any music app. Tap the heart to save a favourite, or search for more stations by name at the bottom of the page.',
+    'Phát / dừng · giữ: ghép điện thoại': 'Play / pause · hold: pair a phone', 'Bài trước / sau · giữ: âm lượng': 'Previous / next track · hold: volume', 'Đổi vị trí Free → Wall → Corner': 'Change placement Free → Wall → Corner',
     'Hai loa đang chơi stereo. Nếu nghe thấy trái phải bị ngược, bấm Đổi.': 'Both speakers play in stereo. If left and right sound the wrong way round, tap Swap.',
     'Đã đổi: trái thành phải, phải thành trái.': 'Swapped: left is now right, right is now left.', 'Đã đổi trái ↔ phải.': 'Swapped left ↔ right.',
-    'Đang dùng một loa (phát cả hai kênh). Muốn nghe stereo, hoặc thay một loa hỏng: bật loa thứ hai để gần, bấm Ghép ở đây, rồi giữ Rew + Play trên loa kia khoảng 3 giây. Loa mới sẽ thay chỗ loa cũ.':
-      'Using one speaker (both channels). For stereo, or to replace a broken speaker: switch the second speaker on nearby, tap Pair here, then hold Rew + Play on it for about 3 seconds. The new speaker takes the place of the old one.' });
+    'Đang dùng một loa (phát cả hai kênh). Muốn nghe stereo, hoặc thay một loa hỏng: bật loa thứ hai để gần, bấm Ghép ở đây, rồi giữ Rew + Play trên loa kia khoảng 3 giây. Loa mới sẽ thay chỗ loa cũ.': 'Using one speaker (both channels). For stereo, or to replace a broken speaker: switch the second speaker on nearby, tap Pair here, then hold Rew + Play on it for about 3 seconds. The new speaker takes the place of the old one.'
+  });
   Object.assign(EN, { 'Bản thử · chưa nối loa': 'Test page · no speaker connected',
     'Bản thử: kết quả đo giả lập, không có gì được gửi tới loa.': 'Test page: simulated measurement, nothing was sent to the speakers.' });
   Object.assign(EN, { 'Để sau': 'Not now', 'Chuyển': 'Switch', 'Giữ loa này': 'Keep this one', 'Chuyển sang loa chính…': 'Switching to the main speaker…' });
+  Object.assign(EN, {
+    'Xoay núm: giữ ngón tay trên núm khoảng nửa giây cho tới khi núm nổi lên, rồi xoay. Vuốt ngang qua núm chỉ cuộn trang, không đổi âm.': 'Turn the knob: hold your finger on it for about half a second until it lifts, then turn it. Swiping across the knob only scrolls the page; it does not change the sound.',
+    'Về 0: chạm đúp vào núm.': 'Reset to zero: double-tap the knob.',
+    'Bass chỉnh ±6 dB, Treble ±8 dB. Khi 2 loa đã ghép, chỉnh một lần là cả hai loa cùng đổi và được lưu trong loa.': 'Bass adjusts by ±6 dB and Treble by ±8 dB. When two speakers are paired, one adjustment changes both and is saved in the speakers.',
+    'Optimal âm chuẩn · Clear giọng rõ, treble sáng · Dark êm, bớt treble · Podcast cho giọng nói.': 'Optimal is reference sound · Clear has clear voice and bright treble · Dark is smooth with reduced treble · Podcast is for speech.',
+    'Chỉnh núm theo ý rồi bấm + Lưu chế độ để giữ lại. Bấm Sửa để xoá chế độ đã lưu.': 'Adjust the knobs, then tap + Save as mode to keep it. Tap Edit to delete a saved mode.',
+    'Free: loa cách tường trên 50 cm, âm chuẩn, không bù.': 'Free: place the speaker more than 50 cm from a wall; reference sound, no compensation.',
+    'Wall: loa sát tường sau, giảm 4 dB quanh 100 Hz cho bass gọn.': 'Wall: place the speaker against the back wall; 4 dB less around 100 Hz for tighter bass.',
+    'Corner: loa trong góc phòng, giảm 7 dB quanh 90 Hz, bù nhẹ 250 Hz.': 'Corner: place the speaker in a corner; 7 dB less around 90 Hz with a slight 250 Hz lift.',
+    'Nối loa: bật loa, bấm Kết nối rồi chọn loa VX trong danh sách. Lần sau app tự nối lại.': 'Connect a speaker: turn it on, tap Connect, then choose the VX speaker from the list. The app reconnects next time.',
+    'Ghép 2 loa: bật loa thứ hai để gần, bấm Ghép, rồi giữ Rew + Play trên loa đó khoảng 3 giây. Ghép một loa mới thì loa mới thay chỗ loa cũ.': 'Pair two speakers: turn on the second speaker nearby, tap Pair, then hold Rew + Play on that speaker for about 3 seconds. Pairing a new speaker replaces the old one.',
+    'Trái / phải: chấm đồng trên hình là loa đang nối với điện thoại. Nghe thấy trái phải bị ngược thì bấm Đổi trái ↔ phải.': 'Left / right: the brass dot marks the speaker connected to the phone. If left and right sound reversed, tap Swap left ↔ right.'
+  });
+  Object.assign(EN, {
+    'Bắt đầu': 'Getting started', 'Âm thanh': 'Sound', 'Phòng nghe': 'Room', 'Kết nối': 'Connect', 'Radio': 'Radio', 'Nếu gặp sự cố': 'Troubleshooting', 'Hướng dẫn sử dụng': 'How to use',
+    'Bắt đầu với ba bước: kết nối loa, chọn vị trí đặt, rồi chỉnh âm theo gu của bạn.': 'Start with three steps: connect your speakers, choose their placement, then tune the sound to your taste.',
+    'Kết nối loa': 'Connect your speakers', 'Bật loa, chọn Kết nối, rồi chọn loa VX trong danh sách.': 'Turn the speaker on, tap Connect, then choose the VX speaker from the list.', 'Chọn vị trí đặt': 'Choose placement', 'Chọn Free, Wall hoặc Corner.': 'Choose Free, Wall, or Corner.', 'Chỉnh âm': 'Tune the sound', 'Giữ núm Bass hoặc Treble rồi xoay. Chạm đúp để về 0.': 'Hold the Bass or Treble knob and turn it. Double-tap to reset it to zero.',
+    'Tone': 'Tone', 'Placement': 'Placement', 'Bluetooth & USB': 'Bluetooth & USB', 'Listen': 'Listen', 'Troubleshooting': 'Troubleshooting', 'Lưu ý:': 'Important:',
+    'Hai loa ghép sẽ cùng thay đổi.': 'Both paired speakers change together.', 'Cách tường trên 50 cm.': 'Place it more than 50 cm from a wall.', 'Sát tường sau, bass gọn hơn.': 'Place it against the back wall for tighter bass.', 'Trong góc, giảm bass ù.': 'Place it in a corner to reduce boomy bass.', 'Đặt âm lượng 60–70%, ngồi đúng vị trí và giữ phòng yên lặng. Mất khoảng 30 giây.': 'Set volume to 60–70%, sit in your listening position, and keep the room quiet. It takes about 30 seconds.', 'Khi dùng kết quả đo phòng, Free / Wall / Corner tạm thời không có tác dụng.': 'When room measurement is active, Free / Wall / Corner have no effect.', 'Điện thoại phát đài và gửi tiếng ra loa qua Bluetooth. Chạm trái tim để lưu yêu thích.': 'The phone plays the station and sends audio to the speaker over Bluetooth. Tap the heart to save a favourite.', 'Kiểm tra loa đang bật và ở gần điện thoại, rồi chọn Tìm loa.': 'Make sure the speaker is on and nearby, then tap Find speaker.', 'Chọn đầu ra âm thanh là loa VX.': 'Choose the VX speaker as the audio output.', 'Cho phép microphone và giảm âm lượng nếu micro quá tải.': 'Allow microphone access and lower the volume if the microphone overloads.'
+  });
   const EN_RX = [
     [/^Kết nối với (.*)\?$/, (m, n) => `Connect to ${n}?`],
     [/^Đang nối với (loa trái|loa phải|loa phụ), loa phụ của cặp\..*$/, (m, s) =>
@@ -2951,13 +3063,44 @@
     else if (m.type === 'attributes') trEl(m.target);
     else m.addedNodes.forEach(n => n.nodeType === 3 ? trNode(n) : n.nodeType === 1 && trTree(n));
   })).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
+  const GUIDE_EN = [
+    '<b>Turn the knob:</b> hold your finger on it for about half a second until it lifts, then turn it. Swiping across the knob only scrolls the page; it does not change the sound.',
+    '<b>Reset to zero:</b> double-tap the knob.',
+    'Bass adjusts by ±6 dB and Treble by ±8 dB. When two speakers are paired, one adjustment changes both and is saved in the speakers.',
+    '<b>Optimal</b> is reference sound · <b>Clear</b> has clear voice and bright treble · <b>Dark</b> is smooth with reduced treble · <b>Podcast</b> is for speech.',
+    'Adjust the knobs, then tap <b>+ Save as mode</b> to keep it. Tap <b>Edit</b> to delete a saved mode.',
+    '<b>Free:</b> place the speaker more than 50 cm from a wall; reference sound, no compensation.',
+    '<b>Wall:</b> place the speaker against the back wall; 4 dB less around 100 Hz for tighter bass.',
+    '<b>Corner:</b> place the speaker in a corner; 7 dB less around 90 Hz with a slight 250 Hz lift.',
+    '<b>Room measurement:</b> the speaker plays a bass sweep, the phone listens where you sit, then lowers boomy bass notes. Sit in your listening position, set volume to 60–70%, and keep the room quiet; it takes about 30 seconds. Once measurement is active, Free / Wall / Corner have no effect; choosing them again keeps the measurement saved for later.',
+    '<b>Connect a speaker:</b> turn it on, tap <b>Connect</b>, then choose the VX speaker from the list. The app reconnects next time.',
+    '<b>Pair two speakers:</b> turn on the second speaker nearby, tap <b>Pair</b>, then hold <b>Rew + Play</b> on that speaker for about 3 seconds. Pairing a new speaker replaces the old one.',
+    '<b>Left / right:</b> the brass dot marks the speaker connected to the phone. If left and right sound reversed, tap <b>Swap left ↔ right</b>.',
+    'The phone plays the station and sends audio to the speaker over Bluetooth, like any music app. Tap the heart to save a favourite, or search for more stations by name at the bottom of the page.'
+  ];
+  function renderGuideLanguage() {
+    const root = document.querySelector('#setGuide');
+    if (!root || lang === 'vi') return;
+    const lead = root.querySelector('.guide-lead'); if (lead) lead.innerHTML = 'Start with three steps: <strong>connect your speakers</strong>, choose placement, then tune the sound to your taste.';
+    const steps = [...root.querySelectorAll('.guide-step')];
+    [['Connect your speakers','Turn the speaker on, tap Connect, then choose the VX speaker from the list.'],['Choose placement','Choose Free, Wall, or Corner.'],['Tune the sound','Hold the Bass or Treble knob and turn it. Double-tap to reset it to zero.']].forEach((x,i)=>{ if(steps[i]) steps[i].querySelector('div').innerHTML = `<b>${x[0]}</b><span>${x[1]}</span>`; });
+    const labels = [...root.querySelectorAll('.guide-kicker')], translated = ['Getting started','Sound','Room','Connect','Radio','Troubleshooting']; labels.forEach((e,i)=>{ if(translated[i]) e.textContent = translated[i]; });
+    const cards = [...root.querySelectorAll('.guide-card')];
+    const english = [
+      '<span class="guide-label">Tone</span><p><b>Bass and Treble</b>Bass ±6 dB, Treble ±8 dB. Paired speakers change together.</p><p><b>Listening modes</b><strong>Optimal</strong> is reference · <strong>Clear</strong> is vocal-forward · <strong>Dark</strong> is smoother · <strong>Podcast</strong> is for speech.</p><p><b>Save a setup</b>Choose <strong>+ Save as mode</strong> to save; choose <strong>Edit</strong> to delete.</p>',
+      '<span class="guide-label">Placement</span><p><b>Free</b>More than 50 cm from a wall.</p><p><b>Wall</b>Against the back wall for tighter bass.</p><p><b>Corner</b>In a corner to reduce boom.</p><p><b>Room measurement</b>Set volume to 60–70%, sit in position, and keep the room quiet. It takes about 30 seconds.</p>',
+      '<span class="guide-label">Bluetooth &amp; USB</span><p><b>Pair two speakers</b>Tap <strong>Pair</strong>, then hold <strong>Rew + Play</strong> on the second speaker for about 3 seconds.</p><p><b>Left / right</b>The brass dot marks the speaker connected to the phone. If reversed, choose <strong>Swap left ↔ right</strong>.</p><p><b>USB</b>Chrome/Edge desktop supports QCC3034 through WebHID; the phone app uses Bluetooth.</p>',
+      '<span class="guide-label">Listen</span><p>The phone plays the station and sends audio to the speaker over Bluetooth. Tap the heart to save a favourite.</p>',
+      '<span class="guide-label">Troubleshooting</span><p><b>Speaker not found</b>Make sure it is on and nearby, then choose Find speaker.</p><p><b>No sound</b>Choose the VX speaker as the audio output.</p><p><b>Room measurement will not start</b>Allow microphone access and lower the volume if the microphone overloads.</p>'
+    ]; cards.forEach((e,i)=>{ if(english[i]) e.innerHTML = english[i]; });
+  }
   function setLang(l) {
     lang = l === 'en' ? 'en' : 'vi';
     store.set('vx.lang', lang);
     document.documentElement.lang = lang;
     $('langNow').textContent = lang === 'en' ? 'English' : 'Tiếng Việt';
     document.querySelectorAll('.langrow').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
-    trTree(document.body);
+    trTree(document.body); renderGuideLanguage();
     renderStatus(); renderPlacement(); renderModes();       // text written by code follows too
   }
   document.querySelectorAll('.langrow').forEach(b => b.onclick = () => setLang(b.dataset.lang));
