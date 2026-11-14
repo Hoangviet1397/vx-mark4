@@ -893,6 +893,8 @@
   #v-radio section > .eyebrow, #setMain > .eyebrow.subh { margin: 26px 2px 0 !important; font-size: 13px !important; font-weight: 600 !important; letter-spacing: 0 !important; text-transform: none !important; color: var(--muted) !important; font-family: inherit !important; }
   #radioNow { border-radius: 18px; box-shadow: var(--card-shadow); }
   .setbtns { margin-top: 28px; }
+  /* paired before, the other speaker is off: amber dot, normal text, no warning lines */
+  .chip.half::before { background: var(--accent); }
 </style>
 </head>
 <body>
@@ -1132,7 +1134,7 @@
         <div class="guide-kicker">Âm thanh</div><div class="guide-card"><span class="guide-label">Tone</span><p><b>Bass và Treble</b>Bass ±6 dB, Treble ±8 dB. Hai loa ghép sẽ cùng thay đổi.</p><p><b>Chế độ nghe</b><strong>Optimal</strong> âm chuẩn · <strong>Clear</strong> rõ giọng · <strong>Dark</strong> êm hơn · <strong>Podcast</strong> cho lời nói.</p><p><b>Lưu thiết lập</b>Chọn <strong>+ Lưu chế độ</strong> để lưu; chọn <strong>Sửa</strong> để xoá.</p></div>
         <div class="guide-kicker">Phòng nghe</div><div class="guide-card"><span class="guide-label">Placement</span><p><b>Free</b>Cách tường trên 50 cm.</p><p><b>Wall</b>Sát tường sau, bass gọn hơn.</p><p><b>Corner</b>Trong góc, giảm bass ù.</p><p><b>Đo phòng</b>Đặt âm lượng 60–70%, ngồi đúng vị trí và giữ phòng yên lặng. Mất khoảng 30 giây.</p></div>
         <div class="guide-tip"><strong>Lưu ý:</strong> Khi dùng kết quả đo phòng, Free / Wall / Corner tạm thời không có tác dụng.</div>
-        <div class="guide-kicker">Kết nối</div><div class="guide-card"><span class="guide-label">Bluetooth &amp; USB</span><p><b>Ghép hai loa</b>Chọn <strong>Ghép</strong>, rồi giữ <strong>Rew + Play</strong> trên loa thứ hai khoảng 3 giây.</p><p><b>Trái / phải</b>Chấm đồng đánh dấu loa đang nối với điện thoại. Nếu bị ngược, chọn <strong>Đổi trái ↔ phải</strong>.</p><p><b>USB</b>Chrome/Edge desktop hỗ trợ QCC3034 qua WebHID; app điện thoại dùng Bluetooth.</p></div>
+        <div class="guide-kicker">Kết nối</div><div class="guide-card"><span class="guide-label">Bluetooth &amp; USB</span><p><b>Ghép hai loa</b>Chọn <strong>Ghép</strong>, rồi giữ <strong>Rew + Play</strong> trên loa thứ hai khoảng 3 giây.</p><p><b>Trái / phải</b>Chấm đồng đánh dấu loa đang nối với điện thoại. Nếu bị ngược, chọn <strong>Đổi trái ↔ phải</strong>.</p><p><b>Chưa thấy loa kia</b>Hai loa đã ghép nhưng loa kia đang tắt hoặc ở xa: âm sắc, chế độ và phòng nghe chỉ đổi trên loa đang nối. Bật loa kia lên là hai loa tự đồng bộ lại.</p><p><b>USB</b>Chrome/Edge desktop hỗ trợ QCC3034 qua WebHID; app điện thoại dùng Bluetooth.</p></div>
         <div class="guide-kicker">Radio</div><div class="guide-card"><span class="guide-label">Listen</span><p>Điện thoại phát đài và gửi tiếng ra loa qua Bluetooth. Chạm trái tim để lưu yêu thích.</p></div>
         <div class="guide-kicker">Nếu gặp sự cố</div><div class="guide-card"><span class="guide-label">Troubleshooting</span><p><b>Không thấy loa</b>Kiểm tra loa đang bật và ở gần điện thoại, rồi chọn Tìm loa.</p><p><b>Không có tiếng</b>Chọn đầu ra âm thanh là loa VX.</p><p><b>Đo phòng không chạy</b>Cho phép microphone và giảm âm lượng nếu micro quá tải.</p></div>
       </div>
@@ -1945,8 +1947,10 @@
     const via = link ? (link.kind === 'usb' ? 'USB' : 'Bluetooth') : '';
     const side = state.role === 1 ? 'Loa trái' : state.role === 2 ? 'Loa phải' : 'Loa';
     const chip = $('chip'), pair = !$('tilePeer').hidden;
-    chip.classList.toggle('on', state.connected);
-    $('chipTxt').textContent = state.connected ? `${side} · ${via}` : DEMO ? 'Bản thử · chưa nối loa' : 'Chưa kết nối · chạm để nối';
+    const alone = state.connected && pair && !state.peer;   // paired before, the other one is off: say it here, once
+    chip.classList.toggle('on', state.connected && !alone);
+    chip.classList.toggle('half', alone);
+    $('chipTxt').textContent = alone ? `${side} · chưa thấy loa kia` : state.connected ? `${side} · ${via}` : DEMO ? 'Bản thử · chưa nối loa' : 'Chưa kết nối · chạm để nối';
     // firmware of the speaker the app talks to (GET_INFO), e.g. "Loa trái · 2.3"
     $('fwNow').textContent = state.connected && info.fw ? `${side} · ${info.fw}` : 'Kết nối để xem';
     $('tPeer').textContent = !(state.connected || DEMO) ? 'Chưa nối' : state.peer ? 'Stereo · đồng bộ' : 'Một loa';
@@ -1977,7 +1981,7 @@
     });
     const n = $('homeNote'), sn = $('syncNote');
     if (!state.connected) { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = ''; }
-    else if (!state.peer) { n.className = 'note warn'; n.textContent = pair ? 'Loa kia chưa nối: chỉnh sửa chỉ áp cho loa này.' : ''; sn.className = 'note warn'; sn.textContent = pair ? 'Chỉ áp cho loa này cho tới khi 2 loa nối lại.' : ''; }
+    else if (!state.peer) { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = ''; }
     else { n.className = 'note'; n.textContent = ''; sn.className = 'note'; sn.textContent = ''; }
     roomRender();
   }
@@ -2996,6 +3000,9 @@
     'Hai loa ghép sẽ cùng thay đổi.': 'Both paired speakers change together.', 'Cách tường trên 50 cm.': 'Place it more than 50 cm from a wall.', 'Sát tường sau, bass gọn hơn.': 'Place it against the back wall for tighter bass.', 'Trong góc, giảm bass ù.': 'Place it in a corner to reduce boomy bass.', 'Đặt âm lượng 60–70%, ngồi đúng vị trí và giữ phòng yên lặng. Mất khoảng 30 giây.': 'Set volume to 60–70%, sit in your listening position, and keep the room quiet. It takes about 30 seconds.', 'Khi dùng kết quả đo phòng, Free / Wall / Corner tạm thời không có tác dụng.': 'When room measurement is active, Free / Wall / Corner have no effect.', 'Điện thoại phát đài và gửi tiếng ra loa qua Bluetooth. Chạm trái tim để lưu yêu thích.': 'The phone plays the station and sends audio to the speaker over Bluetooth. Tap the heart to save a favourite.', 'Kiểm tra loa đang bật và ở gần điện thoại, rồi chọn Tìm loa.': 'Make sure the speaker is on and nearby, then tap Find speaker.', 'Chọn đầu ra âm thanh là loa VX.': 'Choose the VX speaker as the audio output.', 'Cho phép microphone và giảm âm lượng nếu micro quá tải.': 'Allow microphone access and lower the volume if the microphone overloads.'
   });
   const EN_RX = [
+    [/^(Loa trái|Loa phải|Loa) · chưa thấy loa kia$/, (m, s) => `${{ 'Loa trái': 'Left speaker', 'Loa phải': 'Right speaker', 'Loa': 'Speaker' }[s]} · other speaker not found`],
+    [/^(Một loa|Stereo) · (USB|Bluetooth)$/, (m, a, v) => `${a === 'Một loa' ? 'One speaker' : 'Stereo'} · ${v}`],
+    [/^(Loa trái|Loa phải|Loa) · (USB|Bluetooth|[\d.]+)$/, (m, s, v) => `${{ 'Loa trái': 'Left speaker', 'Loa phải': 'Right speaker', 'Loa': 'Speaker' }[s]} · ${v}`],
     [/^Kết nối với (.*)\?$/, (m, n) => `Connect to ${n}?`],
     [/^Đang nối với (loa trái|loa phải|loa phụ), loa phụ của cặp\..*$/, (m, s) =>
       `Connected to the ${{ 'loa trái': 'left speaker', 'loa phải': 'right speaker', 'loa phụ': 'second speaker' }[s]}, the secondary one of the pair. Switch to the main speaker (the one connected to the phone) for a steadier link?`],
